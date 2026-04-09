@@ -1,0 +1,57 @@
+{
+  "name": "SmartBusAI",
+  "short_name": "SmartBus",
+  "description": "Nền tảng đặt vé xe buýt thông minh với AI",
+  "start_url": "/pages/passenger/index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020c1b",
+  "theme_color": "#00ffe0",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-home.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Trang chủ SmartBusAI"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tìm chuyến xe",
+      "short_name": "Tìm xe",
+      "description": "Tìm kiếm chuyến xe nhanh",
+      "url": "/pages/passenger/index.html?action=search",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Vé của tôi",
+      "short_name": "Vé",
+      "description": "Xem vé đã đặt",
+      "url": "/pages/passenger/profile.html",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any" }]
+    }
+  ],
+  "categories": ["travel", "transportation"],
+  "prefer_related_applications": false
+}

@@ -2,440 +2,536 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Đăng ký - SmartBusAI</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SmartBusAI — Đăng ký</title>
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:"Segoe UI",Arial;
+:root{
+  --neon:#00ffe0;--blue:#00a8ff;--purple:#7c5ce7;
+  --card:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
 }
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html{background:#04090f;}
 body{
-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-background:radial-gradient(circle at 20% 20%,#1a1a40,#000814 70%);
-overflow:hidden;
-color:white;
+  min-height:100vh;display:flex;align-items:flex-start;justify-content:center;
+  color:#fff;overflow-x:hidden;padding:32px 20px 48px;
+  background:
+    radial-gradient(ellipse at 10% 20%,rgba(0,255,224,.07) 0%,transparent 45%),
+    radial-gradient(ellipse at 88% 72%,rgba(108,92,231,.09) 0%,transparent 45%),
+    radial-gradient(ellipse at 55% 5%, rgba(0,164,255,.06) 0%,transparent 38%),
+    #04090f;
+  animation:pageIn .35s ease;
+}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CANVAS ── */
+#gc{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.sf{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.ts{position:absolute;border-radius:50%;background:#fff;
+  animation:twinkle var(--td,3s) ease-in-out var(--dl,0s) infinite alternate;}
+@keyframes twinkle{0%{opacity:.06;transform:scale(.8)}100%{opacity:.85;transform:scale(1.3)}}
+
+/* ── PLANETS ── */
+.pl{position:fixed;border-radius:50%;pointer-events:none;z-index:1;}
+.pl1{width:110px;height:110px;top:50px;right:70px;
+  background:radial-gradient(circle at 30% 30%,#d8ccff,#6c5ce7 44%,#1a0a40 78%);
+  box-shadow:0 0 50px rgba(108,92,231,.50),0 0 100px rgba(108,92,231,.18);}
+.pl2{width:50px;height:50px;bottom:80px;left:50px;
+  background:radial-gradient(circle at 38% 38%,#fff,#00d4ff 54%,#001a33 84%);
+  box-shadow:0 0 32px rgba(0,212,255,.60);animation:pfloat 11s ease-in-out infinite;}
+@keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
+/* ── METEORS ── */
+.mt{position:fixed;pointer-events:none;z-index:1;width:1.5px;height:50px;
+  background:linear-gradient(rgba(255,255,255,.85),transparent);
+  transform:rotate(42deg);animation:mtfall linear infinite;}
+.mt:nth-child(1){top:8%; left:15%;animation-duration:17s;}
+.mt:nth-child(2){top:30%;left:60%;animation-duration:23s;animation-delay:7s;}
+@keyframes mtfall{0%{transform:translate3d(0,0,0)rotate(42deg);opacity:1}100%{transform:translate3d(650px,650px,0)rotate(42deg);opacity:0}}
+
+/* ═══════════ LAYOUT ═══════════ */
+.wrap{
+  position:relative;z-index:10;
+  display:flex;gap:56px;align-items:flex-start;
+  width:min(1080px,100%);
 }
 
-/* GALAXY BACKGROUND */
+/* ═══════════ LEFT INTRO ═══════════ */
+.intro{flex:1;min-width:0;padding-top:8px;position:sticky;top:32px;}
 
-body::before,
-body::after{
-content:"";
-position:absolute;
-width:200%;
-height:200%;
-
-background-image:
-radial-gradient(2px 2px at 20px 30px,#fff,transparent),
-radial-gradient(2px 2px at 40px 70px,#8bd3ff,transparent),
-radial-gradient(1px 1px at 90px 40px,#ffffff,transparent),
-radial-gradient(2px 2px at 130px 80px,#caa6ff,transparent);
-
-background-size:200px 200px;
-
-animation:starsMove 120s linear infinite;
-
-opacity:0.35;
+.intro-logo{display:flex;align-items:center;gap:11px;margin-bottom:26px;}
+.logo-icon{
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 20px rgba(0,255,224,.40);
+}
+.logo-icon svg{width:24px;height:24px;fill:#030d18;}
+.logo-name{
+  font-size:20px;font-weight:900;letter-spacing:.4px;
+  background:linear-gradient(90deg,#00ffe0,#7eb8ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-badge{
+  font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;
+  background:linear-gradient(135deg,rgba(0,255,224,.20),rgba(0,168,255,.14));
+  border:1px solid rgba(0,255,224,.35);color:#00ffe0;letter-spacing:.8px;
+  box-shadow:0 0 10px rgba(0,255,224,.16);text-transform:uppercase;
 }
 
-body::after{
-animation-duration:180s;
-opacity:0.2;
+.intro-badge{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 13px;
+  border-radius:20px;margin-bottom:16px;
+  background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.22);
+  font-size:11px;font-weight:700;color:#00ffe0;letter-spacing:.3px;
 }
-
-@keyframes starsMove{
-from{transform:translateY(0);}
-to{transform:translateY(-2000px);}
-}
-
-/* CONTAINER */
-
-.container{
-display:flex;
-gap:80px;
-align-items:center;
-z-index:2;
-}
-
-/* INTRO */
-
-.intro{
-width:460px;
-}
-
-.badge{
-display:inline-block;
-padding:6px 12px;
-border-radius:20px;
-background:rgba(0,200,255,0.15);
-border:1px solid rgba(0,200,255,0.4);
-font-size:12px;
-margin-bottom:15px;
-}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#00ffe0;
+  box-shadow:0 0 7px #00ffe0;animation:bdot 2s ease-in-out infinite;}
+@keyframes bdot{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
 
 .intro h1{
-font-size:42px;
-margin-bottom:15px;
-background:linear-gradient(90deg,#7aa6ff,#c084ff,#ff7edb);
--webkit-background-clip:text;
-color:transparent;
+  font-size:36px;font-weight:900;line-height:1.2;margin-bottom:12px;
+  background:linear-gradient(120deg,#fff 30%,#7eb8ff 65%,#00ffe0 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.2px;
+}
+.intro-desc{
+  font-size:13.5px;color:rgba(255,255,255,.55);line-height:1.75;
+  margin-bottom:26px;font-weight:500;
 }
 
-.intro p{
-color:#cfd8ff;
-line-height:1.7;
-margin-bottom:25px;
+/* stats */
+.stats-row{
+  display:flex;gap:0;margin-bottom:28px;
+  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
+  border:1px solid rgba(255,255,255,.08);border-radius:15px;overflow:hidden;
+  box-shadow:0 6px 24px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05);
 }
+.stat-item{flex:1;padding:13px 14px;text-align:center;position:relative;}
+.stat-item+.stat-item::before{content:"";position:absolute;left:0;top:22%;height:56%;width:1px;background:rgba(255,255,255,.07);}
+.stat-num{font-size:18px;font-weight:900;line-height:1;margin-bottom:3px;background:linear-gradient(135deg,#fff,var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,.36);font-weight:700;letter-spacing:.3px;}
 
-.features{
-display:flex;
-flex-direction:column;
-gap:12px;
+/* benefit list */
+.benefit-list{display:flex;flex-direction:column;gap:9px;}
+.benefit-item{
+  display:flex;align-items:center;gap:11px;padding:11px 14px;
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(8,18,44,.80),rgba(4,12,30,.76));
+  border:1px solid rgba(255,255,255,.07);
+  transition:border-color .22s,background .22s;
 }
-
-.feature{
-display:flex;
-align-items:center;
-gap:12px;
-padding:12px 14px;
-background:rgba(255,255,255,0.05);
-border-radius:10px;
-border:1px solid rgba(255,255,255,0.08);
+.benefit-item:hover{border-color:rgba(255,255,255,.13);background:linear-gradient(145deg,rgba(12,24,56,.85),rgba(6,16,38,.80));}
+.benefit-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:var(--bd,#00ffe0);
+  box-shadow:0 0 8px var(--bd,#00ffe0);
 }
+.benefit-item:nth-child(1){--bd:#00ffe0;}
+.benefit-item:nth-child(2){--bd:#00a8ff;}
+.benefit-item:nth-child(3){--bd:#a78bfa;}
+.benefit-item:nth-child(4){--bd:#2ecc71;}
+.benefit-txt{font-size:13px;color:rgba(200,228,245,.80);font-weight:600;}
 
-/* REGISTER CARD */
-
-.register-wrapper{
-
-width:420px;
-max-height:85vh;
-
-padding:35px;
-
-overflow-y:auto;
-
-background:rgba(15,20,40,0.85);
-
-backdrop-filter:blur(30px);
-
-border-radius:18px;
-
-border:1px solid rgba(255,255,255,0.25);
-
-box-shadow:
-0 0 30px rgba(0,140,255,0.3),
-0 0 80px rgba(140,0,255,0.25);
-
+/* login redirect */
+.already-login{
+  margin-top:24px;padding:14px 18px;border-radius:14px;
+  background:linear-gradient(145deg,rgba(8,18,44,.80),rgba(4,12,30,.76));
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
-
-.register-wrapper::-webkit-scrollbar{
-width:6px;
+.already-login p{font-size:12.5px;color:rgba(255,255,255,.45);font-weight:600;}
+.already-login a{
+  padding:8px 20px;border-radius:25px;font-size:12.5px;font-weight:800;
+  text-decoration:none;color:#00ffe0;
+  border:1px solid rgba(0,255,224,.30);background:rgba(0,255,224,.08);
+  transition:all .22s;white-space:nowrap;letter-spacing:.2px;
 }
+.already-login a:hover{background:rgba(0,255,224,.20);border-color:rgba(0,255,224,.55);box-shadow:0 0 16px rgba(0,255,224,.18);}
 
-.register-wrapper::-webkit-scrollbar-thumb{
-background:#7aa6ff;
-border-radius:10px;
+/* ═══════════ RIGHT — FORM CARD ═══════════ */
+.card{
+  width:420px;flex-shrink:0;
+  background:linear-gradient(145deg,rgba(6,14,36,.94),rgba(3,9,24,.90));
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,255,255,.10);
+  border-top:1px solid rgba(255,255,255,.15);
+  border-radius:24px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.03),
+    0 24px 60px rgba(0,0,0,.65),
+    0 0 50px rgba(0,168,255,.07),
+    inset 0 1px 0 rgba(255,255,255,.07);
+  overflow:hidden;
 }
+.card::before{content:"";display:block;height:3px;background:linear-gradient(90deg,#00ffe0,#00a8ff,#7c5ce7);}
+.card-body{padding:28px 28px 26px;}
 
-h2{
-text-align:center;
-margin-bottom:25px;
-font-size:26px;
-background:linear-gradient(90deg,#7aa6ff,#ff7edb);
--webkit-background-clip:text;
-color:transparent;
+.card-head{text-align:center;margin-bottom:22px;}
+.card-head h2{
+  font-size:22px;font-weight:900;
+  background:linear-gradient(135deg,#fff 0%,#7eb8ff 55%,#00ffe0 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:4px;
 }
+.card-head p{font-size:12px;color:rgba(255,255,255,.32);font-weight:600;}
 
-/* INPUT */
-
-.input-group{
-margin-bottom:16px;
+/* ── INPUTS ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.input-group{margin-bottom:13px;}
+.input-group label{
+  display:block;font-size:11px;font-weight:800;
+  color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.6px;
+  margin-bottom:6px;
 }
-
-label{
-font-size:13px;
-color:#cfd8ff;
+.input-group input,
+.input-group select{
+  width:100%;padding:10px 13px;border-radius:11px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+  color:#fff;font-size:13px;font-weight:500;
+  font-family:"Segoe UI",Arial,sans-serif;
+  transition:border-color .22s,box-shadow .22s,background .22s;
 }
-
-input,select{
-width:100%;
-padding:11px;
-margin-top:6px;
-
-border-radius:10px;
-
-border:1px solid rgba(255,255,255,0.2);
-
-background:rgba(0,0,0,0.45);
-
-color:white;
+.input-group input:focus,
+.input-group select:focus{
+  outline:none;border-color:rgba(0,255,224,.42);
+  background:rgba(0,255,224,.04);
+  box-shadow:0 0 0 3px rgba(0,255,224,.07),0 0 10px rgba(0,255,224,.10);
 }
-
-input:focus,select:focus{
-outline:none;
-border-color:#7aa6ff;
-box-shadow:0 0 8px #7aa6ff;
+.input-group input::placeholder{color:rgba(255,255,255,.20);}
+.input-group select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,.35)' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:34px;
 }
+.input-group select option{background:#0e1830;color:#fff;}
 
-/* PASSWORD STRENGTH */
+/* error text */
+.err{font-size:11px;color:rgba(231,76,60,.90);margin-top:4px;min-height:14px;font-weight:600;}
 
-.strength-bar{
-height:6px;
-background:#222;
-border-radius:5px;
-margin-top:6px;
-overflow:hidden;
+/* ── PASSWORD STRENGTH ── */
+.strength-wrap{margin-top:7px;}
+.strength-track{height:4px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;}
+.strength-fill{height:100%;width:0%;border-radius:4px;transition:width .3s,background .3s;}
+.strength-label{font-size:10px;color:rgba(255,255,255,.32);margin-top:4px;font-weight:700;min-height:13px;transition:color .3s;}
+
+/* ── SUBMIT BUTTON ── */
+.submit-btn{
+  width:100%;margin-top:18px;padding:13px;border:none;border-radius:13px;
+  font-size:14.5px;font-weight:900;cursor:pointer;letter-spacing:.3px;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff,#7c5ce7);
+  color:#030d18;
+  box-shadow:0 0 18px rgba(0,255,224,.28),0 6px 20px rgba(0,0,0,.28);
+  transition:transform .22s,box-shadow .22s;
+  font-family:"Segoe UI",Arial,sans-serif;position:relative;overflow:hidden;
 }
+.submit-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent);border-radius:13px;}
+.submit-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 30px rgba(0,255,224,.48),0 10px 26px rgba(0,0,0,.32);}
+.submit-btn:disabled{opacity:.50;cursor:not-allowed;transform:none;}
 
-.strength-fill{
-height:100%;
-width:0%;
-transition:0.3s;
-}
+/* message */
+.message{text-align:center;margin-top:12px;font-size:12.5px;min-height:18px;font-weight:700;}
+.success{color:#2ecc71;}.error{color:#e74c3c;}
 
-/* ERROR */
+/* divider + back */
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0 13px;}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.06);}
+.divider span{font-size:10px;color:rgba(255,255,255,.25);font-weight:700;letter-spacing:.5px;white-space:nowrap;}
 
-.error-text{
-font-size:12px;
-color:#ff6b6b;
-margin-top:4px;
-min-height:14px;
-}
-
-/* BUTTON */
-
-button{
-width:100%;
-padding:13px;
-border:none;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-transition:0.3s;
-}
-
-.register-btn{
-
-background:linear-gradient(135deg,#00c6ff,#7a5cff,#ff7edb);
-
-color:white;
-
-margin-top:10px;
-
-}
-
-.register-btn:hover{
-
-transform:translateY(-2px);
-
-box-shadow:
-0 0 12px #7aa6ff,
-0 0 20px #ff7edb;
-
-}
-
+.back-wrap{text-align:center;}
 .back-btn{
-
-margin-top:12px;
-
-background:#222;
-
-color:white;
-
+  display:inline-block;padding:9px 28px;border-radius:25px;
+  border:1px solid rgba(126,184,255,.26);background:rgba(126,184,255,.07);
+  color:#7eb8ff;font-size:12.5px;font-weight:800;
+  text-decoration:none;letter-spacing:.2px;cursor:pointer;
+  transition:all .22s;font-family:"Segoe UI",Arial,sans-serif;
 }
-
-.back-btn:hover{
-background:#333;
-}
-
-/* MESSAGE */
-
-.message{
-text-align:center;
-margin-top:12px;
-font-size:14px;
-}
-
-.success{color:#7cffb2;}
-.error{color:#ff6b6b;}
-
+.back-btn:hover{background:rgba(126,184,255,.18);border-color:rgba(126,184,255,.52);color:#fff;box-shadow:0 0 14px rgba(126,184,255,.18);}
 </style>
 <script src="/js/api.js"></script>
 </head>
-
 <body>
 
-<div class="container">
+<canvas id="gc"></canvas>
+<div class="sf" id="starField"></div>
+<div class="pl pl1"></div>
+<div class="pl pl2"></div>
+<div class="mt"></div>
+<div class="mt"></div>
 
-<!-- INTRO -->
+<div class="wrap">
 
-<div class="intro">
+  <!-- ═══ LEFT INTRO ═══ -->
+  <div class="intro">
 
-<div class="badge">🚀 AI Smart Transportation Platform</div>
+    <div class="intro-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 3H7C5.3 3 4 4.3 4 6v11c0 1.1.6 2 1.5 2.5L6 21h2v-1h8v1h2l.5-1.5C19.4 19 20 18.1 20 17V6c0-1.7-1.3-3-3-3zm1 14H6V6h12v11zM9 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm6 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zM8 9h8v3H8z"/></svg>
+      </div>
+      <div class="logo-name">SmartBusAI</div>
+      <div class="logo-badge">AI PLATFORM</div>
+    </div>
 
-<h1>Tạo tài khoản SmartBusAI</h1>
+    <div class="intro-badge">
+      <span class="badge-dot"></span>
+      Miễn phí · Nhanh chóng · Bảo mật
+    </div>
 
-<p>
-Tham gia hệ thống đặt vé xe thông minh tích hợp AI giúp tối ưu vận hành,
-phân tích nhu cầu hành khách và quản lý dữ liệu vận tải hiệu quả.
-</p>
+    <h1>Tham gia cùng<br>hàng triệu hành khách</h1>
 
-<div class="features">
+    <p class="intro-desc">Tạo tài khoản SmartBusAI chỉ trong 1 phút — đặt vé thông minh, theo dõi chuyến đi và tích luỹ điểm thưởng ngay hôm nay.</p>
 
-<div class="feature">🤖 AI tối ưu tuyến xe</div>
-<div class="feature">⚡ Đặt vé nhanh chóng</div>
-<div class="feature">📊 Quản lý vận hành thông minh</div>
-<div class="feature">🔒 Bảo mật hệ thống cao</div>
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">50K+</div>
+        <div class="stat-lbl">Người dùng</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">Tuyến xe</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4.9★</div>
+        <div class="stat-lbl">Đánh giá</div>
+      </div>
+    </div>
 
-</div>
+    <div class="benefit-list">
+      <div class="benefit-item">
+        <div class="benefit-dot"></div>
+        <div class="benefit-txt">Đặt vé siêu nhanh — hoàn tất trong 60 giây</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-dot"></div>
+        <div class="benefit-txt">AI gợi ý chuyến phù hợp theo lịch trình của bạn</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-dot"></div>
+        <div class="benefit-txt">Tích điểm thưởng — 1 điểm cho mỗi 100K VNĐ chi tiêu</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-dot"></div>
+        <div class="benefit-txt">Bảo mật tuyệt đối · Huỷ vé linh hoạt · Hỗ trợ 24/7</div>
+      </div>
+    </div>
 
-</div>
+    <div class="already-login">
+      <p>Đã có tài khoản SmartBusAI?</p>
+      <a href="login.html">Đăng nhập ngay</a>
+    </div>
 
-<!-- REGISTER FORM -->
+  </div><!-- /intro -->
 
-<div class="register-wrapper">
+  <!-- ═══ RIGHT FORM CARD ═══ -->
+  <div class="card">
+    <div class="card-body">
 
-<h2>Đăng ký tài khoản</h2>
+      <div class="card-head">
+        <h2>Tạo tài khoản mới</h2>
+        <p>Điền thông tin bên dưới để bắt đầu</p>
+      </div>
 
-<form id="registerForm">
+      <form id="registerForm">
 
-<div class="input-group">
-<label>Tên đăng nhập</label>
-<input type="text" id="username" name="username" required>
-<div class="error-text" id="usernameError"></div>
-</div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="username" name="username" placeholder="username" required>
+            <div class="err" id="usernameError"></div>
+          </div>
+          <div class="input-group">
+            <label>Họ và tên</label>
+            <input type="text" id="full_name" name="full_name" placeholder="Nguyễn Văn A" required>
+          </div>
+        </div>
 
-<div class="input-group">
-<label>Họ và tên</label>
-<input type="text" id="full_name" name="full_name" required>
-</div>
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="email" name="email" placeholder="your@email.com" required>
+          <div class="err" id="emailError"></div>
+        </div>
 
-<div class="input-group">
-<label>Email</label>
-<input type="email" id="email" name="email" required>
-<div class="error-text" id="emailError"></div>
-</div>
+        <div class="input-group">
+          <label>Mật khẩu</label>
+          <input type="password" id="password" name="password" placeholder="Tối thiểu 8 ký tự" required>
+          <div class="strength-wrap">
+            <div class="strength-track"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-label" id="strengthLabel"></div>
+          </div>
+          <div class="err" id="passwordError"></div>
+        </div>
 
-<div class="input-group">
-<label>Mật khẩu</label>
-<input type="password" id="password" name="password" required>
+        <div class="input-group">
+          <label>Số điện thoại</label>
+          <input type="text" id="phone" name="phone" placeholder="0901 234 567">
+          <div class="err" id="phoneError"></div>
+        </div>
 
-<div class="strength-bar">
-<div class="strength-fill" id="strengthFill"></div>
-</div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Tỉnh / Thành phố</label>
+            <select id="province" name="province" required>
+              <option value="">Chọn tỉnh</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Quận / Huyện</label>
+            <select id="district" name="district" required>
+              <option value="">Chọn quận/huyện</option>
+            </select>
+          </div>
+        </div>
 
-<div class="error-text" id="passwordError"></div>
+        <button type="submit" class="submit-btn" id="submitBtn">Tạo tài khoản →</button>
 
-</div>
+      </form>
 
-<div class="input-group">
-<label>Số điện thoại</label>
-<input type="text" id="phone" name="phone">
-<div class="error-text" id="phoneError"></div>
-</div>
+      <p id="message" class="message"></p>
 
-<div class="input-group">
-<label>Tỉnh / Thành phố</label>
-<select id="province" name="province" required></select>
-</div>
+      <div class="divider"><span>ĐÃ CÓ TÀI KHOẢN</span></div>
+      <div class="back-wrap">
+        <a href="login.html" class="back-btn">Đăng nhập</a>
+      </div>
 
-<div class="input-group">
-<label>Quận / Huyện</label>
-<select id="district" name="district" required></select>
-</div>
+    </div>
+  </div><!-- /card -->
 
-<button type="submit" class="register-btn" id="submitBtn">Tạo tài khoản</button>
+</div><!-- /wrap -->
 
-</form>
-
-<button class="back-btn" onclick="location.href='login.html'">Quay lại đăng nhập</button>
-
-<p id="message" class="message"></p>
-
-</div>
-
-</div>
-
-<script src="/data/vietnam-location.json"></script>
 <script>
+/* ── GALAXY ── */
+(()=>{
+  const cv=document.getElementById("gc"),cx=cv.getContext("2d");
+  function mb32(s){s=s>>>0;return()=>{s+=0x6D2B79F5;let t=Math.imul(s^s>>>15,1|s);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;};}
+  function draw(){
+    cv.width=innerWidth;cv.height=innerHeight;
+    const bg=cx.createRadialGradient(cv.width*.5,cv.height*.4,0,cv.width*.5,cv.height*.4,cv.width*.9);
+    bg.addColorStop(0,"#0b1928");bg.addColorStop(.55,"#060d18");bg.addColorStop(1,"#020408");
+    cx.fillStyle=bg;cx.fillRect(0,0,cv.width,cv.height);
+    const mw=cx.createLinearGradient(0,cv.height*.1,cv.width,cv.height*.70);
+    mw.addColorStop(0,"transparent");mw.addColorStop(.42,"rgba(50,90,150,0.07)");mw.addColorStop(.56,"rgba(70,120,200,0.10)");mw.addColorStop(1,"transparent");
+    cx.fillStyle=mw;cx.fillRect(0,0,cv.width,cv.height);
+    const rng=mb32(cv.width*cv.height+9);
+    const n=Math.min(300,Math.floor(cv.width*cv.height/5500));
+    for(let i=0;i<n;i++){
+      const x=rng()*cv.width,y=rng()*cv.height,r=rng()*1.3+.15,a=rng()*.7+.18;
+      const h=rng()<.10?180:rng()<.07?265:0;
+      cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);
+      cx.fillStyle=h===180?`rgba(0,255,224,${a*.44})`:h===265?`rgba(175,150,255,${a*.38})`:`rgba(255,255,255,${a})`;cx.fill();
+    }
+    [{x:.10,y:.20,r:.15,c:"rgba(0,200,255,0.06)"},{x:.78,y:.65,r:.13,c:"rgba(130,80,240,0.07)"}].forEach(s=>{
+      const ng=cx.createRadialGradient(s.x*cv.width,s.y*cv.height,0,s.x*cv.width,s.y*cv.height,s.r*cv.width);
+      ng.addColorStop(0,s.c);ng.addColorStop(1,"transparent");cx.fillStyle=ng;cx.fillRect(0,0,cv.width,cv.height);
+    });
+  }
+  draw();let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,200);});
+  const sf=document.getElementById("starField");
+  for(let i=0;i<50;i++){
+    const s=document.createElement("div");s.className="ts";
+    const sz=Math.random()*2+.4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--td:${(Math.random()*4+2).toFixed(1)}s;--dl:${(Math.random()*6).toFixed(1)}s;`;
+    sf.appendChild(s);
+  }
+})();
 
-/* GIỮ NGUYÊN JS CỦA MÀY */
-
+/* ── LOCATION DATA ── */
 let locationData={};
-
 fetch("/data/vietnam-location.json")
-.then(res=>res.json())
-.then(data=>{
-locationData=data;
-initProvince();
+  .then(r=>r.json())
+  .then(data=>{
+    locationData=data;
+    const ps=document.getElementById("province");
+    ps.innerHTML="<option value=''>Chọn tỉnh / thành phố</option>";
+    Object.keys(data).sort().forEach(p=>{
+      const o=document.createElement("option");
+      o.value=p;o.textContent=p;ps.appendChild(o);
+    });
+    ps.addEventListener("change",()=>{
+      const ds=document.getElementById("district");
+      const districts=(locationData[ps.value]||[]).sort();
+      ds.innerHTML="<option value=''>Chọn quận / huyện</option>";
+      districts.forEach(d=>{
+        const o=document.createElement("option");
+        o.value=d;o.textContent=d;ds.appendChild(o);
+      });
+    });
+  })
+  .catch(()=>{});
+
+/* ── PASSWORD STRENGTH ── */
+const pwEl=document.getElementById("password");
+pwEl.addEventListener("input",()=>{
+  const v=pwEl.value;
+  let s=0;
+  if(v.length>=8)s++;
+  if(/[A-Z]/.test(v))s++;
+  if(/[0-9]/.test(v))s++;
+  if(/[^A-Za-z0-9]/.test(v))s++;
+  const fill=document.getElementById("strengthFill");
+  const lbl=document.getElementById("strengthLabel");
+  const map=[
+    {w:"0%",  c:"transparent", t:""},
+    {w:"25%", c:"#e74c3c",     t:"Yếu"},
+    {w:"50%", c:"#f39c12",     t:"Trung bình"},
+    {w:"75%", c:"#f1c40f",     t:"Khá mạnh"},
+    {w:"100%",c:"#2ecc71",     t:"Mạnh"},
+  ];
+  const m=map[s]||map[0];
+  fill.style.width=m.w;fill.style.background=m.c;
+  lbl.textContent=m.t;lbl.style.color=m.c;
 });
 
-function initProvince(){
+/* ── FORM SUBMIT ── */
+document.getElementById("registerForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const username  =document.getElementById("username").value.trim();
+  const full_name =document.getElementById("full_name").value.trim();
+  const email     =document.getElementById("email").value.trim();
+  const password  =document.getElementById("password").value;
+  const phone     =document.getElementById("phone").value.trim();
+  const province  =document.getElementById("province").value;
+  const district  =document.getElementById("district").value;
+  const btn       =document.getElementById("submitBtn");
+  const msg       =document.getElementById("message");
 
-const provinceSelect=document.getElementById("province");
-const districtSelect=document.getElementById("district");
+  // clear errors
+  ["usernameError","emailError","passwordError","phoneError"].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent="";
+  });
 
-provinceSelect.innerHTML="<option value=''>Chọn tỉnh</option>";
-districtSelect.innerHTML="<option value=''>Chọn quận/huyện</option>";
+  let ok=true;
+  if(!username){ document.getElementById("usernameError").textContent="Vui lòng nhập tên đăng nhập";ok=false; }
+  if(!email)   { document.getElementById("emailError").textContent="Vui lòng nhập email";ok=false; }
+  if(password.length<6){ document.getElementById("passwordError").textContent="Mật khẩu tối thiểu 6 ký tự";ok=false; }
+  if(!ok) return;
 
-Object.keys(locationData).forEach(p=>{
-const op=document.createElement("option");
-op.value=p;
-op.textContent=p;
-provinceSelect.appendChild(op);
+  btn.disabled=true;btn.textContent="Đang tạo tài khoản...";
+  msg.className="message";msg.textContent="";
+
+  try{
+    const res=await fetch("/api/auth/register",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username,full_name,email,password,phone,address:province&&district?district+", "+province:province||district||""})
+    });
+    const data=await res.json();
+    if(res.ok){
+      msg.className="message success";
+      msg.textContent="✅ Đăng ký thành công! Đang chuyển hướng...";
+      setTimeout(()=>window.location.href="login.html",1200);
+    } else {
+      msg.className="message error";
+      msg.textContent=data.message||"Đăng ký thất bại";
+      btn.disabled=false;btn.textContent="Tạo tài khoản →";
+    }
+  }catch{
+    msg.className="message error";
+    msg.textContent="Không kết nối được server";
+    btn.disabled=false;btn.textContent="Tạo tài khoản →";
+  }
 });
 
-provinceSelect.addEventListener("change",()=>{
-
-const districts=locationData[provinceSelect.value]||[];
-
-districtSelect.innerHTML="<option value=''>Chọn quận/huyện</option>";
-
-districts.forEach(d=>{
-const op=document.createElement("option");
-op.value=d;
-op.textContent=d;
-districtSelect.appendChild(op);
-});
-
-});
-
-}
-
-/* PASSWORD STRENGTH */
-
-const password=document.getElementById("password");
-
-password.addEventListener("input",()=>{
-
-const val=password.value;
-
-let strength=0;
-
-if(val.length>=8) strength++;
-if(/[A-Z]/.test(val)) strength++;
-if(/[0-9]/.test(val)) strength++;
-if(/[^A-Za-z0-9]/.test(val)) strength++;
-
-const fill=document.getElementById("strengthFill");
-
-fill.style.width=(strength*25)+"%";
-
-if(strength<=1) fill.style.background="red";
-else if(strength==2) fill.style.background="orange";
-else if(strength==3) fill.style.background="gold";
-else fill.style.background="green";
-
-});
-
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.tagName!=="SELECT") document.getElementById("submitBtn").click(); });
 </script>
-
 </body>
 </html>

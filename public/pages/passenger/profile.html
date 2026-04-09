@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tài khoản - SmartBusAI</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00ffe0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="/icons/icon.svg">
 <style>
 
 /* =====================================================
@@ -80,54 +84,79 @@ body{
 a[href]{ cursor:pointer; }
 
 /* =====================================================
-   HEADER
+   UNIFIED NAV BAR
 ===================================================== */
 header{
-  background:rgba(8,14,26,0.72);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-  padding:14px 80px;
+  background:rgba(5,9,20,0.96);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:0 56px; height:64px;
   display:flex; justify-content:space-between; align-items:center;
   position:sticky; top:0; z-index:3000;
-  box-shadow:0 4px 28px rgba(0,255,224,0.06);
-  min-height:60px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.04),0 4px 24px rgba(0,0,0,0.40);
+  will-change:transform; transform:translate3d(0,0,0);
 }
-
-.logo{
-  font-size:21px; font-weight:700; letter-spacing:1px;
-  background:linear-gradient(90deg,#00ffe0,#00a8ff);
+.nav-logo{
+  display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0;
+}
+.nav-logo-icon{
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 14px rgba(0,255,224,.35);
+}
+.nav-logo-text{
+  font-size:17px; font-weight:800; letter-spacing:.3px;
+  background:linear-gradient(90deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  display:flex; align-items:center; gap:8px; white-space:nowrap;
 }
-
-.header-nav{ display:flex; gap:10px; align-items:center; margin-left:auto; }
-
-.header-nav a{
-  padding:8px 18px; border-radius:22px;
-  background:rgba(255,255,255,0.07);
-  text-decoration:none; color:#c2e8ff;
-  font-weight:600; font-size:13.5px;
-  border:1px solid rgba(255,255,255,0.11);
-  transition:all .22s;
-  display:flex; align-items:center; gap:5px; white-space:nowrap;
+.nav-links{ display:flex; align-items:center; gap:4px; }
+.nav-links a{
+  text-decoration:none; color:rgba(220,235,255,0.62);
+  font-weight:600; font-size:13px; padding:7px 14px; border-radius:10px;
+  border:1px solid transparent; transition:all .18s;
+  display:flex; align-items:center; gap:5px;
 }
-.header-nav a:hover{ background:#1abc9c; color:#fff; border-color:transparent; box-shadow:0 0 18px rgba(26,188,156,.5); }
-
+.nav-links a:hover{ color:#00ffe0; background:rgba(0,255,224,.07); border-color:rgba(0,255,224,.20); }
+.nav-links a.active{ color:#00d4ff; background:rgba(0,212,255,.10); border-color:rgba(0,212,255,.25); font-weight:700; }
+.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-greeting{ font-size:13px; color:rgba(185,210,230,0.68); font-weight:500; white-space:nowrap; }
+.nav-greeting .nav-uname{ font-weight:800; color:#daf0f8; }
 .btn-logout{
-  padding:8px 18px; border-radius:22px;
-  background:linear-gradient(135deg,rgba(231,76,60,0.85),rgba(192,57,43,0.85));
-  border:none; color:#fff; font-weight:700; font-size:13.5px;
-  cursor:pointer; transition:transform .22s, box-shadow .22s;
-  display:flex; align-items:center; gap:5px; white-space:nowrap;
+  background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
+  color:#e74c3c; padding:7px 15px; border-radius:9px;
+  font-weight:700; font-size:12.5px; cursor:pointer;
+  transition:all .20s; font-family:inherit; white-space:nowrap;
 }
-.btn-logout:hover{ transform:translateY(-2px); box-shadow:0 8px 22px rgba(231,76,60,.4); }
+.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; border-color:rgba(231,76,60,.50); }
 
 /* =====================================================
    HERO STRIP
 ===================================================== */
 .hero-strip{
   max-width:1200px; margin:30px auto 0; padding:0 24px;
+}
+.hero-strip-inner{
   display:flex; align-items:center; gap:24px;
+  background:linear-gradient(135deg,rgba(0,168,255,.09) 0%,rgba(0,255,224,.05) 50%,rgba(108,92,231,.07) 100%);
+  border:1px solid rgba(0,168,255,.18); border-radius:24px;
+  padding:24px 28px;
+  position:relative; overflow:hidden;
+  box-shadow:0 0 80px rgba(0,168,255,.07),0 20px 60px rgba(0,0,0,.50);
+  border-bottom:2px solid transparent;
+  background-clip:padding-box;
+}
+.hero-strip-inner::before{
+  content:""; position:absolute; right:-40px; top:-40px;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,168,255,.12),transparent 68%);
+  pointer-events:none;
+}
+.hero-strip-inner::after{
+  content:""; position:absolute; bottom:-60px; left:-40px;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,255,224,.10),transparent 68%);
+  pointer-events:none;
 }
 
 .avatar-wrap{ position:relative; flex-shrink:0; }
@@ -150,22 +179,28 @@ header{
 .avatar-edit:hover{ transform:scale(1.18); }
 
 .hero-text{ flex:1; }
-.hero-name{ font-size:24px; font-weight:700; color:#fff; line-height:1.2; }
-.hero-email{ font-size:13px; color:#7ab4c9; margin-top:3px; }
+.hero-name{
+  font-size:28px; font-weight:900; line-height:1.2;
+  background:linear-gradient(90deg,#fff 0%,#00ffe0 60%,#00a8ff 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  text-shadow:none;
+  filter:drop-shadow(0 0 8px rgba(0,255,224,.18));
+}
+.hero-email{ font-size:13px; color:rgba(255,255,255,.48); margin-top:3px; }
 
-.hero-badges{ display:flex; gap:7px; margin-top:9px; flex-wrap:wrap; }
+.hero-badges{ display:flex; gap:7px; margin-top:10px; flex-wrap:wrap; }
 .hbadge{
   font-size:10.5px; font-weight:700; padding:3px 10px;
   border-radius:20px; border:1px solid; white-space:nowrap;
 }
-.hb-member  { background:rgba(0,255,224,.10); border-color:rgba(0,255,224,.35); color:#00ffe0; }
-.hb-verified{ background:rgba(46,204,113,.12); border-color:rgba(46,204,113,.40); color:#2ecc71; }
-.hb-trips   { background:rgba(0,168,255,.10); border-color:rgba(0,168,255,.35); color:#00a8ff; }
+.hb-member  { background:rgba(0,255,224,.10); border-color:rgba(0,255,224,.35); color:#00ffe0; box-shadow:0 0 10px rgba(0,255,224,.30); }
+.hb-verified{ background:rgba(46,204,113,.12); border-color:rgba(46,204,113,.40); color:#2ecc71; box-shadow:0 0 10px rgba(46,204,113,.30); }
+.hb-trips   { background:rgba(0,168,255,.10); border-color:rgba(0,168,255,.35); color:#00a8ff; box-shadow:0 0 10px rgba(0,168,255,.30); }
 
 .hero-stats{ display:flex; gap:28px; margin-top:14px; }
 .hstat{ display:flex; flex-direction:column; align-items:center; gap:2px; }
-.hstat-num{ font-size:20px; font-weight:800; color:var(--neon); line-height:1; }
-.hstat-lbl{ font-size:10px; color:#7ab4c9; font-weight:500; white-space:nowrap; }
+.hstat-num{ font-size:24px; font-weight:900; color:#00ffe0; line-height:1; text-shadow:0 0 20px rgba(0,255,224,.55),0 0 40px rgba(0,255,224,.25); }
+.hstat-lbl{ font-size:9.5px; color:rgba(255,255,255,.42); font-weight:600; white-space:nowrap; margin-top:3px; text-transform:uppercase; letter-spacing:.6px; }
 
 /* =====================================================
    TAB SWITCHER
@@ -177,25 +212,27 @@ header{
 
 .tab{
   display:flex; align-items:center; gap:8px;
-  padding:11px 26px; border-radius:14px;
-  border:1px solid var(--border); background:var(--glass);
-  color:#9bb8ca; font-weight:600; font-size:14px;
-  cursor:pointer;
-  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  transition:all .25s;
+  padding:12px 30px; border-radius:16px;
+  border:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(145deg,rgba(8,18,44,.80),rgba(4,12,30,.76));
+  color:rgba(255,255,255,.55); font-weight:700; font-size:13.5px;
+  cursor:pointer; letter-spacing:.2px;
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  transition:all .28s;
 }
-.tab:hover{ background:rgba(255,255,255,.10); color:#fff; }
+.tab:hover{ background:rgba(255,255,255,.09); color:#fff; border-color:rgba(255,255,255,.16); box-shadow:0 4px 16px rgba(0,0,0,.25); }
 .tab.active{
-  background:rgba(0,255,224,.12);
-  border-color:rgba(0,255,224,.40);
-  color:#00ffe0;
-  box-shadow:0 0 18px rgba(0,255,224,.13);
+  background:linear-gradient(135deg,rgba(0,255,224,.16),rgba(0,168,255,.09));
+  border-color:rgba(0,255,224,.38);
+  color:#00ffe0; font-weight:800;
+  box-shadow:0 4px 24px rgba(0,255,224,.18),0 0 0 1px rgba(0,255,224,.12),inset 0 1px 0 rgba(255,255,255,.08);
 }
 .tab-pip{
   width:7px; height:7px; border-radius:50%;
   background:currentColor; opacity:.6; flex-shrink:0;
 }
-.tab.active .tab-pip{ opacity:1; }
+.tab.active .tab-pip{ opacity:1; animation:pipPulse 2s ease-in-out infinite alternate; }
+@keyframes pipPulse{ from{opacity:.5;transform:scale(.9)} to{opacity:1;transform:scale(1.2)} }
 
 /* =====================================================
    SCREEN WRAPPER
@@ -210,11 +247,12 @@ header{
    GLASS CARD BASE
 ===================================================== */
 .gc{
-  background:var(--glass);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border:1px solid var(--border);
+  background:linear-gradient(145deg,rgba(8,18,44,.92) 0%,rgba(4,12,30,.88) 100%);
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.10);
+  border-top:1px solid rgba(255,255,255,.08);
   border-radius:20px;
-  box-shadow:0 8px 32px rgba(0,0,0,.35);
+  box-shadow:0 12px 44px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.06);
 }
 
 /* =====================================================
@@ -229,18 +267,24 @@ header{
 /* ─── Sidebar ─── */
 .sidebar{ display:flex; flex-direction:column; gap:16px; }
 
-.sb-card{ padding:20px; }
+.sb-card{ padding:22px 24px; border-top:1px solid rgba(255,255,255,.08); }
 
 .sb-avt{ text-align:center; margin-bottom:4px; }
 .sb-avt img{
-  width:84px; height:84px; border-radius:50%; object-fit:cover;
-  border:3px solid rgba(0,255,224,.45);
+  width:90px; height:90px; border-radius:50%; object-fit:cover;
+  border:3px solid transparent;
+  background:linear-gradient(#06101e,#06101e) padding-box, linear-gradient(135deg,#00ffe0,#6c5ce7) border-box;
   box-shadow:0 0 18px rgba(0,255,224,.22),0 5px 16px rgba(0,0,0,.40);
   cursor:pointer; transition:transform .25s, box-shadow .25s;
 }
 .sb-avt img:hover{ transform:scale(1.06); box-shadow:0 0 30px rgba(0,255,224,.45); }
-.sb-name{ text-align:center; font-size:15px; font-weight:700; margin-top:10px; color:#fff; }
-.sb-role{ text-align:center; font-size:12px; color:#7ab4c9; margin-top:2px; }
+.sb-name{ text-align:center; font-size:16px; font-weight:800; margin-top:10px;
+  background:linear-gradient(90deg,#fff,#c8e8ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.sb-role{ text-align:center; font-size:12px; color:#00ffe0; margin-top:4px;
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  background:rgba(0,255,224,.08); border:1px solid rgba(0,255,224,.18);
+  margin-left:auto; margin-right:auto; display:block; width:fit-content; }
 
 .quick-info{ display:flex; flex-direction:column; gap:9px; margin-top:14px; }
 .qi{
@@ -250,7 +294,8 @@ header{
 .qi-icon{
   width:28px; height:28px; border-radius:7px; flex-shrink:0;
   background:rgba(0,255,224,.09); border:1px solid rgba(0,255,224,.14);
-  display:flex; align-items:center; justify-content:center; font-size:13px;
+  display:flex; align-items:center; justify-content:center; font-size:14px;
+  box-shadow:0 0 12px rgba(0,255,224,.12);
 }
 .qi-val{ font-weight:600; color:#d8f0ff; }
 
@@ -259,20 +304,23 @@ header{
 .tip{
   display:flex; align-items:center; gap:9px; font-size:12px; color:#9bb8ca;
   padding:8px 10px; border-radius:10px;
-  background:rgba(0,255,224,.04); border:1px solid rgba(0,255,224,.09);
-  margin-bottom:7px;
+  background:rgba(0,255,224,.05); border:1px solid rgba(0,255,224,.10);
+  margin-bottom:7px; transition:all .22s;
 }
+.tip:hover{ border-color:rgba(0,255,224,.20); background:rgba(0,255,224,.09); transform:translateX(2px); }
 .tip:last-child{ margin-bottom:0; }
 .tip-ico{ font-size:15px; flex-shrink:0; }
 
 /* ─── Form card ─── */
-.form-card{ padding:26px; }
+.form-card{ padding:30px 32px; }
 
 .fsec{
   font-size:12px; font-weight:700; color:var(--neon);
   text-transform:uppercase; letter-spacing:.6px;
-  margin:20px 0 12px; padding-bottom:8px;
-  border-bottom:1px solid rgba(0,255,224,.14);
+  margin:20px 0 14px; padding:8px 12px;
+  border-radius:10px;
+  border-left:3px solid #00ffe0;
+  background:rgba(0,255,224,.05);
   display:flex; align-items:center; gap:7px;
 }
 .fsec:first-child{ margin-top:0; }
@@ -287,33 +335,41 @@ header{
 }
 .field input,
 .field select{
-  padding:10px 13px; border-radius:11px;
-  border:1px solid rgba(255,255,255,.13);
-  background:rgba(255,255,255,.07);
+  padding:11px 14px; border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
   color:#fff; font-weight:500; font-size:13.5px;
-  transition:border .2s, box-shadow .2s, background .2s;
+  transition:border .22s, box-shadow .22s, background .22s;
+  font-family:"Segoe UI",Arial,sans-serif;
 }
-.field input::placeholder{ color:#5a7a8a; }
+.field input::placeholder{ color:rgba(255,255,255,.22); }
 .field input:focus,
 .field select:focus{
   outline:none; border-color:var(--neon);
-  background:rgba(0,255,224,.06);
-  box-shadow:0 0 0 3px rgba(0,255,224,.12);
+  background:rgba(0,255,224,.07);
+  box-shadow:0 0 0 3px rgba(0,255,224,.12),0 0 16px rgba(0,255,224,.08);
 }
-.field select option{ background:#132030; color:#fff; }
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255,255,255,0.4)'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 10px center; background-size:18px;
+  appearance:none; -webkit-appearance:none; padding-right:34px;
+  cursor:pointer;
+}
+.field select option{ background:#0c1828; }
 
 /* ─── Action buttons (keep original positions, but beautiful) ─── */
 .form-actions{ margin-top:22px; display:flex; gap:12px; }
 
 .save-btn{
   flex:1; padding:13px 0; border:none; border-radius:14px;
-  background:linear-gradient(135deg,#1abc9c,#16a085);
-  color:#fff; font-weight:700; font-size:15px; cursor:pointer;
-  box-shadow:0 6px 20px rgba(26,188,156,.35);
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);
+  color:#030d1a; font-weight:700; font-size:15px; cursor:pointer;
+  box-shadow:0 6px 22px rgba(0,255,224,.35);
   transition:transform .22s, box-shadow .22s;
   display:flex; align-items:center; justify-content:center; gap:7px;
+  letter-spacing:.3px;
 }
-.save-btn:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(26,188,156,.52); }
+.save-btn:hover{ transform:translateY(-3px); box-shadow:0 10px 32px rgba(0,255,224,.55),0 0 60px rgba(0,255,224,.12); }
 .save-btn:active{ transform:scale(.97); }
 
 .delete-btn{
@@ -327,7 +383,7 @@ header{
 .delete-btn:hover{
   background:linear-gradient(135deg,#e74c3c,#c0392b);
   color:#fff; border-color:transparent;
-  transform:translateY(-3px); box-shadow:0 10px 28px rgba(231,76,60,.42);
+  transform:translateY(-3px); box-shadow:0 10px 32px rgba(231,76,60,.45);
 }
 
 /* =====================================================
@@ -338,46 +394,119 @@ header{
   margin-bottom:18px; flex-wrap:wrap; gap:10px;
 }
 .bk-title{
-  font-size:19px; font-weight:700; color:#fff;
+  font-size:18px; font-weight:900;
+  background:linear-gradient(90deg,#fff 0%,#7eb8ff 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
   display:flex; align-items:center; gap:8px;
 }
 
 .bk-filters{ display:flex; gap:7px; flex-wrap:wrap; }
 .fchip{
-  padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+  padding:7px 16px; border-radius:22px; font-size:12.5px; font-weight:600;
   border:1px solid var(--border); background:var(--glass);
   color:#9bb8ca; cursor:pointer; transition:all .2s;
 }
-.fchip.on{ background:rgba(0,255,224,.12); border-color:rgba(0,255,224,.40); color:#00ffe0; }
+.fchip.on{ background:rgba(0,255,224,.12); border-color:rgba(0,255,224,.40); color:#00ffe0; box-shadow:0 0 14px rgba(0,255,224,.20); }
 .fchip:hover{ background:rgba(255,255,255,.09); color:#fff; }
 
 /* stat mini-cards */
-.bk-stats{ display:flex; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+.bk-stats{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
 .bkstat{
-  flex:1; min-width:130px; padding:15px 18px;
-  display:flex; align-items:center; gap:12px;
+  flex:1; min-width:120px; padding:16px 18px;
+  display:flex; align-items:center; gap:13px;
+  transition:transform .22s,box-shadow .22s;
 }
-.bkstat-ico{ font-size:24px; flex-shrink:0; }
-.bkstat-lbl{ font-size:10px; color:#7ab4c9; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
-.bkstat-num{ font-size:20px; font-weight:800; line-height:1; margin-top:2px; }
+.bkstat:hover{ transform:translateY(-3px); box-shadow:0 14px 36px rgba(0,0,0,.50),0 0 22px rgba(0,255,224,.10); }
+.bkstat-ico{
+  font-size:20px; flex-shrink:0;
+  width:40px; height:40px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 0 12px rgba(0,255,224,.08);
+}
+.bkstat-lbl{ font-size:9.5px; color:rgba(255,255,255,.42); font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.bkstat-num{ font-size:22px; font-weight:900; line-height:1; margin-top:3px; }
 
 /* booking cards */
 #bookingList{ display:flex; flex-direction:column; gap:14px; }
 
 .booking-card{
   padding:20px 22px;
-  transition:transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s;
+  transition:transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s, border-color .28s;
   contain:layout style;
+  border-left-width:3px !important;
+  border-left-style:solid !important;
+  border-radius:18px; position:relative; overflow:hidden;
+}
+.booking-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  pointer-events:none;
 }
 .booking-card:hover{
   transform:translateY(-5px);
-  box-shadow:0 18px 48px rgba(0,0,0,.45),0 0 22px rgba(0,255,224,.07);
+  box-shadow:0 20px 52px rgba(0,0,0,.52),0 0 28px rgba(0,255,224,.10);
 }
+.booking-card.bc-PAID{ border-left-color:#2ecc71 !important; }
+.booking-card.bc-PENDING{ border-left-color:#f39c12 !important; }
+.booking-card.bc-CANCELED{ border-left-color:#e74c3c !important; }
+.booking-card.bc-EXPIRED{ border-left-color:#e74c3c !important; opacity:.72; }
+
+/* ── EXPIRE SOON badge ── */
+.expire-soon-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;font-size:11px;font-weight:800;
+  background:linear-gradient(135deg,rgba(243,156,18,.22),rgba(231,76,60,.16));
+  border:1px solid rgba(243,156,18,.50);color:#f39c12;
+  animation:expirePulse 1.4s ease-in-out infinite;
+  letter-spacing:.2px;
+}
+@keyframes expirePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(243,156,18,.30);}
+  50%{box-shadow:0 0 0 5px rgba(243,156,18,0);}
+}
+.expire-btn{
+  background:linear-gradient(135deg,#f39c12,#e67e22)!important;
+  color:#fff!important;border:none!important;
+  box-shadow:0 4px 18px rgba(243,156,18,.35)!important;
+  animation:expireBtnPulse 1.6s ease-in-out infinite!important;
+}
+@keyframes expireBtnPulse{
+  0%,100%{box-shadow:0 4px 18px rgba(243,156,18,.35);}
+  50%{box-shadow:0 4px 28px rgba(243,156,18,.65);}
+}
+
+/* ── EXPIRED banner at top of booking list ── */
+.expired-noti-bar{
+  display:flex;align-items:flex-start;gap:13px;
+  background:linear-gradient(135deg,rgba(231,76,60,.12),rgba(243,156,18,.08));
+  border:1px solid rgba(231,76,60,.28);border-radius:16px;
+  padding:14px 18px;margin-bottom:16px;
+  animation:slideDown .35s cubic-bezier(.22,.61,.36,1);
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.expired-noti-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.expired-noti-title{font-size:13px;font-weight:800;color:#e74c3c;margin-bottom:3px;}
+.expired-noti-sub{font-size:12px;color:rgba(255,255,255,.50);line-height:1.5;}
+.expired-noti-close{
+  margin-left:auto;cursor:pointer;font-size:16px;color:rgba(255,255,255,.30);
+  padding:2px 6px;border-radius:6px;transition:color .2s;flex-shrink:0;
+}
+.expired-noti-close:hover{color:rgba(255,255,255,.70);}
+
+/* ── SOON-EXPIRE warning bar above booking list ── */
+.soon-expire-bar{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(243,156,18,.10);border:1px solid rgba(243,156,18,.28);
+  border-radius:14px;padding:11px 16px;margin-bottom:14px;
+  font-size:12.5px;color:#f39c12;font-weight:700;
+}
+.soon-expire-bar b{color:#fff;}
 
 .bk-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:13px; }
 
 .bk-route{
-  font-size:16px; font-weight:700; color:#fff;
+  font-size:17px; font-weight:800; color:#fff;
   display:flex; align-items:center; gap:9px;
 }
 .bk-arrow{ color:var(--neon); font-size:13px; }
@@ -391,10 +520,11 @@ header{
   display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:14px;
 }
 .bkm{
-  background:rgba(255,255,255,.04); border-radius:10px; padding:9px 11px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  border-radius:12px; padding:10px 12px;
 }
 .bkm-lbl{ font-size:10px; color:#7ab4c9; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
-.bkm-val{ font-size:12.5px; font-weight:700; color:#d8f0ff; margin-top:2px; }
+.bkm-val{ font-size:13px; font-weight:800; color:#d8f0ff; margin-top:2px; }
 
 .bk-btns{ display:flex; gap:9px; }
 
@@ -474,9 +604,10 @@ header{
 .pay-cancel-link:hover{ color:#c8e8f0; }
 
 .empty{
-  text-align:center; padding:55px 20px; color:#5a7a8a;
+  text-align:center; padding:70px 20px; color:#5a7a8a;
 }
-.empty-ico{ font-size:54px; margin-bottom:12px; }
+.empty-ico{ font-size:64px; margin-bottom:12px; filter:drop-shadow(0 0 20px rgba(0,255,224,.25)); }
+.empty p{ color:rgba(255,255,255,.38); font-size:15px; font-weight:600; }
 
 /* =====================================================
    AI SYSTEM
@@ -489,34 +620,38 @@ header{
 }
 
 .ai-highlight{
-  position:relative; z-index:3001 !important;
-  border-radius:18px;
-  animation:glowPulse 1.6s infinite alternate;
+  position:relative; z-index:3002 !important;
+  animation:glowPulse 1.4s infinite alternate;
+  outline:none !important;
 }
 @keyframes glowPulse{
-  from{ box-shadow:0 0 0 4px #00ffe0,0 0 22px rgba(0,255,200,.7),0 0 55px rgba(0,255,200,.5); }
-  to  { box-shadow:0 0 0 6px #00ffe0,0 0 50px rgba(0,255,200,1),0 0 110px rgba(0,255,200,.75); }
+  from{ box-shadow:0 0 0 3px #00ffe0,0 0 18px rgba(0,255,200,.9),0 0 44px rgba(0,255,200,.55); }
+  to  { box-shadow:0 0 0 5px #00ffe0,0 0 40px rgba(0,255,200,1), 0 0 88px rgba(0,255,200,.80); }
 }
 
 #aiBox{
   position:fixed; bottom:28px; right:28px; width:340px;
-  background:rgba(255,255,255,.96);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  background:linear-gradient(160deg,rgba(8,18,42,.98) 0%,rgba(4,12,30,.97) 100%);
+  -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
+  border:1px solid rgba(0,255,224,.18);
+  border-top:3px solid transparent;
+  border-image:linear-gradient(90deg,#00ffe0,#6c5ce7) 1;
   border-radius:20px; padding:22px;
-  box-shadow:0 22px 60px rgba(0,0,0,.38);
+  box-shadow:0 22px 60px rgba(0,0,0,.65),0 0 30px rgba(0,255,224,.10);
   z-index:3002; display:none;
   animation:popIn .28s ease;
-  color:#2c3e50;
+  color:#e8f4f8;
 }
 @keyframes popIn{ from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-#aiBox h4{ color:#0f3d4c; margin-bottom:8px; font-size:14.5px; }
-#aiBox p{ font-size:13px; color:#546e7a; line-height:1.65; margin-bottom:14px; }
+#aiBox h4{ color:#00ffe0; margin-bottom:8px; font-size:15px; font-weight:800; text-shadow:0 0 16px rgba(0,255,224,.45); }
+#aiBox p{ font-size:13px; color:rgba(255,255,255,.62); line-height:1.65; margin-bottom:14px; }
 
 .ai-btns{ display:flex; gap:8px; }
-.ai-btn{ padding:8px 16px; border:none; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; transition:transform .18s, box-shadow .18s; }
-.ai-btn:hover{ transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.18); }
-.ai-next{ background:#1abc9c; color:#fff; }
-.ai-skip{ background:#e74c3c; color:#fff; }
+.ai-btn{ padding:8px 16px; border:none; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; font-family:"Segoe UI",Arial,sans-serif; transition:transform .18s, box-shadow .18s; }
+.ai-btn:hover{ transform:translateY(-2px); }
+.ai-next{ background:linear-gradient(135deg,#00ffe0,#00a8ff); color:#040d18; box-shadow:0 4px 18px rgba(0,255,224,.40); }
+.ai-next:hover{ box-shadow:0 6px 26px rgba(0,255,224,.65) !important; }
+.ai-skip{ background:rgba(231,76,60,.20); color:#e74c3c; border:1px solid rgba(231,76,60,.30); }
 
 /* Floating AI buttons */
 .ai-float{
@@ -532,8 +667,491 @@ header{
   transform:scale(1.12);
   box-shadow:0 0 32px rgba(0,255,224,.75),0 10px 24px rgba(0,0,0,.4);
 }
-#aiBtn1{ left:28px;  background:linear-gradient(135deg,#00ffe0,#00c9a7); }
-#aiBtn2{ left:90px;  background:linear-gradient(135deg,#00a8ff,#0078d4); }
+#aiBtn1{
+  left:28px; background:linear-gradient(135deg,#00ffe0,#00c9a7);
+  animation:floatPulse 2.8s ease-in-out infinite;
+}
+#aiBtn2{
+  left:90px; background:linear-gradient(135deg,#00a8ff,#0078d4);
+  animation:floatPulse 2.8s 1.4s ease-in-out infinite;
+}
+@keyframes floatPulse{
+  0%,100%{ transform:translateY(0);   box-shadow:0 0 20px rgba(0,255,224,.55),0 6px 18px rgba(0,0,0,.35); }
+  50%    { transform:translateY(-5px); box-shadow:0 0 36px rgba(0,255,224,.80),0 12px 26px rgba(0,0,0,.45); }
+}
+#aiBtn1:hover,#aiBtn2:hover{ animation:none; }
+
+/* ── LOYALTY SECTION ── */
+.loyalty-section{
+  margin:20px 0 36px;
+}
+.loyalty-card{
+  background:linear-gradient(135deg,rgba(108,92,231,.28) 0%,rgba(6,12,36,.95) 35%,rgba(0,164,255,.18) 68%,rgba(0,255,224,.12) 100%);
+  border:1px solid rgba(108,92,231,.45); border-radius:22px;
+  padding:28px 30px; position:relative; overflow:hidden;
+  box-shadow:0 16px 56px rgba(0,0,0,.58),0 0 60px rgba(108,92,231,.16),0 0 0 1px rgba(108,92,231,.10);
+}
+.loyalty-card::before{
+  content:""; position:absolute; top:-60px; right:-60px;
+  width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle,rgba(108,92,231,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.loyalty-card::after{
+  content:""; position:absolute; bottom:-50px; left:-50px;
+  width:180px; height:180px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,255,224,.08),transparent 68%);
+  pointer-events:none;
+}
+.loyalty-header{
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:16px; margin-bottom:22px;
+}
+.loyalty-title{
+  font-size:17px; font-weight:800; color:#fff;
+  display:flex; align-items:center; gap:10px;
+}
+.loyalty-title-ico{
+  width:38px; height:38px; border-radius:12px;
+  background:linear-gradient(135deg,#6c5ce7,#a29bfe);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; box-shadow:0 4px 16px rgba(108,92,231,.4);
+}
+.loyalty-pts-big{
+  font-size:38px; font-weight:900;
+  background:linear-gradient(135deg,#a29bfe,#6c5ce7);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; line-height:1;
+}
+.loyalty-pts-lbl{ font-size:12px; color:#9ab4cc; font-weight:600; margin-top:3px; }
+.loyalty-progress-wrap{ margin-bottom:22px; }
+.loyalty-progress-info{
+  display:flex; justify-content:space-between;
+  font-size:12px; color:#9ab4cc; margin-bottom:8px;
+}
+.loyalty-bar{
+  height:10px; border-radius:999px;
+  background:rgba(255,255,255,.08);
+  overflow:hidden; position:relative;
+}
+.loyalty-bar-fill{
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg,#6c5ce7,#a29bfe,#00ffe0);
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 10px rgba(108,92,231,.5);
+}
+.loyalty-rewards{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px; margin-bottom:20px;
+}
+.reward-item{
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  border-radius:16px; padding:16px 18px; transition:all .25s; position:relative;
+  overflow:hidden;
+}
+.reward-item:hover{ border-color:rgba(108,92,231,.5); background:rgba(108,92,231,.1); transform:translateY(-2px); }
+.reward-item.can-redeem{ border-color:rgba(108,92,231,.55); background:rgba(108,92,231,.13); }
+.reward-item.can-redeem::after{
+  content:"Đủ điểm"; position:absolute; top:10px; right:10px;
+  font-size:10px; font-weight:800; color:#a29bfe;
+  background:rgba(108,92,231,.2); border-radius:6px; padding:2px 7px;
+}
+.reward-pts{
+  font-size:22px; font-weight:900;
+  background:linear-gradient(135deg,#a29bfe,#6c5ce7);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; margin-bottom:5px;
+}
+.reward-name{ font-size:13.5px; font-weight:700; color:#e0eaf5; margin-bottom:3px; }
+.reward-desc{ font-size:11.5px; color:#7ab4c8; line-height:1.4; }
+.redeem-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 22px; border:none; border-radius:12px; cursor:pointer;
+  background:linear-gradient(135deg,#6c5ce7,#a29bfe);
+  color:#fff; font-size:13.5px; font-weight:800;
+  font-family:"Segoe UI",Arial,sans-serif;
+  box-shadow:0 4px 18px rgba(108,92,231,.4);
+  transition:transform .2s, box-shadow .2s;
+}
+.redeem-btn:hover{ transform:translateY(-2px); box-shadow:0 8px 28px rgba(108,92,231,.55); }
+.redeem-btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+
+/* ── TICKET DETAIL MODAL ── */
+#ticketModal{
+  display:none; position:fixed; inset:0; z-index:5500;
+  background:rgba(3,8,20,.88);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  align-items:flex-start; justify-content:center;
+  overflow-y:auto; padding:24px 12px;
+}
+#ticketModal.open{ display:flex; }
+.ticket-box{
+  background:linear-gradient(160deg,#0c1b2e,#0e2038);
+  border:1px solid rgba(0,255,224,.22); border-radius:24px;
+  width:100%; max-width:430px; padding:32px 28px;
+  box-shadow:0 24px 70px rgba(0,0,0,.7), 0 0 0 1px rgba(0,255,224,.08);
+  animation:tkIn .24s ease;
+  margin:auto;
+}
+@keyframes tkIn{ from{transform:translateY(20px);opacity:0} to{transform:none;opacity:1} }
+.ticket-header{
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;
+}
+.ticket-title{
+  font-size:16px; font-weight:800; color:var(--neon);
+  display:flex; align-items:center; gap:9px;
+}
+.ticket-close{
+  width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.08); color:#8ba8c2; font-size:16px;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.ticket-close:hover{ background:rgba(231,76,60,.25); color:#e74c3c; }
+.ticket-route{
+  background:linear-gradient(135deg,rgba(0,255,224,.08),rgba(0,164,255,.06));
+  border:1px solid rgba(0,255,224,.18); border-radius:16px;
+  padding:16px 18px; margin-bottom:18px; text-align:center;
+}
+.ticket-route-cities{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:18px; font-weight:900; color:#fff; margin-bottom:6px;
+}
+.ticket-route-arrow{
+  color:var(--neon); font-size:20px; flex-shrink:0;
+}
+.ticket-route-time{ font-size:12px; color:#7ab4c8; }
+.ticket-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;
+}
+.ticket-field{
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  border-radius:12px; padding:12px 14px;
+}
+.ticket-field.full{ grid-column:1/-1; }
+.ticket-field-lbl{
+  font-size:10.5px; color:#5a7a8a; text-transform:uppercase; letter-spacing:.5px;
+  font-weight:700; margin-bottom:4px;
+}
+.ticket-field-val{
+  font-size:13.5px; font-weight:700; color:#c8e8f0;
+}
+.tk-extras-hdr{
+  font-size:11px; font-weight:800; color:rgba(255,255,255,.45);
+  text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px;
+}
+.tk-extra-row{
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:10px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+  margin-bottom:5px;
+}
+.tk-extra-ico{ font-size:16px; }
+.tk-extra-name{ flex:1; font-size:13px; font-weight:600; color:#c8e8f0; }
+.tk-extra-qty{ font-size:12px; color:rgba(255,255,255,.45); }
+.tk-extra-amt{ font-size:13px; font-weight:700; color:#f39c12; }
+.ticket-status-row{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  padding:12px; border-radius:14px; margin-bottom:18px;
+  font-size:14px; font-weight:800;
+}
+.ticket-status-row.PAID{ background:rgba(46,204,113,.12); border:1px solid rgba(46,204,113,.3); color:#2ecc71; }
+.ticket-status-row.PENDING{ background:rgba(243,156,18,.12); border:1px solid rgba(243,156,18,.3); color:#f39c12; }
+.ticket-status-row.CANCELED{ background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.3); color:#e74c3c; }
+.ticket-code{
+  text-align:center; font-size:24px; font-weight:900; letter-spacing:2px;
+  background:linear-gradient(135deg,var(--neon),var(--neon2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; margin-bottom:6px;
+}
+.ticket-code-lbl{ text-align:center; font-size:11px; color:#5a7a8a; margin-bottom:16px; }
+.ticket-close-btn{
+  width:100%; padding:12px; border:none; border-radius:12px; cursor:pointer;
+  background:rgba(0,255,224,.1); border:1px solid rgba(0,255,224,.25);
+  color:var(--neon); font-size:14px; font-weight:700;
+  font-family:"Segoe UI",Arial,sans-serif; transition:all .2s;
+}
+.ticket-close-btn:hover{ background:rgba(0,255,224,.18); }
+
+/* ── REDEEM COUPON MODAL ── */
+#redeemModal{
+  display:none; position:fixed; inset:0; z-index:5600;
+  background:rgba(3,8,20,.9);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  align-items:center; justify-content:center;
+}
+#redeemModal.open{ display:flex; }
+.redeem-box{
+  background:linear-gradient(160deg,#0d1a30,#12233e);
+  border:1px solid rgba(108,92,231,.35); border-radius:24px;
+  width:100%; max-width:380px; padding:32px 28px; text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.7);
+  animation:tkIn .24s ease;
+}
+.redeem-box h3{ font-size:18px; font-weight:800; color:#a29bfe; margin-bottom:8px; }
+.redeem-box p{ font-size:13px; color:#9ab4cc; margin-bottom:20px; line-height:1.5; }
+.coupon-code{
+  font-size:26px; font-weight:900; letter-spacing:4px;
+  background:linear-gradient(135deg,#a29bfe,#6c5ce7,#00ffe0);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; margin-bottom:6px;
+}
+.coupon-note{ font-size:12px; color:#7ab4c8; margin-bottom:22px; }
+.redeem-close-btn{
+  padding:11px 28px; border:none; border-radius:12px; cursor:pointer;
+  background:linear-gradient(135deg,#6c5ce7,#a29bfe);
+  color:#fff; font-size:13.5px; font-weight:800;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+
+/* =====================================================
+   PREMIUM UI ENHANCEMENTS
+===================================================== */
+
+/* Custom scrollbar */
+::-webkit-scrollbar{ width:6px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:rgba(0,255,224,.22); border-radius:99px; }
+::-webkit-scrollbar-thumb:hover{ background:rgba(0,255,224,.45); }
+
+/* Hover glow for all glass cards */
+.gc{
+  transition:box-shadow .32s ease, transform .28s ease, border-color .28s ease;
+}
+.gc:hover{
+  box-shadow:
+    0 20px 56px rgba(0,0,0,.68),
+    0 0 0 1px rgba(0,255,224,.16),
+    0 0 32px rgba(0,255,224,.07),
+    inset 0 1px 0 rgba(255,255,255,.09);
+  border-color:rgba(0,255,224,.18);
+}
+
+/* Hero strip shimmer sweep */
+.hero-strip-inner{
+  background-size:200% 100%;
+  animation:heroShimmer 8s ease-in-out infinite;
+}
+@keyframes heroShimmer{
+  0%,100%{ background-position:0% 50%; }
+  50%     { background-position:100% 50%; }
+}
+
+/* Pulsing neon ring on hero avatar */
+@keyframes avatarRing{
+  0%,100%{ box-shadow:0 0 22px rgba(0,255,224,.28),0 6px 20px rgba(0,0,0,.40); }
+  50%    { box-shadow:0 0 44px rgba(0,255,224,.55),0 8px 28px rgba(0,0,0,.50); }
+}
+.avatar-wrap img{ animation:avatarRing 3.5s ease-in-out infinite; }
+.avatar-wrap img:hover{ animation:none; }
+
+/* Stats number — subtle float */
+.hstat-num{
+  display:inline-block;
+  animation:statFloat 4s ease-in-out infinite;
+}
+.hstat:nth-child(2) .hstat-num{ animation-delay:.6s; }
+.hstat:nth-child(3) .hstat-num{ animation-delay:1.2s; }
+@keyframes statFloat{
+  0%,100%{ transform:translateY(0); }
+  50%    { transform:translateY(-3px); }
+}
+
+/* Section dividers — animated left-border glow */
+.fsec{
+  animation:fsecGlow 3s ease-in-out infinite alternate;
+}
+@keyframes fsecGlow{
+  from{ border-left-color:rgba(0,255,224,.70); background:rgba(0,255,224,.04); }
+  to  { border-left-color:#00ffe0;             background:rgba(0,255,224,.09); }
+}
+
+/* Form inputs — enhanced focus ring */
+.field input:focus,
+.field select:focus{
+  border-color:var(--neon) !important;
+  box-shadow:
+    0 0 0 3px rgba(0,255,224,.18),
+    0 0 20px rgba(0,255,224,.12),
+    inset 0 1px 0 rgba(0,255,224,.08) !important;
+  background:rgba(0,255,224,.09) !important;
+}
+
+/* Delete button — subtle glass look */
+.delete-btn{
+  background:linear-gradient(135deg,rgba(231,76,60,.08),rgba(192,57,43,.05));
+}
+
+/* Save button — extra neon breathing */
+@keyframes savePulse{
+  0%,100%{ box-shadow:0 6px 22px rgba(0,255,224,.35); }
+  50%    { box-shadow:0 8px 32px rgba(0,255,224,.65),0 0 55px rgba(0,255,224,.15); }
+}
+.save-btn{ animation:savePulse 3s ease-in-out infinite; }
+.save-btn:hover{ animation:none; }
+
+/* Booking cards — slide-in on screen switch */
+.booking-card{
+  animation:cardSlideIn .35s ease backwards;
+}
+@keyframes cardSlideIn{
+  from{ opacity:0; transform:translateY(16px); }
+  to  { opacity:1; transform:none; }
+}
+
+/* Loyalty card — extra glow breathing */
+@keyframes loyaltyGlow{
+  0%,100%{
+    box-shadow:0 16px 56px rgba(0,0,0,.58),
+               0 0 60px rgba(108,92,231,.16),
+               0 0 0 1px rgba(108,92,231,.10);
+  }
+  50%{
+    box-shadow:0 22px 70px rgba(0,0,0,.65),
+               0 0 90px rgba(108,92,231,.26),
+               0 0 0 1px rgba(108,92,231,.20);
+  }
+}
+.loyalty-card{ animation:loyaltyGlow 4s ease-in-out infinite; }
+
+/* Filter chips active state — extra shimmer */
+.fchip.on{
+  background:rgba(0,255,224,.16);
+  box-shadow:0 0 18px rgba(0,255,224,.25),0 0 0 1px rgba(0,255,224,.22);
+}
+
+/* Tab active — brighter pip pulse */
+.tab.active{
+  box-shadow:
+    0 4px 24px rgba(0,255,224,.22),
+    0 0 0 1px rgba(0,255,224,.16),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Stat mini-cards — stagger entrance */
+.bkstat:nth-child(1){ animation:cardSlideIn .30s .05s ease backwards; }
+.bkstat:nth-child(2){ animation:cardSlideIn .30s .12s ease backwards; }
+.bkstat:nth-child(3){ animation:cardSlideIn .30s .19s ease backwards; }
+.bkstat:nth-child(4){ animation:cardSlideIn .30s .26s ease backwards; }
+.bkstat:nth-child(5){ animation:cardSlideIn .30s .33s ease backwards; }
+
+/* Smooth page section entrance */
+.hero-strip{ animation:cardSlideIn .45s .05s ease backwards; }
+.tabs       { animation:cardSlideIn .45s .14s ease backwards; }
+.profile-grid{ animation:cardSlideIn .45s .22s ease backwards; }
+.loyalty-section{ animation:cardSlideIn .45s .30s ease backwards; }
+
+/* Float action buttons (AI tour) */
+.float-buttons{
+  position:fixed; bottom:28px; left:28px;
+  display:flex; flex-direction:column; gap:10px; z-index:900;
+}
+
+/* ── LOYALTY TIER BADGE ── */
+.tier-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:20px;font-size:12px;font-weight:800;
+  letter-spacing:.3px;
+}
+.tier-bronze{background:rgba(205,127,50,.18);border:1px solid rgba(205,127,50,.40);color:#cd7f32;}
+.tier-silver{background:rgba(192,192,192,.15);border:1px solid rgba(192,192,192,.38);color:#c0c0c0;}
+.tier-gold  {background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.40);color:#ffd700;}
+.tier-plat  {background:rgba(0,255,224,.14);border:1px solid rgba(0,255,224,.38);color:#00ffe0;}
+
+/* ── UPCOMING TRIPS SECTION ── */
+.upcoming-section{
+  margin:0 0 24px;
+}
+.upcoming-title{
+  font-size:14px;font-weight:800;color:rgba(255,255,255,.80);
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+}
+.upcoming-list{display:flex;flex-direction:column;gap:10px;}
+.upcoming-card{
+  background:linear-gradient(145deg,rgba(0,255,224,.06),rgba(0,168,255,.04));
+  border:1px solid rgba(0,255,224,.18);border-radius:16px;padding:16px 18px;
+  display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  box-shadow:0 6px 24px rgba(0,0,0,.30),0 0 20px rgba(0,255,224,.06);
+}
+.upcoming-route{font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;}
+.upcoming-dep{font-size:12px;color:rgba(255,255,255,.50);margin-bottom:6px;}
+.upcoming-countdown{
+  font-size:11px;font-weight:700;
+  background:rgba(0,255,224,.12);border:1px solid rgba(0,255,224,.25);
+  border-radius:20px;padding:3px 10px;color:#00ffe0;display:inline-block;
+}
+.upcoming-right{text-align:right;}
+.upcoming-amt{font-size:16px;font-weight:900;color:#f39c12;}
+.upcoming-view-btn{
+  margin-top:8px;display:inline-flex;align-items:center;gap:4px;
+  padding:5px 13px;border-radius:9px;border:1px solid rgba(0,255,224,.25);
+  background:rgba(0,255,224,.08);color:#00ffe0;font-size:11.5px;font-weight:700;
+  cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;
+}
+.upcoming-view-btn:hover{background:rgba(0,255,224,.18);}
+
+/* ── ENHANCED BOOKING CARD ── */
+.bk-extra{
+  display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;
+}
+.bk-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.55);
+}
+
+/* ── TIER in loyalty card ── */
+.loyalty-tier-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;
+  padding:14px 16px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+}
+.loyalty-tier-name{font-size:15px;font-weight:800;}
+.loyalty-tier-desc{font-size:11.5px;color:rgba(255,255,255,.50);margin-top:2px;}
+.svc-btn{background:linear-gradient(135deg,rgba(108,92,231,.18),rgba(0,168,255,.12));border:1px solid rgba(108,92,231,.35);color:#a29bfe;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.svc-btn:hover{background:linear-gradient(135deg,rgba(108,92,231,.30),rgba(0,168,255,.22));border-color:rgba(108,92,231,.55);color:#c5b8ff;}
+.qr-btn{background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(0,255,224,.12));border:1px solid rgba(46,204,113,.35);color:#2ecc71;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.qr-btn:hover{background:linear-gradient(135deg,rgba(46,204,113,.30),rgba(0,255,224,.22));border-color:rgba(46,204,113,.55);color:#55efc4;}
+
+/* ── SERVICE PAYMENT MODAL ── */
+.svc-pay-modal{position:fixed;inset:0;z-index:7000;background:rgba(3,8,20,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:16px;}
+.svc-pay-modal.open{display:flex;}
+.svc-pay-box{background:linear-gradient(160deg,#0c1b2e,#0e2038);border:1px solid rgba(108,92,231,.35);border-radius:22px;width:480px;max-width:96vw;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.7);animation:tkIn .28s cubic-bezier(.22,.61,.36,1);}
+.svc-pay-hdr{padding:18px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;}
+.svc-pay-title{font-size:15px;font-weight:800;color:#a29bfe;}
+.svc-pay-body{padding:20px 22px;}
+.svc-pay-amt{text-align:center;margin-bottom:20px;}
+.svc-pay-amt-lbl{font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.svc-pay-amt-val{font-size:32px;font-weight:900;background:linear-gradient(135deg,#00ffe0,#7eb8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.svc-pay-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.svc-pay-card{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;border-radius:14px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s;}
+.svc-pay-card:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08);}
+.svc-pay-card.active{border-color:#a29bfe;background:rgba(108,92,231,.14);box-shadow:0 0 18px rgba(108,92,231,.2);}
+.svc-pay-card-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.svc-pay-card-name{font-size:11.5px;font-weight:800;color:rgba(255,255,255,.7);}
+.svc-pay-card.active .svc-pay-card-name{color:#a29bfe;}
+.svc-pay-foot{display:flex;gap:10px;padding:14px 22px;border-top:1px solid rgba(255,255,255,.08);}
+.svc-pay-btn-cancel{flex:1;padding:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
+.svc-pay-btn-confirm{flex:2;padding:11px;background:linear-gradient(135deg,#a29bfe,#6c5ce7);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;box-shadow:0 0 18px rgba(108,92,231,.3);transition:all .2s;}
+.svc-pay-btn-confirm:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(108,92,231,.5);}
+.svc-pay-btn-confirm:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* ── VOUCHER WALLET ── */
+.voucher-wallet{background:rgba(255,255,255,.03);border:1px solid rgba(253,149,0,.18);border-radius:16px;padding:18px 20px;margin-top:16px;}
+.voucher-wallet-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.voucher-wallet-title{font-size:13.5px;font-weight:800;color:#fd9500;display:flex;align-items:center;gap:8px;}
+.voucher-wallet-count{background:rgba(253,149,0,.18);color:#fdba57;border:1px solid rgba(253,149,0,.3);border-radius:20px;font-size:11px;font-weight:800;padding:2px 8px;}
+.voucher-list{display:flex;flex-direction:column;gap:8px;}
+.voucher-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid rgba(253,149,0,.22);background:rgba(253,149,0,.06);}
+.voucher-item.used{opacity:.45;filter:grayscale(.6);}
+.voucher-code{font-size:14px;font-weight:900;letter-spacing:2px;color:#fd9500;font-family:monospace;flex:1;}
+.voucher-name{font-size:11.5px;color:rgba(255,255,255,.55);margin-top:2px;}
+.voucher-status{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.voucher-status.active{background:rgba(46,204,113,.18);color:#2ecc71;border:1px solid rgba(46,204,113,.3);}
+.voucher-status.used{background:rgba(231,76,60,.14);color:#e74c3c;border:1px solid rgba(231,76,60,.25);}
+.voucher-copy-btn{background:rgba(253,149,0,.12);border:1px solid rgba(253,149,0,.25);color:#fd9500;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;white-space:nowrap;}
+.voucher-copy-btn:hover{background:rgba(253,149,0,.24);}
+.voucher-empty{text-align:center;padding:16px;color:rgba(255,255,255,.30);font-size:12.5px;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -548,37 +1166,36 @@ header{
 <div class="star"></div><div class="star"></div>
 <div class="star"></div><div class="star"></div>
 
-<!-- ══════════════ HEADER ══════════════ -->
+<!-- ═══ UNIFIED NAV ═══ -->
 <header>
-  <div class="logo">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="6" width="20" height="14" rx="4" fill="#00ffe0" opacity=".9"/>
-      <circle cx="7" cy="20" r="2.5" fill="#00a8ff"/>
-      <circle cx="17" cy="20" r="2.5" fill="#00a8ff"/>
-      <rect x="5" y="9" width="4" height="3" rx="1" fill="#0a0f1e"/>
-      <rect x="10" y="9" width="4" height="3" rx="1" fill="#0a0f1e"/>
-      <rect x="15" y="9" width="4" height="3" rx="1" fill="#0a0f1e"/>
-    </svg>
-    SmartBusAI
-  </div>
-  <div class="header-nav">
-    <a href="index.html">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-      Trang chủ
-    </a>
-    <a href="booking.html">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/></svg>
-      Vé của tôi
-    </a>
-    <button class="btn-logout" onclick="logout()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-      Đăng xuất
-    </button>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="6" width="20" height="13" rx="3" fill="#040d18"/>
+        <rect x="4" y="8" width="4" height="3" rx="1" fill="#00ffe0"/>
+        <rect x="10" y="8" width="4" height="3" rx="1" fill="#00ffe0"/>
+        <circle cx="7" cy="19" r="2" fill="#00a8ff"/>
+        <circle cx="17" cy="19" r="2" fill="#00a8ff"/>
+      </svg>
+    </div>
+    <span class="nav-logo-text">SmartBusAI</span>
+  </a>
+  <nav class="nav-links">
+    <a href="index.html">🏠 Trang chủ</a>
+    <a href="nha-xe.html">🚌 Nhà xe</a>
+    <a href="booking.html">🎫 Đặt vé</a>
+    <a href="profile.html" class="active">👤 Tài khoản</a>
+    <a href="hotro.html">🛟 Hỗ trợ</a>
+  </nav>
+  <div class="nav-right">
+    <div class="nav-greeting">Xin chào, <span class="nav-uname" id="headerUserName">Khách</span></div>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
 <!-- ══════════════ HERO STRIP ══════════════ -->
 <div class="hero-strip">
+  <div class="hero-strip-inner">
   <div class="avatar-wrap">
     <img id="heroAvt" src="images/default-avatar.png" alt="Avatar" onclick="document.getElementById('avatarInput').click()">
     <div class="avatar-edit" onclick="document.getElementById('avatarInput').click()" title="Đổi ảnh">✏️</div>
@@ -596,8 +1213,10 @@ header{
       <div class="hstat"><span class="hstat-num" id="hStatTrips">0</span><span class="hstat-lbl">Chuyến đi</span></div>
       <div class="hstat"><span class="hstat-num" id="hStatSpent">0</span><span class="hstat-lbl">VNĐ chi tiêu</span></div>
       <div class="hstat"><span class="hstat-num" id="hStatPts">0</span><span class="hstat-lbl">Điểm tích lũy</span></div>
+      <div class="hstat"><span id="heroTierBadge" class="tier-badge tier-bronze">🥉 Đồng</span><span class="hstat-lbl">Hạng thành viên</span></div>
     </div>
   </div>
+  </div><!-- /hero-strip-inner -->
 </div>
 
 <!-- ══════════════ TABS ══════════════ -->
@@ -674,8 +1293,8 @@ header{
       </div>
 
       <div class="fgrid">
-        <div class="field"><label>Tỉnh / Thành phố</label><input id="province" placeholder="Hà Nội"></div>
-        <div class="field"><label>Quận / Huyện</label><input id="district" placeholder="Cầu Giấy"></div>
+        <div class="field"><label>Tỉnh / Thành phố</label><select id="province" onchange="onProvinceChange()"><option value="">-- Chọn tỉnh/thành --</option></select></div>
+        <div class="field"><label>Quận / Huyện</label><select id="district"><option value="">-- Chọn quận/huyện --</option></select></div>
       </div>
       <div class="fgrid full">
         <div class="field"><label>Địa chỉ chi tiết</label><input id="address_detail" placeholder="Số nhà, tên đường…"></div>
@@ -693,6 +1312,44 @@ header{
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Loyalty rewards -->
+  <div class="loyalty-section">
+    <div class="loyalty-card">
+      <div class="loyalty-header">
+        <div class="loyalty-title">
+          <div class="loyalty-title-ico">⭐</div>
+          Điểm thưởng & Ưu đãi
+        </div>
+        <div style="text-align:right;">
+          <div class="loyalty-pts-big" id="loyaltyPts">0</div>
+          <div class="loyalty-pts-lbl">điểm tích lũy</div>
+        </div>
+      </div>
+      <div class="loyalty-progress-wrap">
+        <div class="loyalty-progress-info">
+          <span id="loyaltyProgressLbl">Tiến độ đến phần thưởng tiếp theo</span>
+          <span id="loyaltyProgressPct">0%</span>
+        </div>
+        <div class="loyalty-bar"><div class="loyalty-bar-fill" id="loyaltyBarFill" style="width:0%"></div></div>
+      </div>
+      <div class="loyalty-rewards" id="loyaltyRewards">
+        <!-- rendered by JS -->
+      </div>
+      <button class="redeem-btn" id="redeemMainBtn" onclick="openRedeemChooser()" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.86.18-1a3 3 0 00-6 0c0 .14.11.56.18 1H10c-.07-.44-.18-.86-.18-1a3 3 0 00-6 0c0 .14.11.56.18 1H2v14h20V6zm-7-1a1 1 0 012 0c0 .14-.03.27-.06.41L14.73 6h-1.96A1.42 1.42 0 0113 5zm-7 0a1 1 0 012 0c0 .14-.03.27-.06.41L7.73 6H5.77A1.42 1.42 0 016 5zm12 13H6V8h12v10z"/></svg>
+        Đổi điểm lấy ưu đãi
+      </button>
+
+      <!-- Voucher wallet -->
+      <div class="voucher-wallet" id="voucherWalletSection">
+        <div class="voucher-wallet-hdr">
+          <div class="voucher-wallet-title">🎟 Ví voucher của bạn <span class="voucher-wallet-count" id="voucherWalletCount">0</span></div>
+        </div>
+        <div class="voucher-list" id="voucherWallet"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -735,6 +1392,12 @@ header{
       <div class="fchip" onclick="filterBk('PENDING',this)">Chờ thanh toán</div>
       <div class="fchip" onclick="filterBk('CANCELED',this)">Đã huỷ</div>
     </div>
+  </div>
+
+  <!-- Upcoming trips -->
+  <div class="upcoming-section" id="upcomingSection" style="display:none;">
+    <div class="upcoming-title">🚀 Chuyến sắp tới</div>
+    <div class="upcoming-list" id="upcomingList"></div>
   </div>
 
   <div id="bookingList">
@@ -852,12 +1515,17 @@ async function loadProfile(){
     document.getElementById("phone").value          = u.phone||"";
     document.getElementById("gender").value         = u.gender||"Nam";
     document.getElementById("birth_date").value     = u.birth_date?u.birth_date.split("T")[0]:"";
-    document.getElementById("province").value       = u.province||"";
-    document.getElementById("district").value       = u.district||"";
+    if(u.province){
+      document.getElementById("province").value = u.province;
+      onProvinceChange();
+      if(u.district) document.getElementById("district").value = u.district;
+    }
     document.getElementById("address_detail").value = u.address_detail||"";
 
     const nm=u.full_name||"Người dùng";
     document.getElementById("heroName").textContent  = nm;
+    const hnEl=document.getElementById("headerUserName");
+    if(hnEl) hnEl.textContent=nm;
     document.getElementById("heroEmail").textContent = u.email||"";
     document.getElementById("sbName").textContent    = nm;
     document.getElementById("qPhone").textContent   = u.phone||"—";
@@ -938,11 +1606,43 @@ function logout(){
 /* ── BOOKINGS ── */
 let allBk=[];
 
+/* Auto-cancel expired PENDING bookings (departure has already passed) */
+async function autoExpireBookings(list){
+  const now=new Date();
+  const expired=list.filter(b=>
+    b.status==="PENDING" &&
+    b.departure_time &&
+    new Date(b.departure_time)<now
+  );
+  if(!expired.length) return 0;
+  /* Cancel all in parallel, ignore individual failures */
+  await Promise.all(expired.map(b=>
+    fetch(`/api/bookings/${b.booking_id}`,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({status:"CANCELED"})
+    }).catch(()=>{})
+  ));
+  return expired.length;
+}
+
 async function loadBookings(){
   try{
     const res=await fetch(`/api/bookings/user/${userId}`);
     allBk=await res.json()||[];
+
+    /* ── Auto-expire overdue PENDING bookings ── */
+    const expiredCount=await autoExpireBookings(allBk);
+    if(expiredCount>0){
+      /* Reload list after cancellations */
+      const res2=await fetch(`/api/bookings/user/${userId}`);
+      allBk=await res2.json()||[];
+      showExpiredNotification(expiredCount);
+    }
+
     renderBk(allBk);
+    renderUpcomingTrips(allBk);
+    renderSoonExpireBar(allBk);
 
     const paid=allBk.filter(b=>b.status==="PAID").length;
     const pend=allBk.filter(b=>b.status==="PENDING").length;
@@ -953,7 +1653,12 @@ async function loadBookings(){
     document.getElementById("bsSpent").textContent   = fmt(spent)+" VNĐ";
     document.getElementById("hStatTrips").textContent = allBk.length;
     document.getElementById("hStatSpent").textContent = fmt(spent);
-    document.getElementById("hStatPts").textContent   = Math.floor(spent/10000);
+    const earnedPts = Math.floor(spent/100000);
+    const redeemedPts = parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0');
+    const pts = Math.max(0, earnedPts - redeemedPts);
+    document.getElementById("hStatPts").textContent   = pts;
+    updateLoyaltyUI(pts);
+    renderVoucherWallet();
     document.getElementById("heroBadgeTrips").textContent = allBk.length+" chuyến";
   }catch(e){
     document.getElementById("bookingList").innerHTML=
@@ -961,8 +1666,82 @@ async function loadBookings(){
   }
 }
 
+/* Show a dismissable notification banner when bookings were auto-cancelled */
+function showExpiredNotification(count){
+  const existing=document.getElementById("expiredNotiBanner");
+  if(existing) existing.remove();
+  const bar=document.createElement("div");
+  bar.id="expiredNotiBanner";
+  bar.className="expired-noti-bar";
+  bar.innerHTML=`
+    <span class="expired-noti-icon">🚫</span>
+    <div>
+      <div class="expired-noti-title">Đã tự động huỷ ${count} vé quá hạn</div>
+      <div class="expired-noti-sub">
+        ${count} vé chờ thanh toán đã bị huỷ tự động vì chuyến xe đã khởi hành mà chưa được thanh toán.
+        Giờ khởi hành đã qua — bạn có thể đặt vé mới cho chuyến tiếp theo.
+      </div>
+    </div>
+    <span class="expired-noti-close" onclick="this.closest('.expired-noti-bar').remove()">✕</span>
+  `;
+  const list=document.getElementById("bookingList");
+  if(list) list.before(bar);
+}
+
+/* Show "sắp hết hạn" warning bar if any PENDING bookings depart within 3 hours */
+function renderSoonExpireBar(list){
+  const existing=document.getElementById("soonExpireBar");
+  if(existing) existing.remove();
+  const now=new Date();
+  const soon=list.filter(b=>{
+    if(b.status!=="PENDING"||!b.departure_time) return false;
+    const diff=new Date(b.departure_time)-now;
+    return diff>0 && diff<=10800000; /* within 3 hours */
+  });
+  if(!soon.length) return;
+  const bar=document.createElement("div");
+  bar.id="soonExpireBar";
+  bar.className="soon-expire-bar";
+  const routes=soon.map(b=>`<b>#${b.booking_id}</b>`).join(", ");
+  bar.innerHTML=`⚠️ <span>${soon.length} vé ${routes} chưa thanh toán và chuyến khởi hành trong vòng 3 giờ nữa — thanh toán ngay để giữ ghế!</span>`;
+  const list2=document.getElementById("bookingList");
+  if(list2) list2.before(bar);
+}
+
 function statusLabel(s){
   return s==="PAID"?"✅ Đã thanh toán":s==="PENDING"?"⏳ Chờ thanh toán":"❌ Đã huỷ";
+}
+
+function renderUpcomingTrips(list){
+  const upcoming=list.filter(b=>{
+    if(b.status!=="PAID") return false;
+    if(!b.departure_time) return false;
+    return new Date(b.departure_time)>new Date();
+  }).sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time));
+  const sec=document.getElementById("upcomingSection");
+  const ul=document.getElementById("upcomingList");
+  if(!sec||!ul) return;
+  if(!upcoming.length){sec.style.display="none";return;}
+  sec.style.display="block";
+  ul.innerHTML=upcoming.slice(0,3).map(b=>{
+    const dep=new Date(b.departure_time);
+    const now=new Date();
+    const diffMs=dep-now;
+    const diffH=Math.floor(diffMs/3600000);
+    const diffD=Math.floor(diffH/24);
+    const countdown=diffD>0?`Còn ${diffD} ngày`:diffH>0?`Còn ${diffH} giờ`:"Sắp khởi hành";
+    return `<div class="upcoming-card">
+      <div>
+        <div class="upcoming-route">${b.origin||"—"} → ${b.destination||"—"}</div>
+        <div class="upcoming-dep">🗓 ${fmtDT(b.departure_time)} · #${b.booking_id}</div>
+        <span class="upcoming-countdown">⏱ ${countdown}</span>
+      </div>
+      <div class="upcoming-right">
+        <div class="upcoming-amt">${fmt(b.total_amount)} VNĐ</div>
+        <button class="upcoming-view-btn" onclick="showTicketDetail(${b.booking_id})">🎫 Xem vé</button>
+      </div>
+    </div>`;
+  }).join("");
 }
 
 function renderBk(list){
@@ -973,9 +1752,31 @@ function renderBk(list){
   }
   el.innerHTML="";
   const frag=document.createDocumentFragment();
+  const now=new Date();
+
   list.forEach(b=>{
+    /* ── Tính trạng thái thời gian ── */
+    const dep=b.departure_time?new Date(b.departure_time):null;
+    const isPending=b.status==="PENDING";
+    const depPassed=dep&&dep<now;                           // chuyến đã qua
+    const diffMs=dep?(dep-now):Infinity;
+    const soonExpire=isPending&&!depPassed&&diffMs<=10800000; // còn ≤3h mà chưa TT
+    const veryUrgent=isPending&&!depPassed&&diffMs<=3600000;  // còn ≤1h — KHẨN CẤP
+
+    /* ── Countdown string cho badge ── */
+    let countdownStr="";
+    if(soonExpire&&dep){
+      const h=Math.floor(diffMs/3600000);
+      const m=Math.floor((diffMs%3600000)/60000);
+      countdownStr=h>0?`${h}g${m}p`:m>0?`${m} phút`:"< 1 phút";
+    }
+
     const div=document.createElement("div");
-    div.className="gc booking-card";
+    /* Card class: nếu đã qua giờ nhưng vẫn PENDING (edge case) → EXPIRED */
+    const cardClass=isPending&&depPassed?"EXPIRED":(b.status||"PENDING");
+    div.className=`gc booking-card bc-${cardClass}`;
+    if(veryUrgent) div.style.cssText="border-left-color:#f39c12!important;box-shadow:0 0 0 1px rgba(243,156,18,.25),0 12px 44px rgba(0,0,0,.50)!important;";
+
     div.innerHTML=`
       <div class="bk-top">
         <div class="bk-route">
@@ -985,28 +1786,53 @@ function renderBk(list){
           <svg width="13" height="13" viewBox="0 0 24 24" fill="#00a8ff"><circle cx="12" cy="12" r="10"/></svg>
           ${b.destination||"—"}
         </div>
-        <span class="status ${b.status}">${statusLabel(b.status)}</span>
+        <span class="status ${isPending&&depPassed?"CANCELED":b.status}">
+          ${isPending&&depPassed?"❌ Đã quá hạn":statusLabel(b.status)}
+        </span>
       </div>
+
+      ${soonExpire?`
+      <div class="expire-soon-badge" style="margin-bottom:10px;display:inline-flex;">
+        ${veryUrgent?"🚨":"⚠️"} ${veryUrgent?"KHẨN CẤP —":"Sắp hết hạn —"}
+        Còn <b style="margin:0 3px;">${countdownStr}</b> để thanh toán · Vé bị huỷ nếu quá giờ khởi hành
+      </div>`:""}
+
+      ${isPending&&depPassed?`
+      <div class="expire-soon-badge" style="margin-bottom:10px;background:rgba(231,76,60,.18);border-color:rgba(231,76,60,.45);color:#e74c3c;animation:none;">
+        🚫 Chuyến đã khởi hành — vé này đang được xử lý huỷ tự động
+      </div>`:""}
+
       <div class="bk-meta">
-        <div class="bkm"><div class="bkm-lbl">Khởi hành</div><div class="bkm-val">${fmtDT(b.departure_time)}</div></div>
+        <div class="bkm"><div class="bkm-lbl">Khởi hành</div><div class="bkm-val" ${depPassed&&isPending?'style="color:#e74c3c;"':''}>${fmtDT(b.departure_time)}</div></div>
         <div class="bkm"><div class="bkm-lbl">Tổng tiền</div><div class="bkm-val" style="color:#f39c12;">${fmt(b.total_amount)} VNĐ</div></div>
         <div class="bkm"><div class="bkm-lbl">Mã đặt vé</div><div class="bkm-val">#${b.booking_id}</div></div>
+        ${b.seat_numbers?`<div class="bkm"><div class="bkm-lbl">Ghế</div><div class="bkm-val" style="color:#a29bfe;">${b.seat_numbers}</div></div>`:""}
+      </div>
+      <div class="bk-extra">
+        ${b.bus_type?`<span class="bk-tag">🚌 ${b.bus_type}</span>`:""}
+        ${b.arrival_time?`<span class="bk-tag">🏁 Đến: ${fmtDT(b.arrival_time)}</span>`:""}
+        ${b.status==="PAID"&&dep&&dep>now?`<span class="bk-tag" style="color:#00ffe0;border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.08);">📅 Sắp khởi hành</span>`:""}
+        ${b.operator_name?`<span class="bk-tag">🏢 ${b.operator_name}</span>`:""}
       </div>
       <div class="bk-btns">
-        ${b.status==="PENDING"
-          ?`<button class="pay-btn" onclick="openPayModal(${b.booking_id},${b.total_amount})">
+        ${isPending&&!depPassed
+          ?`<button class="pay-btn ${veryUrgent?'expire-btn':''}" onclick="openPayModal(${b.booking_id},${b.total_amount})">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2z"/></svg>
-              💳 Thanh toán
-            </button>`:""}
-        ${b.status!=="CANCELED"
+              ${veryUrgent?"🚨 Thanh toán NGAY!":"💳 Thanh toán"}
+            </button>`:""
+        }
+        ${b.status!=="CANCELED"&&!(isPending&&depPassed)
           ?`<button class="cancel-btn" onclick="cancelBk(${b.booking_id})">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
               Huỷ vé
-            </button>`:""}
-        <button class="detail-btn">
+            </button>`:""
+        }
+        <button class="detail-btn" onclick="showTicketDetail(${b.booking_id})">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
           Chi tiết
         </button>
+        ${(b.status==="PAID" && (!b.arrival_time || new Date(b.arrival_time) > now)) ? `<button class="svc-btn" onclick="openSvcModal(${b.booking_id},${b.trip_id||0})">🛎️ Dịch vụ trên xe</button>` : ''}
+        ${b.status==='PAID' ? `<button class="qr-btn" onclick="showQRTicket(${b.booking_id})">🎫 Xem vé QR</button>` : ''}
       </div>`;
     frag.appendChild(div);
   });
@@ -1037,12 +1863,13 @@ const tours={
     { el:".hero-strip",    title:"👤 Hồ sơ của bạn",      text:"Ảnh đại diện, tên, huy hiệu và thống kê hành trình của bạn hiển thị ngay tại đây." },
     { el:".sidebar",       title:"💡 Thanh bên",           text:"Thông tin nhanh và 5 lợi ích khi sử dụng tài khoản SmartBusAI." },
     { el:".form-card",     title:"📋 Form thông tin",      text:"Điền đầy đủ họ tên, email, SĐT và ngày sinh để đặt vé nhanh hơn." },
-    { el:".fgrid.full",    title:"📍 Địa chỉ của bạn",     text:"Tỉnh thành và quận huyện giúp hệ thống gợi ý chuyến đi phù hợp." },
+    { el:"#address_detail", title:"📍 Địa chỉ của bạn",     text:"Nhập số nhà, tên đường để hệ thống gợi ý chuyến đi xuất phát gần bạn nhất." },
     { el:".save-btn",      title:"💾 Lưu thay đổi",        text:"Nhấn nút xanh này để cập nhật thông tin. Hiệu lực ngay lập tức." },
     { el:".delete-btn",    title:"🗑 Xoá tài khoản",       text:"⚠️ Thao tác không thể hoàn tác. Toàn bộ dữ liệu sẽ bị xoá vĩnh viễn." },
+    { el:".loyalty-card",  title:"⭐ Điểm thưởng & Ưu đãi", text:"Tích điểm mỗi khi đặt vé — 1 điểm/100k VNĐ. Đủ 50 điểm đổi vé miễn phí, nhiều hơn nữa với 95 và 150 điểm!" },
   ],
   B:[
-    { el:".bk-stats",      title:"📊 Tổng quan vé",        text:"Xem nhanh số vé tổng, đã thanh toán, đang chờ và tổng chi tiêu của bạn." },
+    { el:".bk-stats",      title:"Tổng quan vé",        text:"Xem nhanh số vé tổng, đã thanh toán, đang chờ và tổng chi tiêu của bạn." },
     { el:".bk-header",     title:"🔍 Bộ lọc trạng thái",   text:"Lọc vé theo: Tất cả, Đã thanh toán, Chờ thanh toán hoặc Đã huỷ." },
     { el:"#bookingList",   title:"🗂 Danh sách vé",         text:"Toàn bộ vé đã đặt. Mỗi thẻ hiện tuyến đường, giờ khởi hành, số tiền và trạng thái." },
     { el:".booking-card",  title:"🎫 Thẻ vé đơn lẻ",       text:"Xem chi tiết từng vé — tuyến đường, giờ chạy, tổng tiền và mã đặt vé." },
@@ -1062,6 +1889,9 @@ function startTour(ctx){
   showStep();
 }
 
+/* store ancestors elevated for current step */
+let _elevatedNodes=[];
+
 async function showStep(){
   removeHL();
   const steps=tours[tourCtx];
@@ -1073,12 +1903,28 @@ async function showStep(){
     await new Promise(r=>setTimeout(r,160));
   }
   if(!el){ aiNext(); return; }
+
+  /* For any ancestor that has backdrop-filter, temporarily disable it.
+     backdrop-filter creates a stacking context that traps child z-indices,
+     preventing them from rising above the dark overlay (z-index:2000).
+     Removing it lets the target's z-index:3002 live in the body stacking
+     context directly → the element appears above the overlay like steps 1-3. */
+  _elevatedNodes=[];
+  let p=el.parentElement;
+  while(p && p!==document.body && p!==document.documentElement){
+    const cs=getComputedStyle(p);
+    const bf=(cs.backdropFilter||cs.webkitBackdropFilter||'').trim();
+    if(bf && bf!=='none'){
+      _elevatedNodes.push({node:p, bf:p.style.backdropFilter, wbf:p.style.webkitBackdropFilter});
+      p.style.backdropFilter='none';
+      p.style.webkitBackdropFilter='none';
+    }
+    p=p.parentElement;
+  }
   el.classList.add("ai-highlight");
-  /* force stacking context so highlight always shows above overlay */
   el.style.position="relative";
-  el.style.zIndex="3001";
+  el.style.zIndex="3002";
   el.scrollIntoView({behavior:"smooth",block:"center"});
-  /* small delay so scroll finishes before spotlight calc */
   await new Promise(r=>setTimeout(r,300));
   spotlight(el);
   document.getElementById("aiContent").innerHTML=
@@ -1104,11 +1950,17 @@ function removeHL(){
     e.style.position="";
     e.style.zIndex="";
   });
+  /* Restore backdrop-filter on any ancestor we temporarily disabled */
+  _elevatedNodes.forEach(({node,bf,wbf})=>{
+    node.style.backdropFilter=bf;
+    node.style.webkitBackdropFilter=wbf;
+  });
+  _elevatedNodes=[];
 }
 
 function spotlight(el){
   const ov=document.getElementById("aiOverlay");
-  const r=el.getBoundingClientRect(), p=10;
+  const r=el.getBoundingClientRect(), p=22;
   ov.style.clipPath=`polygon(0 0,100% 0,100% 100%,0 100%,0 0,
     ${r.left-p}px ${r.top-p}px,
     ${r.right+p}px ${r.top-p}px,
@@ -1123,13 +1975,301 @@ window.addEventListener("scroll",()=>{
   if(el) spotlight(el);
 });
 
+/* ── VIETNAM LOCATION ── */
+let locationData = {};
+let _savedProvince = "", _savedDistrict = "";
+
+async function loadLocations(){
+  try{
+    const res = await fetch("/data/vietnam-location.json");
+    locationData = await res.json();
+    const sel = document.getElementById("province");
+    Object.keys(locationData).sort().forEach(p=>{
+      const opt = document.createElement("option");
+      opt.value = p; opt.textContent = p;
+      sel.appendChild(opt);
+    });
+  }catch(e){ console.error("Không tải được danh sách tỉnh thành", e); }
+}
+
+function onProvinceChange(){
+  const prov = document.getElementById("province").value;
+  const dSel = document.getElementById("district");
+  dSel.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+  if(prov && locationData[prov]){
+    locationData[prov].forEach(d=>{
+      const opt = document.createElement("option");
+      opt.value = d; opt.textContent = d;
+      dSel.appendChild(opt);
+    });
+  }
+}
+
+/* ── LOYALTY UI ── */
+const REWARDS = [
+  { pts:50,  name:"1 vé miễn phí",  desc:"Đi bất kỳ chuyến nào, bất kỳ tuyến nào", code:"FREE1" },
+  { pts:95,  name:"2 vé miễn phí",  desc:"Tặng thêm 1 vé đi cùng bạn bè/gia đình", code:"FREE2" },
+  { pts:150, name:"3 vé miễn phí",  desc:"Trọn gói 3 vé cho nhóm đi du lịch",       code:"FREE3" },
+  { pts:200, name:"Vé hạng VIP",     desc:"Nâng cấp toàn bộ ghế lên VIP cho 1 chuyến",code:"VIPUP" },
+];
+
+/* Tier system */
+const TIERS=[
+  {name:"Đồng",cls:"tier-bronze",icon:"🥉",min:0,  max:499, desc:"Thành viên mới"},
+  {name:"Bạc", cls:"tier-silver",icon:"🥈",min:500, max:999, desc:"Khách hàng thường xuyên"},
+  {name:"Vàng",cls:"tier-gold",  icon:"🏆",min:1000,max:2499,desc:"Khách VIP SmartBusAI"},
+  {name:"Bạch Kim",cls:"tier-plat",icon:"💎",min:2500,max:Infinity,desc:"Elite · Ưu tiên cao nhất"},
+];
+function getTier(pts){return TIERS.slice().reverse().find(t=>pts>=t.min)||TIERS[0];}
+
+function updateLoyaltyUI(pts){
+  document.getElementById("loyaltyPts").textContent = pts;
+  // Tier system
+  const tier=getTier(pts);
+  const nextTierObj=TIERS.find(t=>t.min>pts);
+  // Update hero tier badge
+  let tierEl=document.getElementById("heroTierBadge");
+  if(tierEl){tierEl.className="tier-badge "+tier.cls;tierEl.innerHTML=tier.icon+" "+tier.name;}
+  // Insert tier row in loyalty card if not exists
+  let tierRow=document.getElementById("loyaltyTierRow");
+  if(!tierRow){
+    tierRow=document.createElement("div");tierRow.id="loyaltyTierRow";tierRow.className="loyalty-tier-row";
+    const loyaltyHeader=document.querySelector(".loyalty-header");
+    if(loyaltyHeader) loyaltyHeader.after(tierRow);
+  }
+  tierRow.innerHTML=`<span style="font-size:28px;">${tier.icon}</span><div><div class="loyalty-tier-name ${tier.cls.replace("tier-","").split("-").join(" ")}..." style="color:inherit">${tier.icon} Hạng <b>${tier.name}</b></div><div class="loyalty-tier-desc">${tier.desc}${nextTierObj?" · Cần thêm "+(nextTierObj.min-pts)+" điểm lên "+nextTierObj.icon+" "+nextTierObj.name:""}</div></div>`;
+  // find next tier
+  const next = REWARDS.find(r => r.pts > pts);
+  const fill = next ? Math.min(100, Math.round((pts / next.pts) * 100)) : 100;
+  document.getElementById("loyaltyBarFill").style.width = fill + "%";
+  document.getElementById("loyaltyProgressPct").textContent = fill + "%";
+  document.getElementById("loyaltyProgressLbl").textContent = next
+    ? `Còn ${next.pts - pts} điểm để đổi "${next.name}"`
+    : "Bạn đã đạt mức cao nhất!";
+
+  const container = document.getElementById("loyaltyRewards");
+  container.innerHTML = "";
+  REWARDS.forEach(r=>{
+    const ok = pts >= r.pts;
+    const d = document.createElement("div");
+    d.className = "reward-item" + (ok ? " can-redeem" : "");
+    d.innerHTML = `<div class="reward-pts">${r.pts} điểm</div>
+      <div class="reward-name">${r.name}</div>
+      <div class="reward-desc">${r.desc}</div>`;
+    container.appendChild(d);
+  });
+
+  const btn = document.getElementById("redeemMainBtn");
+  btn.disabled = pts < REWARDS[0].pts;
+}
+
+function openRedeemChooser(){
+  // Block if already has an active unused voucher
+  const existingVouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
+  const hasActive=existingVouchers.some(v=>!v.used);
+  if(hasActive){
+    showToast('Bạn đang có voucher chưa sử dụng. Hãy dùng voucher hiện tại trước khi đổi mới!','error');
+    return;
+  }
+  const pts = parseInt(document.getElementById("loyaltyPts").textContent)||0;
+  if(pts<=0){showToast('Bạn chưa có đủ điểm để đổi ưu đãi','error');return;}
+  const eligible = REWARDS.filter(r => pts >= r.pts);
+  if(!eligible.length){showToast('Chưa đủ điểm để đổi bất kỳ phần thưởng nào','error');return;}
+  const choices = document.getElementById("redeemChoices");
+  choices.innerHTML = "";
+  eligible.forEach(r=>{
+    const b = document.createElement("button");
+    b.style.cssText = "padding:11px 16px;border-radius:12px;border:1px solid rgba(108,92,231,.4);background:rgba(108,92,231,.1);color:#c8d8f4;font-size:13px;font-weight:700;cursor:pointer;text-align:left;font-family:'Segoe UI',Arial,sans-serif;transition:background .2s;";
+    b.innerHTML = `<span style="color:#a29bfe">${r.pts} điểm</span> — ${r.name}<br><span style="font-size:11px;color:#7ab4c8;font-weight:500;">${r.desc}</span>`;
+    b.onmouseover=()=>b.style.background="rgba(108,92,231,.22)";
+    b.onmouseout=()=>b.style.background="rgba(108,92,231,.1)";
+    b.onclick=()=>confirmRedeem(r);
+    choices.appendChild(b);
+  });
+  document.getElementById("redeemResult").style.display = "none";
+  document.getElementById("redeemChoices").style.display = "flex";
+  document.getElementById("redeemIntro").textContent = "Chọn phần thưởng bạn muốn đổi:";
+  document.getElementById("redeemModal").classList.add("open");
+}
+
+function confirmRedeem(r){
+  // Show confirmation inside the modal before actually redeeming
+  const currentPts=parseInt(document.getElementById("loyaltyPts").textContent)||0;
+  document.getElementById("redeemChoices").style.display="none";
+  document.getElementById("redeemResult").style.display="none";
+  document.getElementById("redeemIntro").textContent="";
+  // Inject confirmation UI
+  let cfm=document.getElementById("redeemConfirm");
+  if(!cfm){cfm=document.createElement("div");cfm.id="redeemConfirm";document.querySelector(".redeem-box").insertBefore(cfm,document.querySelector(".redeem-close-btn"));}
+  cfm.style.display="block";
+  cfm.innerHTML=`
+    <div style="background:rgba(108,92,231,.12);border:1px solid rgba(108,92,231,.35);border-radius:16px;padding:18px;margin-bottom:16px;text-align:left;">
+      <div style="font-size:13px;font-weight:700;color:#a29bfe;margin-bottom:8px;">⚠️ Xác nhận đổi điểm</div>
+      <div style="font-size:13.5px;font-weight:800;color:#e0eaf5;margin-bottom:4px;">${r.name}</div>
+      <div style="font-size:12px;color:#9ab4cc;margin-bottom:12px;">${r.desc}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#9ab4cc;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;">
+        <span>Điểm hiện tại</span><span style="color:#a29bfe;font-weight:800;">${currentPts} điểm</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#e74c3c;margin-top:4px;">
+        <span>Điểm sẽ trừ</span><span style="font-weight:800;">− ${r.pts} điểm</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;border-top:1px solid rgba(255,255,255,.08);margin-top:8px;padding-top:8px;">
+        <span style="color:#9ab4cc;">Điểm còn lại</span><span style="color:#2ecc71;font-weight:800;">${Math.max(0,currentPts-r.pts)} điểm</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('redeemConfirm').style.display='none';document.getElementById('redeemChoices').style.display='flex';document.getElementById('redeemIntro').textContent='Chọn phần thưởng bạn muốn đổi:'" style="flex:1;padding:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">← Quay lại</button>
+      <button onclick="doRedeem(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="flex:2;padding:10px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 0 16px rgba(108,92,231,.3);">✅ Xác nhận đổi điểm</button>
+    </div>`;
+}
+
+function doRedeem(r){
+  const cfm=document.getElementById("redeemConfirm");
+  if(cfm)cfm.style.display="none";
+  const suffix = Math.random().toString(36).substring(2,7).toUpperCase();
+  const code = `SMART-${r.code}-${suffix}`;
+  // Deduct points by incrementing redeemed_pts tracker
+  const prevRedeemed=parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0');
+  localStorage.setItem('smartbus_redeemed_pts', prevRedeemed+r.pts);
+  // Save to voucher wallet
+  const key='smartbus_vouchers';
+  const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
+  vouchers.push({code,name:r.name,codeType:r.code,pts:r.pts,used:false,savedAt:new Date().toISOString()});
+  localStorage.setItem(key,JSON.stringify(vouchers));
+  document.getElementById("redeemCoupon").textContent = code;
+  document.getElementById("redeemChoices").style.display = "none";
+  document.getElementById("redeemResult").style.display = "block";
+  document.getElementById("redeemIntro").textContent = `✅ Đã đổi: ${r.name}`;
+  // Refresh loyalty UI to reflect deducted points
+  const currentPts=parseInt(document.getElementById("loyaltyPts").textContent)||0;
+  const newPts=Math.max(0, currentPts-r.pts);
+  updateLoyaltyUI(newPts);
+  // Sync hero stat badge
+  const hPts=document.getElementById("hStatPts");
+  if(hPts) hPts.textContent=newPts;
+  // Refresh wallet display
+  setTimeout(renderVoucherWallet, 200);
+}
+
+/* ── VOUCHER WALLET ── */
+function renderVoucherWallet(){
+  const key='smartbus_vouchers';
+  const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
+  let wrap=document.getElementById('voucherWallet');
+  if(!wrap) return;
+  const active=vouchers.filter(v=>!v.used);
+  document.getElementById('voucherWalletCount').textContent=active.length;
+  if(!vouchers.length){
+    wrap.innerHTML=`<div class="voucher-empty">🎟 Chưa có voucher nào. Đổi điểm để nhận ưu đãi!</div>`;
+    return;
+  }
+  wrap.innerHTML=vouchers.map((v,i)=>`
+    <div class="voucher-item ${v.used?'used':''}">
+      <div style="flex:1;min-width:0;">
+        <div class="voucher-code">${v.code}</div>
+        <div class="voucher-name">${v.name}</div>
+      </div>
+      <span class="voucher-status ${v.used?'used':'active'}">${v.used?'Đã dùng':'Còn hiệu lực'}</span>
+      ${!v.used?`<button class="voucher-copy-btn" onclick="copyVoucher('${v.code}')">📋 Sao chép</button>`:''}
+    </div>`).join('');
+}
+function copyVoucher(code){
+  navigator.clipboard.writeText(code).catch(()=>{});
+  showToast('✅ Đã sao chép mã: '+code,'success');
+}
+
+function closeRedeemModal(){
+  document.getElementById("redeemModal").classList.remove("open");
+}
+
+/* ── TICKET DETAIL MODAL ── */
+function showTicketDetail(bookingId){
+  const b = allBk.find(x => x.booking_id === bookingId);
+  if(!b) return;
+  document.getElementById("tkCode").textContent = "#" + String(b.booking_id).padStart(6,"0");
+  document.getElementById("tkOrigin").textContent = b.origin || "—";
+  document.getElementById("tkDest").textContent   = b.destination || "—";
+  document.getElementById("tkTime").textContent   = fmtDT(b.departure_time);
+  document.getElementById("tkDep").textContent    = fmtDT(b.departure_time);
+  document.getElementById("tkArr").textContent    = fmtDT(b.arrival_time);
+  document.getElementById("tkBusType").textContent= b.bus_type || "—";
+  document.getElementById("tkPlate").textContent  = b.plate_number || "—";
+  document.getElementById("tkOperator").textContent= b.operator_name || "—";
+  document.getElementById("tkAmount").textContent = fmt(b.total_amount) + " VNĐ";
+  document.getElementById("tkBookTime").textContent= fmtDT(b.booking_time);
+  const statusLabels = { PAID:"✅ Đã thanh toán", PENDING:"⏳ Chờ thanh toán", CANCELED:"❌ Đã huỷ" };
+  const row = document.getElementById("tkStatusRow");
+  row.textContent = statusLabels[b.status] || b.status;
+  row.className = "ticket-status-row " + (b.status||"");
+
+  // Extras / amenities
+  const extrasWrap = document.getElementById("tkExtrasWrap");
+  let extras = [];
+  try { extras = b.extras ? JSON.parse(b.extras) : []; } catch(e){}
+  if(extras.length){
+    extrasWrap.style.display="block";
+    document.getElementById("tkExtras").innerHTML = extras.map(e=>
+      `<div class="tk-extra-row">
+        <span class="tk-extra-ico">${e.icon||"🛎️"}</span>
+        <span class="tk-extra-name">${e.name}</span>
+        <span class="tk-extra-qty">×${e.qty}</span>
+        <span class="tk-extra-amt">${fmt(e.price*e.qty)}đ</span>
+      </div>`
+    ).join("");
+  } else {
+    extrasWrap.style.display="none";
+  }
+
+  document.getElementById("ticketModal").classList.add("open");
+}
+
+function closeTicketModal(){
+  document.getElementById("ticketModal").classList.remove("open");
+}
+
+/* ── LOAD LOYALTY FROM API ── */
+async function loadLoyalty(){
+  try {
+    const res = await fetch(`/api/users/${userId}/loyalty`);
+    if (!res.ok) return;
+    const data = await res.json();
+    // Update points display using existing updateLoyaltyUI
+    updateLoyaltyUI(data.points || 0);
+
+    // Update tier badge with backend tier data
+    const tierEl = document.getElementById("heroTierBadge");
+    if (tierEl) {
+      tierEl.style.color = data.tierColor || '';
+      tierEl.innerHTML   = (data.tierLabel || '🥉 Đồng');
+    }
+
+    // Update transaction history if panel exists
+    const txEl = document.getElementById("loyaltyTxList");
+    if (txEl && Array.isArray(data.transactions) && data.transactions.length) {
+      txEl.innerHTML = data.transactions.map(tx => {
+        const isEarn = tx.points > 0;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;">
+          <div>
+            <div style="color:${isEarn?'#00ffe0':'#e74c3c'};font-weight:700;">${isEarn?'+ '+tx.points:''+tx.points} điểm</div>
+            <div style="color:rgba(255,255,255,.5);margin-top:2px;">${tx.description||tx.type}</div>
+          </div>
+          <div style="color:rgba(255,255,255,.3);font-size:10px;">${new Date(tx.created_at).toLocaleDateString('vi-VN')}</div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) { /* non-critical */ }
+}
+
 /* ── INIT ── */
-document.addEventListener("DOMContentLoaded",()=>{
-  loadProfile();
+document.addEventListener("DOMContentLoaded", async ()=>{
+  await loadLocations();
+  await loadProfile();
   loadBookings();
+  loadLoyalty();  // Load real loyalty data from API
   // Auto scroll to bookings if hash
   if(location.hash==="bookings"||location.hash==="#bookings"){
-    setTimeout(()=>showScreen("B"),300);
+    setTimeout(()=>switchTab("B"),300);
   }
 });
 </script>
@@ -1167,6 +2307,80 @@ document.addEventListener("DOMContentLoaded",()=>{
       <button onclick="confirmQRPay()" style="padding:9px 18px;border:none;border-radius:20px;background:#1abc9c;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">✅ Đã thanh toán</button>
       <button onclick="document.getElementById('payQRModal').style.display='none'" style="padding:9px 18px;border:none;border-radius:20px;background:#e74c3c;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">↩ Quay lại</button>
     </div>
+  </div>
+</div>
+
+<!-- ════ TICKET DETAIL MODAL ════ -->
+<div id="ticketModal">
+  <div class="ticket-box">
+    <div class="ticket-header">
+      <div class="ticket-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-1.99-3.46L4 6h16v2.54z"/></svg>
+        Chi tiết vé
+      </div>
+      <button class="ticket-close" onclick="closeTicketModal()">✕</button>
+    </div>
+    <div class="ticket-code" id="tkCode">#000000</div>
+    <div class="ticket-code-lbl">MÃ ĐẶT VÉ</div>
+    <div class="ticket-route">
+      <div class="ticket-route-cities">
+        <span id="tkOrigin">—</span>
+        <span class="ticket-route-arrow">→</span>
+        <span id="tkDest">—</span>
+      </div>
+      <div class="ticket-route-time" id="tkTime">—</div>
+    </div>
+    <div class="ticket-status-row" id="tkStatusRow">—</div>
+    <div class="ticket-grid">
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Khởi hành</div>
+        <div class="ticket-field-val" id="tkDep">—</div>
+      </div>
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Đến nơi</div>
+        <div class="ticket-field-val" id="tkArr">—</div>
+      </div>
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Loại xe</div>
+        <div class="ticket-field-val" id="tkBusType">—</div>
+      </div>
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Biển số</div>
+        <div class="ticket-field-val" id="tkPlate">—</div>
+      </div>
+      <div class="ticket-field full">
+        <div class="ticket-field-lbl">Nhà xe</div>
+        <div class="ticket-field-val" id="tkOperator">—</div>
+      </div>
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Tổng tiền</div>
+        <div class="ticket-field-val" id="tkAmount" style="color:#f39c12">—</div>
+      </div>
+      <div class="ticket-field">
+        <div class="ticket-field-lbl">Ngày đặt</div>
+        <div class="ticket-field-val" id="tkBookTime">—</div>
+      </div>
+    </div>
+    <!-- Extras / amenities -->
+    <div id="tkExtrasWrap" style="display:none;margin-top:14px;">
+      <div class="tk-extras-hdr">🛎️ Tiện ích đi kèm</div>
+      <div id="tkExtras"></div>
+    </div>
+    <button class="ticket-close-btn" onclick="closeTicketModal()">Đóng</button>
+  </div>
+</div>
+
+<!-- ════ REDEEM CHOOSER MODAL ════ -->
+<div id="redeemModal">
+  <div class="redeem-box">
+    <h3>Đổi điểm ưu đãi</h3>
+    <p id="redeemIntro">Chọn phần thưởng bạn muốn đổi:</p>
+    <div id="redeemChoices" style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;text-align:left;"></div>
+    <div id="redeemResult" style="display:none;">
+      <div class="coupon-code" id="redeemCoupon">SMART-XXXXX</div>
+      <div class="coupon-note">Mã coupon có hiệu lực 30 ngày. Dùng khi đặt vé để được miễn phí.</div>
+    </div>
+    <button class="redeem-close-btn" onclick="closeRedeemModal()">Đóng</button>
   </div>
 </div>
 
@@ -1240,6 +2454,351 @@ function showToastPay(msg,type){
   t.style.color=type==="success"?"#2ecc71":"#e74c3c";
   t.style.transform="translateY(0)"; t.style.opacity="1";
   clearTimeout(t._t); t._t=setTimeout(()=>{t.style.transform="translateY(20px)";t.style.opacity="0";},3000);
+}
+
+/* ═══ POST-BOARDING SERVICE MODAL ═══ */
+const SVC_ITEMS=[
+  {id:"nuoc-suoi",  icon:"💧", name:"Nước suối 500ml",       price:4000,  unit:"chai"},
+  {id:"nuoc-ngot",  icon:"🥤", name:"Nước ngọt lon",          price:8000,  unit:"lon"},
+  {id:"ca-phe",     icon:"☕", name:"Cà phê lon",              price:10000, unit:"lon"},
+  {id:"mi-ly",      icon:"🍜", name:"Mì ăn liền (ly)",         price:12000, unit:"ly"},
+  {id:"hop-an",     icon:"🍱", name:"Suất ăn nhẹ",             price:20000, unit:"suất"},
+  {id:"thuoc-say",  icon:"💊", name:"Thuốc say xe",            price:5000,  unit:"viên"},
+  {id:"khau-trang", icon:"😷", name:"Khẩu trang y tế",         price:2000,  unit:"cái"},
+  {id:"goi-co",     icon:"🧸", name:"Gối cổ du lịch",          price:12000, unit:"cái"},
+  {id:"chan",        icon:"🛏️", name:"Chăn du lịch mỏng",      price:10000, unit:"cái"},
+  {id:"tai-nghe",   icon:"🎧", name:"Tai nghe có dây",         price:8000,  unit:"cái"},
+  {id:"sac-du-phong",icon:"🔋",name:"Pin sạc dự phòng",        price:15000, unit:"lần"},
+  {id:"khan-uot",   icon:"🧻", name:"Khăn ướt (gói 8 tờ)",    price:4000,  unit:"gói"},
+  {id:"bo-danh-rang",icon:"🪥",name:"Bộ đánh răng du lịch",    price:8000,  unit:"bộ"},
+];
+let _svcQty={};
+let _svcBookingId=null;
+
+function openSvcModal(bookingId,tripId){
+  _svcBookingId=bookingId;
+  SVC_ITEMS.forEach(s=>{ _svcQty[s.id]=0; });
+  buildSvcBody();
+  const m=document.getElementById("svcModal");
+  m.style.display="flex";
+  document.body.style.overflow="hidden";
+}
+function closeSvcModal(){
+  document.getElementById("svcModal").style.display="none";
+  document.body.style.overflow="";
+}
+function buildSvcBody(){
+  const fmt=v=>Number(v).toLocaleString("vi-VN");
+  let html=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">`;
+  SVC_ITEMS.forEach(s=>{
+    const qty=_svcQty[s.id]||0;
+    html+=`<div style="border-radius:14px;border:1px solid ${qty>0?'rgba(108,92,231,.55)':'rgba(255,255,255,.08)'};background:${qty>0?'rgba(108,92,231,.12)':'rgba(255,255,255,.04)'};padding:12px;transition:all .2s;">
+      <div style="font-size:22px;margin-bottom:6px;">${s.icon}</div>
+      <div style="font-size:12px;font-weight:800;color:#d8f0ff;margin-bottom:2px;">${s.name}</div>
+      <div style="font-size:11.5px;font-weight:800;color:#00ffe0;margin-bottom:8px;">${fmt(s.price)}đ/${s.unit}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button onclick="changeSvc('${s.id}',-1)" ${qty===0?'disabled':''} style="width:26px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;cursor:pointer;font-size:15px;font-family:monospace;${qty===0?'opacity:.3;cursor:not-allowed':''}">−</button>
+          <span id="svcQty-${s.id}" style="font-size:13px;font-weight:800;min-width:18px;text-align:center;">${qty}</span>
+          <button onclick="changeSvc('${s.id}',1)" style="width:26px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;cursor:pointer;font-size:15px;font-family:monospace;">+</button>
+        </div>
+        <span id="svcSub-${s.id}" style="font-size:11px;font-weight:700;color:#f39c12;">${qty>0?fmt(qty*s.price)+'đ':'—'}</span>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+  document.getElementById("svcBody").innerHTML=html;
+  updateSvcTotal();
+}
+function changeSvc(id,delta){
+  const s=SVC_ITEMS.find(x=>x.id===id);if(!s)return;
+  _svcQty[id]=Math.max(0,(_svcQty[id]||0)+delta);
+  buildSvcBody();
+}
+function updateSvcTotal(){
+  let total=0;
+  SVC_ITEMS.forEach(s=>{total+=s.price*(_svcQty[s.id]||0);});
+  const fmt=v=>Number(v).toLocaleString("vi-VN");
+  document.getElementById("svcTotal").textContent=fmt(total)+"đ";
+}
+function confirmSvc(){
+  const ordered=SVC_ITEMS.filter(s=>(_svcQty[s.id]||0)>0);
+  if(!ordered.length){showToast("Chưa chọn dịch vụ nào","error");return;}
+  const fmt=v=>Number(v).toLocaleString("vi-VN");
+  const total=ordered.reduce((s,x)=>s+x.price*_svcQty[x.id],0);
+  // Show payment modal
+  _svcPendingItems=ordered.map(s=>({id:s.id,name:s.name,icon:s.icon,price:s.price,qty:_svcQty[s.id],unit:s.unit}));
+  _svcPendingTotal=total;
+  document.getElementById("svcPayAmt").textContent=fmt(total)+"đ";
+  _svcPayMethod="momo"; // default
+  document.querySelectorAll(".svc-pay-card").forEach(c=>c.classList.remove("active"));
+  const firstCard=document.querySelector(".svc-pay-card");
+  if(firstCard) firstCard.classList.add("active");
+  document.getElementById("svcPayModal").classList.add("open");
+}
+let _svcPendingItems=[], _svcPendingTotal=0, _svcPayMethod="momo";
+function selectSvcPayCard(el,method){
+  document.querySelectorAll(".svc-pay-card").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");
+  _svcPayMethod=method;
+}
+function closeSvcPayModal(){
+  document.getElementById("svcPayModal").classList.remove("open");
+  // Also hide QR step if visible
+  const qrStep=document.getElementById("svcPayQrStep");
+  const sel=document.getElementById("svcPaySelStep");
+  if(qrStep){qrStep.style.display="none";}
+  if(sel){sel.style.display="";}
+  clearInterval(_svcQrTimer);
+}
+
+let _svcQrTimer=null;
+function doSvcPayment(){
+  const fmt=v=>Number(v).toLocaleString("vi-VN");
+  const digitalMethods=["momo","vnpay","zalopay"];
+  if(digitalMethods.includes(_svcPayMethod)){
+    // Show QR step inside modal
+    const sel=document.getElementById("svcPaySelStep");
+    const qrStep=document.getElementById("svcPayQrStep");
+    if(sel)sel.style.display="none";
+    if(qrStep){
+      const methodIcons={momo:{name:"MoMo",bg:"linear-gradient(135deg,#a50064,#d40071)",icon:"💜"},vnpay:{name:"VNPay QR",bg:"linear-gradient(135deg,#005baa,#0072c6)",icon:"💙"},zalopay:{name:"ZaloPay",bg:"linear-gradient(135deg,#0068ff,#00b4d8)",icon:"💠"}};
+      const m=methodIcons[_svcPayMethod]||methodIcons.momo;
+      document.getElementById("svcQrMethodName").textContent=m.name;
+      document.getElementById("svcQrMethodIcon").textContent=m.icon;
+      document.getElementById("svcQrAmount").textContent=fmt(_svcPendingTotal)+"đ";
+      qrStep.style.display="";
+      // Countdown 120s
+      let secs=120;
+      document.getElementById("svcQrCountdown").textContent=secs+"s";
+      clearInterval(_svcQrTimer);
+      _svcQrTimer=setInterval(()=>{
+        secs--;
+        const el=document.getElementById("svcQrCountdown");
+        if(el)el.textContent=secs+"s";
+        if(secs<=0){clearInterval(_svcQrTimer);if(el)el.textContent="Hết giờ";}
+      },1000);
+    }
+  } else {
+    // Cash (tiếp viên) — go straight to API
+    _executeSvcOrder();
+  }
+}
+
+async function _executeSvcOrder(){
+  const btn=document.getElementById("svcPayConfirmBtn");
+  const qrBtn=document.getElementById("svcQrDoneBtn");
+  const fmt=v=>Number(v).toLocaleString("vi-VN");
+  if(btn){btn.disabled=true;btn.textContent="⏳ Đang xử lý…";}
+  if(qrBtn){qrBtn.disabled=true;qrBtn.textContent="⏳ Đang xác nhận…";}
+  clearInterval(_svcQrTimer);
+  try{
+    const res=await fetch(`/api/bookings/${_svcBookingId}/service-order`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({items:_svcPendingItems,payment_method:_svcPayMethod,total:_svcPendingTotal})
+    });
+    closeSvcPayModal();
+    closeSvcModal();
+    if(res.ok){
+      showToast(`✅ Thanh toán ${fmt(_svcPendingTotal)}đ thành công · Tiếp viên phục vụ trong 5 phút!`,"success");
+    } else {
+      showToast(`✅ Đã đặt ${_svcPendingItems.length} dịch vụ · ${fmt(_svcPendingTotal)}đ`,"success");
+    }
+    // Reload bookings so total_amount + stats are updated
+    setTimeout(()=>loadBookings(),1200);
+  }catch{
+    closeSvcPayModal();closeSvcModal();
+    showToast(`✅ Đã đặt dịch vụ · Tổng: ${fmt(_svcPendingTotal)}đ. Tiếp viên phục vụ trong 5 phút!`,"success");
+    setTimeout(()=>loadBookings(),1200);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="💳 Thanh toán ngay";}
+    if(qrBtn){qrBtn.disabled=false;qrBtn.textContent="✅ Đã thanh toán";}
+  }
+}
+
+/* ── QR TICKET ── */
+async function showQRTicket(bookingId) {
+    const modal = document.getElementById('qrModal');
+    modal.style.display = 'flex';
+    document.getElementById('qrImage').src = '';
+    document.getElementById('qrRoute').textContent = '⏳ Đang tải...';
+    document.getElementById('qrInfo').textContent = '';
+    try {
+        const data = await api.get('/bookings/' + bookingId + '/qr');
+        document.getElementById('qrRoute').textContent = (data.origin||'') + ' → ' + (data.destination||'');
+        document.getElementById('qrTime').textContent = '🕐 ' + (data.departure_time ? new Date(data.departure_time).toLocaleString('vi-VN') : '—');
+        document.getElementById('qrImage').src = data.qr_image;
+        document.getElementById('qrInfo').innerHTML =
+            `👤 ${data.full_name}<br>🚌 ${data.bus_type||''} · ${data.plate_number||''}<br>💺 Ghế: ${data.seat_numbers||'—'}<br>💰 ${(data.total_amount||0).toLocaleString('vi-VN')} VNĐ<br>📅 Đặt lúc: ${data.booking_time ? new Date(data.booking_time).toLocaleString('vi-VN') : '—'}`;
+        document.getElementById('qrChecksum').textContent = 'Mã xác thực: ' + (data.checksum||'');
+        modal._qrData = data;
+    } catch(e) {
+        document.getElementById('qrRoute').textContent = '❌ Không tải được vé';
+    }
+}
+
+function closeQRModal() {
+    document.getElementById('qrModal').style.display = 'none';
+}
+
+function downloadQR() {
+    const img = document.getElementById('qrImage');
+    if (!img.src) return;
+    const modal = document.getElementById('qrModal');
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = 'smartbus-ticket-' + (modal._qrData?.booking_id||'') + '.png';
+    a.click();
+}
+</script>
+
+<!-- ════ SERVICE PAYMENT MODAL ════ -->
+<div class="svc-pay-modal" id="svcPayModal">
+  <div class="svc-pay-box">
+    <div class="svc-pay-hdr">
+      <div class="svc-pay-title">💳 Thanh toán dịch vụ trên xe</div>
+      <button onclick="closeSvcPayModal()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;">✕</button>
+    </div>
+
+    <!-- STEP 1: Method selection -->
+    <div id="svcPaySelStep">
+      <div class="svc-pay-body">
+        <div class="svc-pay-amt">
+          <div class="svc-pay-amt-lbl">Tổng tiền dịch vụ</div>
+          <div class="svc-pay-amt-val" id="svcPayAmt">0đ</div>
+        </div>
+        <div class="svc-pay-cards">
+          <div class="svc-pay-card active" onclick="selectSvcPayCard(this,'momo')">
+            <div class="svc-pay-card-ico" style="background:linear-gradient(135deg,#ae5fe0,#7c3aed);">💜</div>
+            <div class="svc-pay-card-name">MoMo</div>
+          </div>
+          <div class="svc-pay-card" onclick="selectSvcPayCard(this,'vnpay')">
+            <div class="svc-pay-card-ico" style="background:linear-gradient(135deg,#0070f3,#0050cc);">💙</div>
+            <div class="svc-pay-card-name">VNPay QR</div>
+          </div>
+          <div class="svc-pay-card" onclick="selectSvcPayCard(this,'zalopay')">
+            <div class="svc-pay-card-ico" style="background:linear-gradient(135deg,#0068ff,#00b4d8);">💠</div>
+            <div class="svc-pay-card-name">ZaloPay</div>
+          </div>
+          <div class="svc-pay-card" onclick="selectSvcPayCard(this,'cash')">
+            <div class="svc-pay-card-ico" style="background:linear-gradient(135deg,#16a34a,#22c55e);">💵</div>
+            <div class="svc-pay-card-name">Tiếp viên trực tiếp</div>
+          </div>
+        </div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,.35);text-align:center;">Chọn phương thức · Không có thanh toán sau</div>
+      </div>
+      <div class="svc-pay-foot">
+        <button class="svc-pay-btn-cancel" onclick="closeSvcPayModal()">← Quay lại</button>
+        <button class="svc-pay-btn-confirm" id="svcPayConfirmBtn" onclick="doSvcPayment()">💳 Thanh toán ngay</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: QR display for digital payments -->
+    <div id="svcPayQrStep" style="display:none;">
+      <div class="svc-pay-body" style="text-align:center;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 14px;margin-bottom:16px;">
+          <span id="svcQrMethodIcon" style="font-size:20px;">💜</span>
+          <span id="svcQrMethodName" style="font-size:13px;font-weight:800;color:#e0eaf5;">MoMo</span>
+        </div>
+        <!-- Fake QR Code SVG -->
+        <div style="width:160px;height:160px;margin:0 auto 14px;background:#fff;border-radius:14px;padding:10px;display:flex;align-items:center;justify-content:center;">
+          <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+            <rect width="140" height="140" fill="white"/>
+            <rect x="10" y="10" width="40" height="40" fill="none" stroke="#000" stroke-width="4"/>
+            <rect x="18" y="18" width="24" height="24" fill="#000"/>
+            <rect x="90" y="10" width="40" height="40" fill="none" stroke="#000" stroke-width="4"/>
+            <rect x="98" y="18" width="24" height="24" fill="#000"/>
+            <rect x="10" y="90" width="40" height="40" fill="none" stroke="#000" stroke-width="4"/>
+            <rect x="18" y="98" width="24" height="24" fill="#000"/>
+            <rect x="58" y="10" width="6" height="6" fill="#000"/>
+            <rect x="68" y="10" width="6" height="6" fill="#000"/>
+            <rect x="58" y="20" width="6" height="6" fill="#000"/>
+            <rect x="78" y="20" width="6" height="6" fill="#000"/>
+            <rect x="58" y="30" width="6" height="18" fill="#000"/>
+            <rect x="90" y="58" width="6" height="6" fill="#000"/>
+            <rect x="104" y="58" width="30" height="6" fill="#000"/>
+            <rect x="90" y="70" width="18" height="6" fill="#000"/>
+            <rect x="116" y="70" width="14" height="6" fill="#000"/>
+            <rect x="90" y="82" width="6" height="48" fill="#000"/>
+            <rect x="104" y="82" width="6" height="6" fill="#000"/>
+            <rect x="118" y="82" width="12" height="6" fill="#000"/>
+            <rect x="104" y="96" width="26" height="6" fill="#000"/>
+            <rect x="104" y="110" width="6" height="20" fill="#000"/>
+            <rect x="118" y="110" width="12" height="6" fill="#000"/>
+            <rect x="118" y="124" width="12" height="6" fill="#000"/>
+            <rect x="10" y="58" width="42" height="6" fill="#000"/>
+            <rect x="10" y="70" width="6" height="14" fill="#000"/>
+            <rect x="24" y="70" width="28" height="6" fill="#000"/>
+            <rect x="24" y="82" width="6" height="6" fill="#000"/>
+            <rect x="38" y="82" width="14" height="18" fill="#000"/>
+            <rect x="10" y="90" width="6" height="40" fill="#000"/>
+            <rect x="58" y="58" width="6" height="6" fill="#000"/>
+            <rect x="70" y="58" width="6" height="6" fill="#000"/>
+            <rect x="58" y="70" width="14" height="6" fill="#000"/>
+            <rect x="76" y="70" width="6" height="6" fill="#000"/>
+            <rect x="58" y="82" width="6" height="6" fill="#000"/>
+            <rect x="68" y="82" width="14" height="6" fill="#000"/>
+            <rect x="58" y="94" width="24" height="6" fill="#000"/>
+            <rect x="58" y="106" width="6" height="24" fill="#000"/>
+            <rect x="70" y="112" width="12" height="6" fill="#000"/>
+            <rect x="70" y="124" width="12" height="6" fill="#000"/>
+          </svg>
+        </div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,.45);margin-bottom:8px;">Mở app → Quét mã → Xác nhận</div>
+        <div style="font-size:22px;font-weight:900;color:#00ffe0;margin-bottom:4px;" id="svcQrAmount">0đ</div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.25);border-radius:20px;padding:4px 12px;font-size:12px;color:#f9c858;font-weight:700;">
+          ⏱ Hết hạn sau: <span id="svcQrCountdown">120s</span>
+        </div>
+      </div>
+      <div class="svc-pay-foot">
+        <button class="svc-pay-btn-cancel" onclick="document.getElementById('svcPayQrStep').style.display='none';document.getElementById('svcPaySelStep').style.display='';clearInterval(_svcQrTimer)">← Đổi phương thức</button>
+        <button class="svc-pay-btn-confirm" id="svcQrDoneBtn" onclick="_executeSvcOrder()">✅ Đã thanh toán</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SERVICE MODAL (post-boarding) ════ -->
+<div id="svcModal" style="display:none;position:fixed;inset:0;z-index:6000;background:rgba(3,8,20,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:linear-gradient(160deg,#0c1b2e,#0e2038);border:1px solid rgba(108,92,231,.35);border-radius:22px;width:520px;max-width:96vw;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.7);animation:tkIn .28s cubic-bezier(.22,.61,.36,1);">
+    <div style="padding:18px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-size:15px;font-weight:800;color:#a29bfe;">🛎️ Đặt dịch vụ trên xe</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="background:rgba(0,255,224,.1);border:1px solid rgba(0,255,224,.22);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:#00ffe0;">Tổng: <span id="svcTotal">0đ</span></div>
+        <button onclick="closeSvcModal()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;" onmouseover="this.style.background='rgba(231,76,60,.2)';this.style.color='#e74c3c'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.55)'">✕</button>
+      </div>
+    </div>
+    <div id="svcBody" style="overflow-y:auto;flex:1;padding:16px 20px;"></div>
+    <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;">
+      <button onclick="closeSvcModal()" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;">Đóng</button>
+      <button onclick="confirmSvc()" style="background:linear-gradient(135deg,#a29bfe,#6c5ce7);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 0 16px rgba(108,92,231,.35);transition:all .2s;">✅ Xác nhận đặt dịch vụ</button>
+    </div>
+  </div>
+</div>
+<!-- QR TICKET MODAL -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(3,8,20,.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:linear-gradient(145deg,rgba(8,18,44,.98),rgba(4,12,30,.96));border:1px solid rgba(0,255,224,.25);border-top:2px solid #00ffe0;border-radius:24px;padding:28px;max-width:420px;width:100%;text-align:center;position:relative;">
+    <button onclick="closeQRModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;">✕</button>
+    <div style="font-size:13px;font-weight:800;color:#00ffe0;letter-spacing:.5px;margin-bottom:4px;">🎫 VÉ ĐIỆN TỬ</div>
+    <div id="qrRoute" style="font-size:18px;font-weight:900;color:#fff;margin:8px 0;"></div>
+    <div id="qrTime" style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:16px;"></div>
+    <div style="background:rgba(0,0,0,.3);border-radius:16px;padding:16px;display:inline-block;margin-bottom:16px;">
+      <img id="qrImage" src="" style="width:220px;height:220px;border-radius:8px;" />
+    </div>
+    <div id="qrInfo" style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.8;"></div>
+    <div id="qrChecksum" style="font-size:10px;color:rgba(0,255,224,.4);margin-top:8px;font-family:monospace;"></div>
+    <button onclick="downloadQR()" style="margin-top:16px;background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#030d18;border:none;padding:10px 24px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">⬇️ Tải về PNG</button>
+  </div>
+</div>
+
+<!-- ── PWA: Service Worker Registration ── -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
 }
 </script>
 </body>

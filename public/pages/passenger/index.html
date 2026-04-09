@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>SmartBusAI - Hệ thống đặt vé xe thông minh</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00ffe0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SmartBusAI">
+<link rel="apple-touch-icon" href="/icons/icon.svg">
 <style>
 /* ============================================================
    BASE — galaxy canvas làm nền toàn trang, KHÔNG có background trên html/body
@@ -22,6 +28,10 @@ html{ min-height:100vh; background:#060c18; }
 body{
   color:#fff; background:transparent;
   overflow-x:hidden; animation:pageIn .32s ease;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  letter-spacing:.012em;
 }
 @keyframes pageIn{ from{opacity:0} to{opacity:1} }
 
@@ -81,61 +91,57 @@ body{
 body.leaving{ opacity:0; transition:opacity .22s; }
 
 /* ============================================================
-   HEADER
+   UNIFIED NAV BAR
 ============================================================ */
 header{
-  padding:16px 72px;
+  background:rgba(5,9,20,0.96);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:0 56px; height:64px;
   display:flex; justify-content:space-between; align-items:center;
-  background:rgba(6,10,22,0.72);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(255,255,255,0.09);
-  box-shadow:0 2px 30px rgba(0,0,0,.50);
   position:sticky; top:0; z-index:3000;
-  transform:translate3d(0,0,0);
+  box-shadow:0 1px 0 rgba(255,255,255,0.04),0 4px 24px rgba(0,0,0,0.40);
+  will-change:transform; transform:translate3d(0,0,0);
 }
-
-.hdr-logo{
-  display:flex; align-items:center; gap:10px; text-decoration:none;
+.nav-logo{
+  display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0;
 }
-.hdr-logo-icon{
-  width:38px; height:38px; border-radius:10px;
+.nav-logo-icon{
+  width:36px; height:36px; border-radius:10px;
   background:linear-gradient(135deg,#00ffe0,#00a8ff);
-  display:flex; align-items:center; justify-content:center; font-size:20px;
-  box-shadow:0 0 16px rgba(0,255,224,.40);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 14px rgba(0,255,224,.35);
 }
-.hdr-logo-text{
-  font-size:18px; font-weight:800; letter-spacing:.3px;
+.nav-logo-text{
+  font-size:17px; font-weight:800; letter-spacing:.3px;
   background:linear-gradient(90deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
-
-nav{ display:flex; align-items:center; gap:20px; }
-nav a{
-  text-decoration:none; color:rgba(255,255,255,.60);
-  font-weight:600; font-size:13.5px; padding:6px 12px; border-radius:9px;
-  transition:all .22s; border:1px solid transparent;
+.nav-links{ display:flex; align-items:center; gap:4px; }
+.nav-links a{
+  text-decoration:none; color:rgba(220,235,255,0.62);
+  font-weight:600; font-size:13px; padding:7px 14px; border-radius:10px;
+  border:1px solid transparent; transition:all .18s;
+  display:flex; align-items:center; gap:5px;
 }
-nav a:hover{
-  color:#00ffe0; background:rgba(0,255,224,.08);
-  border-color:rgba(0,255,224,.22);
-}
-
-.hdr-info{ display:flex; align-items:center; gap:8px; font-size:13px; color:#9abccc; }
-.hdr-info .user-name{ font-weight:700; color:#c8e8f0; }
-
+.nav-links a:hover{ color:#00ffe0; background:rgba(0,255,224,.07); border-color:rgba(0,255,224,.20); }
+.nav-links a.active{ color:#00d4ff; background:rgba(0,212,255,.10); border-color:rgba(0,212,255,.25); font-weight:700; }
+.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-greeting{ font-size:13px; color:rgba(185,210,230,0.68); font-weight:500; white-space:nowrap; }
+.nav-greeting .nav-uname{ font-weight:800; color:#daf0f8; }
 .btn-logout{
   background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
   color:#e74c3c; padding:7px 15px; border-radius:9px;
   font-weight:700; font-size:12.5px; cursor:pointer;
-  transition:all .22s; font-family:"Segoe UI",Arial,sans-serif;
+  transition:all .20s; font-family:inherit; white-space:nowrap;
 }
-.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; }
+.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; border-color:rgba(231,76,60,.50); }
 
 /* ============================================================
    HERO SLIDER — TRANSPARENT, galaxy canvas xuyên qua
 ============================================================ */
 .hero-slider{
-  position:relative; height:88vh; overflow:hidden;
+  position:relative; height:72vh; overflow:hidden;
   /* KHÔNG có background — canvas phủ xuyên */
 }
 
@@ -163,7 +169,7 @@ nav a:hover{
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
 .hero-content p{
-  font-size:19px; color:rgba(255,255,255,.80); font-weight:400;
+  font-size:19px; color:rgba(255,255,255,.92); font-weight:500;
 }
 
 /* ============================================================
@@ -171,13 +177,13 @@ nav a:hover{
 ============================================================ */
 .search-box{
   width:min(1100px,94vw);
-  margin:50px auto 0;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.16);
+  margin:30px auto 0;
+  background:rgba(255,255,255,0.11);
+  border:1px solid rgba(255,255,255,0.20);
   padding:28px 30px;
   border-radius:20px;
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  box-shadow:0 18px 50px rgba(0,0,0,.52),0 0 45px rgba(0,255,224,.14);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 18px 50px rgba(0,0,0,.50),0 0 55px rgba(0,255,224,.16);
   display:flex; gap:12px; flex-wrap:wrap; justify-content:center; align-items:center;
 }
 
@@ -211,176 +217,558 @@ nav a:hover{
 /* ============================================================
    ABOUT SECTION
 ============================================================ */
-.about{ margin:65px auto 10px; width:min(1100px,94vw); text-align:center; }
-.about h2{ font-size:26px; font-weight:800; }
-.about>p{ max-width:700px; margin:16px auto 0; opacity:.80; line-height:1.7; }
+.about{ margin:16px auto 8px; width:min(1100px,94vw); text-align:center; }
+.about h2{ font-size:27px; font-weight:800; }
+.about>p{ max-width:680px; margin:14px auto 0; opacity:.88; line-height:1.7; font-weight:500; font-size:15px; }
 
-.about-grid{ margin-top:40px; display:flex; gap:24px; justify-content:center; flex-wrap:wrap; }
+.about-grid{ margin-top:32px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+
+/* ── About card ── */
 .about-card{
-  background:rgba(255,255,255,.07); padding:26px; border-radius:18px;
-  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  width:300px; border:1px solid rgba(255,255,255,.10);
-  box-shadow:0 0 28px rgba(0,255,224,.10);
-  transition:transform .3s,box-shadow .3s;
+  background:rgba(10,20,45,.80); padding:0;
+  border-radius:22px;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 8px 36px rgba(0,0,0,.50),0 0 18px rgba(0,255,224,.04);
+  transition:transform .3s,box-shadow .3s,border-color .3s,background .3s;
+  cursor:pointer; user-select:none;
+  position:relative; overflow:hidden; display:flex; flex-direction:column; text-align:left;
 }
-.about-card:hover{ transform:translateY(-6px); box-shadow:0 0 44px rgba(0,255,224,.25); }
+.about-card:nth-child(1){ --ac:#00ffe0; --ag:rgba(0,255,224,.20); }
+.about-card:nth-child(2){ --ac:#a855f7; --ag:rgba(168,85,247,.20); }
+.about-card:nth-child(3){ --ac:#00a8ff; --ag:rgba(0,168,255,.20); }
+.about-card::before{
+  content:""; position:absolute; top:0; left:0; bottom:0; width:4px;
+  background:linear-gradient(180deg,var(--ac),transparent); border-radius:4px 0 0 4px;
+}
+.about-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 22px 60px rgba(0,0,0,.58),0 0 44px var(--ag);
+  border-color:var(--ac);
+  background:linear-gradient(145deg,rgba(12,24,56,.90),rgba(6,16,38,.85));
+}
+.about-card.expanded{
+  border-color:var(--ac);
+  box-shadow:0 22px 60px rgba(0,0,0,.58),0 0 52px var(--ag);
+  background:rgba(18,34,72,.82);
+}
+.ac-body{ padding:22px 22px 22px 26px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.ac-toprow{ display:flex; align-items:center; gap:10px; }
+.ac-num{ font-size:10px; font-weight:900; color:var(--ac); letter-spacing:1.2px; opacity:.7; }
+.ac-icon{
+  width:42px; height:42px; border-radius:13px; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:21px; box-shadow:0 0 22px var(--ag),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.about-card-arrow{ display:inline-block; font-size:11px; color:rgba(255,255,255,.32); transition:transform .3s; margin-left:auto; }
+.about-card.expanded .about-card-arrow{ transform:rotate(180deg); color:var(--ac); }
+.feature-box.expanded .about-card-arrow{ transform:rotate(180deg); color:var(--fx); }
+.ac-title{
+  font-size:16px; font-weight:800; line-height:1.3;
+  background:linear-gradient(135deg,#fff,var(--ac));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.ac-pill{
+  display:inline-flex; align-items:center;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+  border-radius:20px; padding:3px 11px; width:fit-content;
+  font-size:11px; font-weight:700; color:var(--ac); letter-spacing:.3px;
+  box-shadow:0 0 12px var(--ag);
+}
+.ac-desc{ font-size:13px; color:rgba(255,255,255,.72); line-height:1.7; font-weight:500; }
+
+/* ── Expand detail panel (shared) ── */
+.about-detail{
+  max-height:0; overflow:hidden;
+  transition:max-height .45s cubic-bezier(.22,.61,.36,1),opacity .35s;
+  opacity:0; margin-top:0;
+}
+.about-detail.open{ max-height:400px; opacity:1; margin-top:2px; }
+.about-detail-inner{
+  background:rgba(0,0,0,.32); border:1px solid rgba(255,255,255,.09);
+  border-radius:12px; padding:15px 17px; text-align:left; margin:0 2px 4px;
+}
+.about-detail-inner p{ font-size:13px; color:rgba(255,255,255,.85); line-height:1.75; margin-bottom:8px; font-weight:500; }
+.about-detail-inner ul{ padding-left:16px; }
+.about-detail-inner ul li{ font-size:12.5px; color:rgba(255,255,255,.78); line-height:1.85; font-weight:500; }
+.about-detail-inner .det-tag{
+  display:inline-block; margin-top:10px; padding:4px 12px; border-radius:20px;
+  font-size:11.5px; font-weight:700; background:rgba(0,255,224,.10);
+  border:1px solid rgba(0,255,224,.28); color:#00ffe0; cursor:pointer; transition:background .2s;
+}
+.about-detail-inner .det-tag:hover{ background:rgba(0,255,224,.22); }
 
 /* ============================================================
    STATS
 ============================================================ */
-.stats{ display:flex; justify-content:center; gap:55px; margin:75px 0 35px; flex-wrap:wrap; }
+.stats{ display:flex; justify-content:center; gap:55px; margin:48px 0 28px; flex-wrap:wrap; }
 .stat-box{ text-align:center; }
 .stat-box h2{ font-size:38px; font-weight:800; color:#1abc9c; }
-.stat-box p{ font-size:13.5px; color:rgba(255,255,255,.65); margin-top:4px; }
+.stat-box p{ font-size:14px; color:rgba(255,255,255,.88); margin-top:4px; font-weight:600; }
+.stat-box .stat-live{
+  display:inline-block; font-size:10px; font-weight:700; letter-spacing:.4px;
+  color:#00ffe0; opacity:.70; margin-left:4px; animation:livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse{ 0%,100%{opacity:.40} 50%{opacity:.85} }
 
 /* ============================================================
    TRIP LIST CONTAINER
 ============================================================ */
 .container{ width:min(1100px,94vw); margin:55px auto 0; }
-.container>h2{ margin-bottom:22px; font-size:20px; font-weight:800; }
+.container-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:22px; flex-wrap:wrap; gap:10px;
+}
+.container-header h2{ font-size:20px; font-weight:800; }
+.trip-count-badge{
+  font-size:12px; color:rgba(255,255,255,.45); font-weight:700;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
+  padding:5px 16px; border-radius:20px; white-space:nowrap;
+  transition:all .3s;
+}
 #tripList{ display:flex; flex-direction:column; gap:20px; }
+
+/* ============================================================
+   PAGINATION
+============================================================ */
+.pg-wrap{
+  display:flex; align-items:center; justify-content:center;
+  gap:6px; margin:32px 0 8px; flex-wrap:wrap;
+}
+.pg-info{
+  width:100%; text-align:center;
+  font-size:12px; color:rgba(255,255,255,.38);
+  font-weight:600; margin-bottom:8px; letter-spacing:.3px;
+}
+.pg-btn{
+  min-width:40px; height:40px; border-radius:12px;
+  background:linear-gradient(145deg,rgba(8,18,40,.88),rgba(4,12,28,.84));
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.60); font-size:13px; font-weight:700;
+  cursor:pointer; transition:all .22s; padding:0 12px;
+  font-family:"Segoe UI",Arial,sans-serif;
+  display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.pg-btn:hover:not(:disabled):not(.pg-dots){
+  background:linear-gradient(135deg,rgba(0,255,224,.14),rgba(0,168,255,.10));
+  border-color:rgba(0,255,224,.32); color:#00ffe0;
+  transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 14px rgba(0,255,224,.12);
+}
+.pg-btn.active{
+  background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.16));
+  border-color:rgba(0,255,224,.50); color:#00ffe0; font-weight:900;
+  box-shadow:0 4px 16px rgba(0,255,224,.22),0 0 0 1px rgba(0,255,224,.10);
+}
+.pg-btn:disabled{ opacity:.25; cursor:not-allowed; transform:none !important; }
+.pg-btn.pg-dots{
+  background:transparent; border-color:transparent;
+  cursor:default; color:rgba(255,255,255,.28); min-width:28px;
+}
+.pg-btn.pg-dots:hover{ background:transparent; border-color:transparent; transform:none; box-shadow:none; }
+.pg-prev,.pg-next{
+  padding:0 16px; font-size:12.5px; letter-spacing:.3px; min-width:80px;
+}
 
 /* ============================================================
    TRIP CARD
 ============================================================ */
+/* ============================================================
+   TRIP CARD — dark premium v2
+============================================================ */
+@keyframes spin{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes busRing{
+  0%  { box-shadow:0 0 0 0 rgba(0,255,224,.55); }
+  70% { box-shadow:0 0 0 8px rgba(0,255,224,0); }
+  100%{ box-shadow:0 0 0 0 rgba(0,255,224,0); }
+}
 .trip-card{
-  display:grid; grid-template-columns:1fr auto;
-  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,255,255,.72));
-  color:#1e2a35; border-radius:20px; padding:24px 26px;
-  border:1px solid rgba(255,255,255,.35);
-  box-shadow:0 12px 44px rgba(0,0,0,.38),0 0 26px rgba(0,255,224,.08);
-  transition:transform .3s cubic-bezier(.22,.61,.36,1),box-shadow .3s;
-  contain:layout style;
+  display:grid; grid-template-columns:1fr 188px;
+  background:linear-gradient(145deg,rgba(5,14,32,.97) 0%,rgba(3,10,22,.95) 100%);
+  color:#fff; border-radius:24px; overflow:hidden;
+  border:1px solid rgba(0,255,224,.12);
+  box-shadow:0 16px 52px rgba(0,0,0,.65),0 0 32px rgba(0,255,224,.04),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform .32s cubic-bezier(.22,.61,.36,1),box-shadow .32s,border-color .32s;
+  contain:layout style; position:relative;
+}
+.trip-card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,#00ffe0 0%,#00a8ff 50%,#6c5ce7 100%);
+  border-radius:24px 24px 0 0; z-index:1;
+}
+/* Subtle noise texture overlay */
+.trip-card::after{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.018'/%3E%3C/svg%3E");
+  border-radius:24px;
+}
+.trip-card.vip-card{
+  border-color:rgba(108,92,231,.20);
+  box-shadow:0 16px 52px rgba(0,0,0,.65),0 0 40px rgba(108,92,231,.14),inset 0 1px 0 rgba(108,92,231,.12);
+}
+.trip-card.vip-card::before{
+  background:linear-gradient(90deg,#c084fc 0%,#a855f7 40%,#00ffe0 100%);
 }
 .trip-card:hover{
-  transform:translateY(-6px) scale(1.012);
-  box-shadow:0 26px 65px rgba(0,0,0,.48),0 0 44px rgba(0,255,224,.22);
+  transform:translateY(-7px) scale(1.013);
+  box-shadow:0 30px 72px rgba(0,0,0,.72),0 0 56px rgba(0,255,224,.20),inset 0 1px 0 rgba(255,255,255,.06);
+  border-color:rgba(0,255,224,.32);
+}
+.trip-card.vip-card:hover{
+  box-shadow:0 30px 72px rgba(0,0,0,.72),0 0 56px rgba(108,92,231,.28),0 0 28px rgba(0,255,224,.14),inset 0 1px 0 rgba(108,92,231,.18);
+  border-color:rgba(108,92,231,.40);
 }
 
-.trip-left{ display:flex; flex-direction:column; gap:8px; }
-.trip-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+/* ── left column ── */
+.tc-left{ padding:24px 24px 20px; display:flex; flex-direction:column; gap:13px; }
 
-/* ── ROUTE ROW — long dashed line ── */
-.route{
-  display:flex; align-items:center; gap:0;
-  font-size:17px; font-weight:700; color:#0a3d62;
-  width:100%;
+/* top bar */
+.tc-topbar{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.tc-badge{
+  padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:800; letter-spacing:.5px;
 }
-.route-origin, .route-dest{
-  display:flex; align-items:center; gap:6px;
-  white-space:nowrap; flex-shrink:0;
-}
-.route-origin .pin{ color:#e74c3c; font-size:16px; }
-.route-dest   .pin{ color:#2980b9; font-size:16px; }
+.tc-badge.vip   { background:linear-gradient(135deg,#6c5ce7,#a855f7); color:#fff; }
+.tc-badge.normal{ background:rgba(255,255,255,.10); color:#9bb8ca; border:1px solid rgba(255,255,255,.14); }
+.tc-status{ padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:800; margin-left:auto; }
+.tc-status.open{ background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.28); }
+.tc-status.full{ background:rgba(231,76,60,.15);  color:#e74c3c; border:1px solid rgba(231,76,60,.28); }
+.tc-rating{ font-size:12px; font-weight:700; color:#f1c40f; display:flex; align-items:center; gap:3px; }
 
-/* DASHED LINE — chiếm toàn bộ khoảng giữa */
-.route-middle{
-  flex:1; display:flex; align-items:center;
+/* countdown badge */
+.tc-cdwn{
+  padding:2px 9px; border-radius:20px; font-size:10px; font-weight:800;
+  letter-spacing:.3px; display:none; align-items:center; gap:4px;
+  border:1px solid rgba(255,255,255,.18);
+}
+.tc-cdwn.visible{ display:inline-flex; }
+.tc-cdwn.soon{
+  background:rgba(243,156,18,.15); color:#f39c12;
+  border-color:rgba(243,156,18,.35);
+}
+.tc-cdwn.urgent{
+  background:rgba(231,76,60,.18); color:#e74c3c;
+  border-color:rgba(231,76,60,.40);
+  animation:cdwnPulse 1s infinite alternate;
+}
+@keyframes cdwnPulse{
+  from{ box-shadow:0 0 0 0 rgba(231,76,60,.4); }
+  to  { box-shadow:0 0 0 6px rgba(231,76,60,.0); }
+}
+@keyframes tcFadeOut{
+  to{ opacity:0; transform:scaleY(0); margin-bottom:-100px; pointer-events:none; }
+}
+.trip-card.departing{
+  animation:tcFadeOut .55s ease forwards;
+  transform-origin:top;
+  overflow:hidden;
+}
+
+/* best value badge */
+.tc-best-badge{
+  position:absolute; top:0; right:0;
+  background:linear-gradient(135deg,#f39c12,#e67e22);
+  color:#fff; font-size:9px; font-weight:900; padding:2px 8px;
+  border-radius:0 22px 0 10px; z-index:2; letter-spacing:.4px;
+}
+
+/* route */
+.tc-route{ display:flex; align-items:center; gap:0; }
+.tc-city{ display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+.tc-city.right{ text-align:right; }
+.tc-city-name{ font-size:26px; font-weight:900; letter-spacing:-.5px; line-height:1; }
+.tc-city.left  .tc-city-name{
+  background:linear-gradient(135deg,#00ffe0,#7eb8ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.tc-city.right .tc-city-name{
+  background:linear-gradient(135deg,#7eb8ff,#00ffe0);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.tc-city-time{ font-size:14px; font-weight:800; color:#00ffe0; }
+.tc-city-date{ font-size:11px; color:#7ab4c9; }
+
+.tc-route-mid{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
   padding:0 14px; min-width:80px;
-  position:relative;
 }
-.route-dashes{
-  flex:1; height:2px;
-  background:repeating-linear-gradient(
-    90deg,
-    #74b9ff 0px, #74b9ff 8px,
-    transparent 8px, transparent 16px
-  );
+.tc-mid-dur{
+  font-size:10.5px; font-weight:700; color:#8fa8c0;
+  background:rgba(255,255,255,.06); padding:2px 9px; border-radius:20px;
+  white-space:nowrap; border:1px solid rgba(255,255,255,.08);
 }
-.route-bus{
-  font-size:18px; flex-shrink:0; margin:0 8px;
+.tc-route-line{ display:flex; align-items:center; width:100%; }
+.tc-dash{
+  flex:1; height:1px;
+  background:repeating-linear-gradient(90deg,rgba(0,255,224,.40) 0,rgba(0,255,224,.40) 5px,transparent 5px,transparent 11px);
 }
-.route-dist{
-  font-size:11px; font-weight:600; color:#636e72;
-  background:#dfe6e9; padding:2px 8px; border-radius:8px;
-  white-space:nowrap; flex-shrink:0; margin-left:6px;
+.tc-bus-ico{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0; margin:0 6px;
+  background:rgba(0,255,224,.10); border:1px solid rgba(0,255,224,.26);
+  display:flex; align-items:center; justify-content:center; font-size:17px;
+  animation:busRing 2.4s ease-out infinite;
+}
+.tc-dur{
+  font-size:11px; font-weight:700; color:#8fa8c0;
+  background:rgba(255,255,255,.06); padding:2px 10px; border-radius:20px;
+  white-space:nowrap; border:1px solid rgba(255,255,255,.08);
 }
 
-/* ── Trip meta grid ── */
-.trip-grid{
-  display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:8px;
+/* meta boxes — 8 items, 4 per row */
+.tc-meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+.tc-meta-box{
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08);
+  border-radius:12px; padding:9px 11px; min-width:0;
+  transition:background .18s,border-color .18s,transform .18s;
+  position:relative; overflow:hidden;
 }
-.trip-box{
-  background:#ecf0f1; border-radius:11px; padding:8px 12px; font-size:12.5px;
+.tc-meta-box::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:2px;
+  opacity:0; transition:opacity .18s;
 }
-.trip-box b{ display:block; font-size:14px; color:#2c3e50; margin-top:2px; font-weight:700; }
+.tc-meta-box:hover{ background:rgba(0,255,224,.07); border-color:rgba(0,255,224,.22); transform:translateY(-1px); }
+.tc-meta-box:hover::before{ opacity:1; background:linear-gradient(90deg,#00ffe0,#00a8ff); }
+.tc-meta-ico{ font-size:13px; line-height:1; margin-bottom:4px; display:block; }
+.tc-meta-lbl{ font-size:9.5px; color:rgba(122,180,201,.75); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+.tc-meta-val{ font-size:12.5px; font-weight:800; color:#d8f0ff; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Color accents per meta type */
+.tc-meta-box.m-dur    .tc-meta-val{ color:#00ffe0; }
+.tc-meta-box.m-rating .tc-meta-val{ color:#f1c40f; }
+.tc-meta-box.m-seats  .tc-meta-val{ color:#2ecc71; }
+.tc-meta-box.m-booked .tc-meta-val{ color:#fd9500; }
 
-/* ── Bottom strip ── */
-.trip-bottom{
-  display:flex; align-items:center; gap:12px; margin-top:10px;
-  font-size:13px; flex-wrap:wrap;
+/* amenity chips */
+.tc-amenities{ display:flex; flex-wrap:wrap; gap:6px; }
+.tc-chip{
+  display:inline-flex; align-items:center; gap:3px;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  border-radius:20px; padding:3px 9px;
+  font-size:10.5px; font-weight:700; color:#c8e8f8; letter-spacing:.2px;
+  white-space:nowrap;
 }
-.tag{ padding:3px 9px; border-radius:8px; font-size:12px; font-weight:700; }
-.tag.vip   { background:#2c3e50; color:#fff; }
-.tag.normal{ background:#b2bec3; color:#444; }
-.rating{ color:#f1c40f; font-weight:700; }
 
-.progress{ height:6px; background:#dfe6e9; border-radius:10px; overflow:hidden; width:90px; }
-.progress-bar{ height:100%; background:linear-gradient(90deg,#00ffe0,#00a8ff); transition:width .4s; }
+/* seat occupancy bar */
+.tc-seat-row{ display:flex; flex-direction:column; gap:5px; }
+.tc-seat-row-top{ display:flex; justify-content:space-between; align-items:center; }
+.tc-seat-lbl{ font-size:10.5px; font-weight:700; color:rgba(255,255,255,.40); text-transform:uppercase; letter-spacing:.4px; }
+.tc-seat-txt{ font-size:11.5px; font-weight:800; color:#b8d8f0; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+.tc-seat-urgent{ font-size:10.5px; font-weight:800; color:#ff6b6b; background:rgba(255,107,107,.15); padding:2px 7px; border-radius:20px; border:1px solid rgba(255,107,107,.35); animation:urgPulse 1s ease-in-out infinite alternate; }
+@keyframes urgPulse{ from{color:#ff6b6b;border-color:rgba(255,107,107,.35);} to{color:#ff9f9f;border-color:rgba(255,107,107,.65);} }
+.tc-seat-bar{ width:100%; height:11px; background:rgba(255,255,255,.08); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
+.tc-seat-fill{ height:100%; border-radius:10px; transition:width .6s cubic-bezier(.4,0,.2,1); position:relative; }
+.tc-seat-fill.ok  { background:linear-gradient(90deg,#00ffe0,#00a8ff); box-shadow:0 0 12px rgba(0,255,224,.60),inset 0 1px 0 rgba(255,255,255,.25); }
+.tc-seat-fill.warn{ background:linear-gradient(90deg,#f39c12,#e67e22); box-shadow:0 0 12px rgba(243,156,18,.60),inset 0 1px 0 rgba(255,255,255,.20); }
+.tc-seat-fill.empty{ background:linear-gradient(90deg,#e74c3c,#c0392b); box-shadow:0 0 12px rgba(231,76,60,.60),inset 0 1px 0 rgba(255,255,255,.20); animation:seatUrgent 1.2s ease-in-out infinite alternate; }
+@keyframes seatUrgent{ from{box-shadow:0 0 8px rgba(231,76,60,.50);} to{box-shadow:0 0 18px rgba(231,76,60,.90);} }
 
-.badge{ display:inline-block; padding:3px 9px; font-size:12px; border-radius:8px; font-weight:700; }
-.badge.open{ background:#2ecc71; color:#fff; }
-.badge.full{ background:#e74c3c; color:#fff; }
+/* duration pill */
+.tc-mid-dur{
+  font-size:11px; font-weight:800; color:#c8e8f8;
+  background:rgba(0,212,255,.12); padding:3px 10px; border-radius:20px;
+  white-space:nowrap; border:1px solid rgba(0,212,255,.22);
+  display:flex; align-items:center; gap:4px;
+}
+/* bus type row */
+.tc-bus-type-row{
+  display:flex; align-items:center; gap:6px;
+  font-size:11px; color:rgba(255,255,255,.45); font-weight:600;
+}
+/* pickup sub-text */
+.tc-city-sub{ font-size:10px; color:rgba(0,255,224,.60); font-weight:600; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:1px; }
+/* FOMO badges */
+.tc-fomo-badges{ position:absolute; top:14px; right:56px; z-index:2; display:flex; flex-direction:row; gap:5px; pointer-events:none; flex-wrap:wrap; justify-content:flex-end; max-width:260px; }
+.tc-fbadge{
+  padding:3px 9px; border-radius:20px; font-size:10px; font-weight:800;
+  letter-spacing:.4px; display:inline-flex; align-items:center; gap:3px;
+  white-space:nowrap; backdrop-filter:blur(6px);
+}
+.tc-fbadge.hot { background:linear-gradient(135deg,rgba(231,76,60,.90),rgba(243,156,18,.85)); color:#fff; box-shadow:0 2px 8px rgba(231,76,60,.40); animation:fbPulse 1.4s ease-in-out infinite alternate; }
+.tc-fbadge.warm{ background:linear-gradient(135deg,rgba(243,156,18,.88),rgba(230,126,34,.85)); color:#fff; box-shadow:0 2px 8px rgba(243,156,18,.35); }
+.tc-fbadge.top { background:linear-gradient(135deg,rgba(241,196,15,.92),rgba(243,156,18,.85)); color:#1a1000; box-shadow:0 2px 8px rgba(241,196,15,.40); }
+.tc-fbadge.best{ background:linear-gradient(135deg,rgba(0,184,148,.90),rgba(0,206,201,.85)); color:#fff; box-shadow:0 2px 8px rgba(0,184,148,.35); }
+.tc-fbadge.limo{ background:linear-gradient(135deg,rgba(162,155,254,.90),rgba(108,92,231,.85)); color:#fff; box-shadow:0 2px 8px rgba(108,92,231,.35); }
+@keyframes fbPulse{ from{transform:scale(1);} to{transform:scale(1.05);} }
 
-.review-btn{
-  background:linear-gradient(135deg,#f1c40f,#f39c12); border:none;
-  padding:6px 14px; border-radius:9px; font-weight:700; font-size:12.5px;
-  color:#2c3e50; cursor:pointer; display:flex; align-items:center; gap:4px;
-  box-shadow:0 3px 10px rgba(0,0,0,.18); transition:transform .2s,box-shadow .2s;
+/* ── right column ── */
+.tc-right{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:9px; padding:22px 16px;
+  background:linear-gradient(180deg,rgba(0,255,224,.07) 0%,rgba(0,168,255,.04) 60%,rgba(0,0,0,.10) 100%);
+  border-left:1px solid rgba(0,255,224,.12);
+  position:relative; z-index:1;
+}
+.tc-price-lbl{
+  font-size:10px; font-weight:800; color:#7ab4c9; text-transform:uppercase;
+  letter-spacing:.5px; background:rgba(0,255,224,.08); padding:3px 9px;
+  border-radius:20px; border:1px solid rgba(0,255,224,.15);
+}
+.tc-price{
+  font-size:23px; font-weight:900; line-height:1.1; text-align:center; word-break:break-word;
+  background:linear-gradient(135deg,#00ffe0,#7eb8ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 12px rgba(0,255,224,.35));
+}
+.tc-price small{ font-size:11px; color:#7ab4c9; -webkit-text-fill-color:#7ab4c9; }
+.tc-dp-wrap{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+.tc-price-orig{ font-size:12px; color:#6a8fa8; text-decoration:line-through; font-weight:700; }
+.tc-dp-badge{
+  font-size:10px; font-weight:800; padding:2px 7px; border-radius:20px;
+  white-space:nowrap; letter-spacing:.3px;
+}
+.tc-dp-badge.discount{ background:rgba(46,204,113,.18); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+.tc-dp-badge.surcharge{ background:rgba(231,76,60,.18); color:#ff7675; border:1px solid rgba(231,76,60,.3); }
+.tc-per-person{ font-size:10px; color:#6a8fa8; font-weight:600; }
+.tc-book-now-lbl{ font-size:9.5px; font-weight:800; color:rgba(0,255,224,.65); letter-spacing:.8px; text-transform:uppercase; }
+.tc-book-btn{
+  width:100%;
+  background:linear-gradient(135deg,#00ffe0 0%,#00c8d4 50%,#00a8ff 100%);
+  border:none; padding:12px 0; border-radius:14px; font-weight:900; color:#02101f;
+  cursor:pointer; font-size:13.5px; transition:transform .22s,box-shadow .22s,filter .22s;
+  font-family:"Segoe UI",Arial,sans-serif;
+  box-shadow:0 6px 22px rgba(0,255,224,.32),inset 0 1px 0 rgba(255,255,255,.30);
+  letter-spacing:.2px;
+}
+.tc-book-btn:hover:not(:disabled){
+  transform:translateY(-3px) scale(1.03);
+  box-shadow:0 10px 30px rgba(0,255,224,.50),inset 0 1px 0 rgba(255,255,255,.30);
+  filter:brightness(1.06);
+}
+.tc-book-btn:active:not(:disabled){ transform:translateY(0) scale(.98); }
+.tc-book-btn:disabled{ opacity:.30; cursor:not-allowed; background:linear-gradient(135deg,#3a4a5a,#2a3548); box-shadow:none; }
+.tc-review-btn{
+  width:100%; background:transparent; border:1px solid rgba(241,196,15,.30);
+  padding:8px 0; border-radius:11px; font-weight:700; color:#f1c40f;
+  cursor:pointer; font-size:12px; transition:border-color .2s,background .2s,transform .2s;
   font-family:"Segoe UI",Arial,sans-serif;
 }
-.review-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,.25); }
-
-/* ── Trip right column ── */
-.trip-right{
-  display:flex; flex-direction:column; justify-content:center;
-  align-items:flex-end; gap:12px; padding-left:24px;
-  border-left:1px solid rgba(0,0,0,.08); min-width:160px;
-}
-.price-label{ font-size:12px; font-weight:700; color:#636e72; text-transform:uppercase; letter-spacing:.4px; }
-.trip-price{ font-size:28px; font-weight:800; color:#0a3d62; line-height:1; }
-.trip-price small{ font-size:14px; font-weight:600; color:#2c3e50; }
-
-.book-btn{
-  background:linear-gradient(135deg,#2980b9,#1abc9c); border:none;
-  padding:10px 26px; border-radius:11px; font-weight:800; color:#fff;
-  cursor:pointer; font-size:14px; box-shadow:0 5px 16px rgba(0,0,0,.22);
-  transition:transform .22s,background .22s,box-shadow .22s;
-  font-family:"Segoe UI",Arial,sans-serif;
-}
-.book-btn:hover{
-  transform:translateY(-2px);
-  background:linear-gradient(135deg,#1abc9c,#2ecc71);
-  box-shadow:0 9px 22px rgba(0,0,0,.30);
-}
+.tc-review-btn:hover{ background:rgba(241,196,15,.10); border-color:rgba(241,196,15,.60); transform:translateY(-1px); }
 
 /* ============================================================
-   FEATURES + REVIEWS
+   FEATURES (bottom 3) + REVIEWS
 ============================================================ */
 .features{
-  width:min(1100px,94vw); margin:90px auto;
-  display:flex; gap:32px; justify-content:center; flex-wrap:wrap; text-align:center;
+  width:min(1100px,94vw); margin:60px auto 80px;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+}
+.features-heading{
+  grid-column:1/-1; text-align:center;
+  font-size:20px; font-weight:800; color:rgba(255,255,255,.88);
+  margin-bottom:4px; letter-spacing:-.2px;
+}
+.features-sub{
+  grid-column:1/-1; text-align:center;
+  font-size:13.5px; color:rgba(255,255,255,.52); font-weight:500;
+  margin-bottom:6px;
 }
 .feature-box{
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-  padding:26px; border-radius:18px; backdrop-filter:blur(8px); width:300px;
-  box-shadow:0 0 24px rgba(0,255,224,.12); transition:transform .3s,box-shadow .3s;
+  background:rgba(10,20,45,.80); border:1px solid rgba(255,255,255,.10);
+  padding:0; border-radius:22px;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 36px rgba(0,0,0,.50);
+  transition:transform .3s,box-shadow .3s,border-color .3s,background .3s;
+  cursor:pointer; user-select:none; text-align:left;
+  position:relative; overflow:hidden; display:flex; flex-direction:column;
 }
-.feature-box:hover{ transform:translateY(-5px); box-shadow:0 0 38px rgba(0,255,224,.24); }
-.feature-box h3{ margin-top:10px; font-size:15px; }
-.feature-box p{ font-size:13px; opacity:.75; margin-top:8px; line-height:1.6; }
+.feature-box:nth-child(3){ --fx:#00ffe0; --fxg:rgba(0,255,224,.20); }
+.feature-box:nth-child(4){ --fx:#a855f7; --fxg:rgba(168,85,247,.20); }
+.feature-box:nth-child(5){ --fx:#f39c12; --fxg:rgba(243,156,18,.20); }
+.feature-box::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--fx,#00ffe0) 0%,rgba(255,255,255,.05) 100%);
+}
+.feature-box:hover{
+  transform:translateY(-5px);
+  box-shadow:0 22px 60px rgba(0,0,0,.55),0 0 44px var(--fxg,rgba(0,255,224,.18));
+  border-color:var(--fx,#00ffe0);
+}
+.feature-box.expanded{
+  border-color:var(--fx,#00ffe0);
+  background:rgba(18,34,72,.82);
+  box-shadow:0 22px 60px rgba(0,0,0,.55),0 0 52px var(--fxg,rgba(0,255,224,.18));
+}
+.fx-body{ padding:22px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.fx-toprow{ display:flex; align-items:center; justify-content:space-between; }
+.fx-icon{
+  width:48px; height:48px; border-radius:14px; flex-shrink:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center;
+  font-size:23px; box-shadow:0 0 24px var(--fxg,rgba(0,255,224,.20)),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.fx-metric{
+  font-size:26px; font-weight:900; color:var(--fx,#00ffe0); line-height:1;
+  text-shadow:0 0 20px var(--fx,rgba(0,255,224,.6));
+}
+.fx-title{
+  font-size:15.5px; font-weight:800;
+  background:linear-gradient(135deg,#fff,var(--fx,#00ffe0));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.fx-desc{ font-size:13px; color:rgba(255,255,255,.70); line-height:1.7; font-weight:500; }
 
-.reviews{ margin:75px auto; width:min(800px,90vw); text-align:center; }
-.review-slider{ position:relative; height:88px; margin-top:26px; }
-.review{ position:absolute; width:100%; text-align:center; opacity:0; transition:opacity .5s; font-size:18px; }
-.review.active{ opacity:1; }
+/* ── Reviews Section Premium ── */
+.rv-section{
+  margin:90px 0 0; padding:0 28px 80px;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,10,28,.55) 40%,transparent 100%);
+}
+.rv-section-inner{ max-width:1200px; margin:0 auto; }
+.rv-hero{ display:flex; justify-content:space-between; align-items:flex-start; gap:40px; margin-bottom:48px; flex-wrap:wrap; }
+.rv-hero-left{ flex:1; min-width:220px; }
+.rv-section-tag{ font-size:11px; font-weight:800; letter-spacing:2px; color:#00ffe0; text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.rv-section-tag::before{ content:""; width:28px; height:2px; background:#00ffe0; border-radius:2px; display:inline-block; }
+.rv-title{ font-size:38px; font-weight:900; line-height:1.15; margin-bottom:10px; background:linear-gradient(120deg,#fff 40%,#00ffe0 80%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.rv-subtitle{ font-size:15px; color:rgba(255,255,255,.55); font-weight:500; }
+.rv-subtitle b{ color:#00ffe0; }
+
+.rv-overall{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:22px; padding:24px 28px; display:flex; flex-direction:column; align-items:center; min-width:220px; }
+.rv-score{ font-size:64px; font-weight:900; line-height:1; background:linear-gradient(135deg,#ffd32a,#f1c40f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.rv-stars-display{ color:#f1c40f; font-size:22px; letter-spacing:2px; margin:4px 0; }
+.rv-total{ font-size:12px; color:rgba(255,255,255,.45); font-weight:600; margin-bottom:14px; }
+.rv-bars{ width:100%; display:flex; flex-direction:column; gap:5px; }
+.rv-bar-row{ display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; color:rgba(255,255,255,.55); }
+.rv-bar-row span:first-child{ width:22px; text-align:right; color:#f1c40f; font-size:11px; }
+.rv-bar-row span:last-child{ width:28px; }
+.rv-bar{ flex:1; height:6px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden; }
+.rv-bar-fill{ height:100%; background:linear-gradient(90deg,#f1c40f,#ffd32a); border-radius:4px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+
+.rv-track-wrap{ position:relative; display:flex; align-items:center; gap:12px; }
+.rv-track{ display:flex; gap:20px; overflow-x:hidden; scroll-behavior:smooth; flex:1; padding:4px 2px 12px; }
+.rv-nav{ width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:rgba(255,255,255,.75); font-size:22px; cursor:pointer; flex-shrink:0; transition:all .2s; display:flex; align-items:center; justify-content:center; font-family:inherit; line-height:1; }
+.rv-nav:hover{ background:rgba(0,255,224,.12); border-color:rgba(0,255,224,.35); color:#00ffe0; }
+.rv-dots{ display:flex; justify-content:center; gap:7px; margin-top:22px; }
+.rv-dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.18); cursor:pointer; transition:all .3s; }
+.rv-dot.active{ background:#00ffe0; width:24px; border-radius:4px; }
+
+.rv-card{
+  flex:0 0 calc(33.33% - 14px); min-width:280px;
+  background:linear-gradient(145deg,rgba(10,20,44,.90),rgba(6,14,32,.94));
+  border:1px solid rgba(255,255,255,.09); border-radius:20px;
+  padding:24px; transition:transform .25s,box-shadow .25s;
+  cursor:default;
+}
+.rv-card:hover{ transform:translateY(-5px); box-shadow:0 16px 48px rgba(0,0,0,.45),0 0 24px rgba(0,255,224,.08); border-color:rgba(0,255,224,.18); }
+.rv-card-top{ display:flex; align-items:center; gap:13px; margin-bottom:14px; }
+.rv-avatar{ width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800; color:#fff; flex-shrink:0; }
+.rv-author-info{ flex:1; min-width:0; }
+.rv-author-name{ font-size:14px; font-weight:700; color:#e8f4ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rv-author-route{ font-size:11.5px; color:rgba(255,255,255,.45); margin-top:2px; display:flex; align-items:center; gap:4px; }
+.rv-author-date{ font-size:11px; color:rgba(255,255,255,.30); font-weight:600; white-space:nowrap; }
+.rv-card-stars{ color:#f1c40f; font-size:15px; letter-spacing:1px; margin-bottom:12px; }
+.rv-card-body{ font-size:13.5px; color:rgba(220,235,255,.72); line-height:1.72; font-style:italic; position:relative; }
+.rv-card-body::before{ content:'"'; font-size:52px; line-height:.6; color:rgba(0,255,224,.15); font-style:normal; float:left; margin-right:6px; margin-top:6px; font-family:Georgia,serif; }
+.rv-card-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:14px; }
+.rv-card-tag{ background:rgba(0,255,224,.08); border:1px solid rgba(0,255,224,.18); color:rgba(0,255,224,.80); font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; }
+.rv-verified{ display:flex; align-items:center; gap:4px; margin-top:12px; font-size:11px; color:rgba(46,204,113,.80); font-weight:600; }
 
 /* ============================================================
    FOOTER
 ============================================================ */
 footer{
   margin-top:80px; background:rgba(0,0,0,.42); text-align:center;
-  padding:34px; font-size:14px; opacity:.80; border-top:1px solid rgba(255,255,255,.06);
+  padding:34px; font-size:14px; opacity:.90; border-top:1px solid rgba(255,255,255,.06);
+  font-weight:500;
 }
 
 /* ============================================================
@@ -424,11 +812,11 @@ footer{
 }
 nav a.ai-highlight{
   border-radius:9px !important; background:rgba(0,255,224,.18) !important;
-  color:#003c36 !important; font-weight:700;
+  color:#00ffe0 !important; font-weight:700;
   box-shadow:0 0 0 3px #00ffe0,0 0 18px rgba(0,255,200,.65) !important;
 }
 .trip-card.ai-highlight{
-  background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,255,255,.78)) !important;
+  border-color:rgba(0,255,224,.55) !important;
 }
 
 /* ── LIGHTNING CANVAS ── */
@@ -459,11 +847,11 @@ nav a.ai-highlight{
 }
 .sb-wrap::-webkit-scrollbar{ width:4px; }
 .sb-wrap::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.12); border-radius:2px; }
-.sb-label{ font-size:11px; color:#7ab4c8; font-weight:600; margin-bottom:3px; }
+.sb-label{ font-size:11.5px; color:#9ad0e0; font-weight:700; margin-bottom:3px; }
 .sb-input{
   width:100%; padding:9px 12px; border-radius:10px;
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.13);
-  color:#fff; font-size:12.5px; outline:none;
+  background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18);
+  color:#f0f8ff; font-size:13px; outline:none; font-weight:500;
   font-family:"Segoe UI",Arial,sans-serif; transition:border .2s;
 }
 .sb-input:focus{ border-color:rgba(0,255,224,.45); }
@@ -485,17 +873,27 @@ nav a.ai-highlight{
 }
 .sb-btn-cancel:hover{ background:rgba(255,255,255,.06); }
 .sb-result-card{
-  background:rgba(0,255,224,.07); border:1px solid rgba(0,255,224,.22);
-  border-radius:14px; padding:14px; font-size:12px; color:#c8e8f0;
-  line-height:1.65;
+  background:rgba(0,255,224,.09); border:1px solid rgba(0,255,224,.26);
+  border-radius:14px; padding:14px; font-size:13px; color:#dff6ff;
+  line-height:1.7; font-weight:500;
 }
-.sb-result-card h5{ color:#00ffe0; font-size:13px; margin-bottom:8px; }
+.sb-result-card h5{ color:#00ffe0; font-size:14px; margin-bottom:8px; font-weight:800; }
 .sb-result-card .sb-price{ font-size:18px; font-weight:900; color:#00ffe0; margin:6px 0; }
 .sb-tag{ display:inline-block; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:700;
          background:rgba(0,255,224,.15); color:#00ffe0; border:1px solid rgba(0,255,224,.3); }
-.sb-step{ font-size:11px; color:#5a8498; text-align:center; padding:4px 0; }
+.sb-step{ font-size:12px; color:#7ab4c8; text-align:center; padding:4px 0; font-weight:600; }
 .sb-ok{ color:#2ecc71; font-weight:700; font-size:13px; text-align:center; padding:8px; }
 .sb-err{ color:#e74c3c; font-size:12px; padding:4px 0; }
+
+/* seat picker in smart booking */
+.sb-seat-btn{
+  width:36px; height:28px; border-radius:4px; border:1px solid #2ecc71;
+  background:#1a4a3a; color:#cff; font-size:10px; font-weight:700;
+  cursor:pointer; transition:all .15s; padding:0; line-height:1;
+}
+.sb-seat-btn:hover:not(:disabled){ background:#2ecc71; color:#000; transform:scale(1.05); }
+.sb-seat-btn.sb-seat-booked{ background:#222; border-color:#444; color:#555; cursor:not-allowed; }
+.sb-seat-btn.sb-seat-selected{ background:rgba(0,255,224,.25); border-color:#00ffe0; color:#00ffe0; box-shadow:0 0 8px rgba(0,255,224,.4); }
 
 /* ============================================================
    AI LEFT PANEL — Trip Analyzer (circle button bottom-left)
@@ -552,7 +950,7 @@ nav a.ai-highlight{
   box-shadow:0 0 14px rgba(0,255,224,.45);
 }
 .ai-drawer-head-text h4{ font-size:14px; font-weight:800; color:#00ffe0; }
-.ai-drawer-head-text p { font-size:10.5px; color:#5a8498; margin-top:1px; }
+.ai-drawer-head-text p { font-size:11px; color:#7aacbe; margin-top:1px; font-weight:600; }
 
 .ai-drawer-body{
   flex:1; overflow-y:auto; padding:14px 16px;
@@ -563,21 +961,21 @@ nav a.ai-highlight{
 
 /* Messages */
 .ai-msg{
-  padding:10px 13px; border-radius:14px; font-size:12.5px; line-height:1.55;
-  max-width:90%; animation:msgIn .22s ease;
+  padding:10px 13px; border-radius:14px; font-size:13px; line-height:1.6;
+  max-width:90%; animation:msgIn .22s ease; font-weight:500;
 }
 @keyframes msgIn{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 .ai-msg.bot{
-  background:rgba(0,255,224,.08); border:1px solid rgba(0,255,224,.16);
-  color:#c8e8f0; align-self:flex-start;
+  background:rgba(0,255,224,.10); border:1px solid rgba(0,255,224,.22);
+  color:#dff6ff; align-self:flex-start;
 }
 .ai-msg.user{
-  background:rgba(124,92,231,.18); border:1px solid rgba(124,92,231,.30);
-  color:#ddd8ff; align-self:flex-end;
+  background:rgba(124,92,231,.22); border:1px solid rgba(124,92,231,.38);
+  color:#ece8ff; align-self:flex-end;
 }
 .ai-msg.typing{
-  background:rgba(0,255,224,.06); border:1px solid rgba(0,255,224,.10);
-  color:#5a8498; font-style:italic;
+  background:rgba(0,255,224,.06); border:1px solid rgba(0,255,224,.12);
+  color:#7ab4c8; font-style:italic;
 }
 
 /* Quick actions */
@@ -598,9 +996,9 @@ nav a.ai-highlight{
   display:flex; gap:8px; flex-shrink:0;
 }
 .ai-drawer-input input{
-  flex:1; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
-  border-radius:10px; color:#fff; padding:9px 13px; font-size:12.5px;
-  font-family:"Segoe UI",Arial,sans-serif; outline:none; transition:border .2s;
+  flex:1; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18);
+  border-radius:10px; color:#f0f8ff; padding:9px 13px; font-size:13px;
+  font-family:"Segoe UI",Arial,sans-serif; outline:none; transition:border .2s; font-weight:500;
 }
 .ai-drawer-input input::placeholder{ color:#4a7a8a; }
 .ai-drawer-input input:focus{ border-color:rgba(0,255,224,.45); }
@@ -642,53 +1040,531 @@ nav a.ai-highlight{
 }
 .ai-chat button:hover{ background:rgba(0,255,224,.20); color:#fff; }
 
-/* ============================================================
-   REVIEW MODAL
-============================================================ */
-.review-modal{
-  position:fixed; inset:0; background:rgba(0,0,0,.38);
-  backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+/* ═══════════════════════════════════════════
+   REVIEW MODAL — Premium 2026 Design
+═══════════════════════════════════════════ */
+.rm-overlay{
+  position:fixed; inset:0; z-index:5000;
+  background:rgba(0,0,0,.75); backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   display:none; justify-content:center; align-items:center;
-  z-index:3500; animation:fadeIn .22s ease;
+  animation:fadeIn .2s ease;
 }
-@keyframes fadeIn{ from{opacity:0} to{opacity:1} }
-
-.review-box{
-  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(255,255,255,.88));
-  color:#2c3e50; padding:28px; border-radius:20px; width:400px;
-  box-shadow:0 22px 70px rgba(0,0,0,.55),0 0 32px rgba(0,255,224,.18);
-  text-align:center; animation:modalPop .22s ease;
+.rm-box{
+  width:min(560px,96vw); max-height:90vh;
+  background:linear-gradient(145deg,rgba(5,12,28,.98),rgba(3,8,20,.97));
+  border:1px solid rgba(0,255,224,.15);
+  border-radius:28px; overflow:hidden; overflow-y:auto;
+  box-shadow:0 0 0 1px rgba(0,255,224,.05),
+             0 40px 100px rgba(0,0,0,.80),
+             0 0 60px rgba(0,255,224,.06);
+  position:relative;
+  animation:rteIn .28s cubic-bezier(.22,.61,.36,1);
 }
-@keyframes modalPop{ from{transform:scale(.82);opacity:0} to{transform:scale(1);opacity:1} }
-.review-box h3{ font-size:21px; margin-bottom:4px; }
+.rm-box::-webkit-scrollbar{ width:3px; }
+.rm-box::-webkit-scrollbar-thumb{ background:rgba(0,255,224,.15); border-radius:2px; }
 
-.stars{ margin:14px 0; display:flex; justify-content:center; gap:7px; }
-.stars span{ font-size:31px; cursor:pointer; transition:transform .18s; opacity:.35; filter:grayscale(1); }
-.stars span:hover{ transform:scale(1.22); }
-.stars span.active{ opacity:1; filter:none; }
-
-.review-box textarea{
-  width:100%; height:90px; padding:10px; border-radius:11px;
-  border:1px solid #dcdde1; font-family:"Segoe UI",Arial,sans-serif;
-  resize:none; transition:border .2s;
+.rm-bg-glow{
+  position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+  width:300px; height:300px; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle,rgba(0,255,224,.06) 0%,transparent 70%);
+  transition:background 0.6s ease; z-index:0;
 }
-.review-box textarea:focus{ outline:none; border-color:#1abc9c; box-shadow:0 0 9px rgba(26,188,156,.25); }
 
-.review-actions{ margin-top:14px; display:flex; gap:10px; justify-content:center; }
-.review-submit{
-  background:linear-gradient(135deg,#1abc9c,#16a085); border:none;
-  padding:9px 22px; border-radius:28px; color:#fff; font-weight:700;
-  cursor:pointer; box-shadow:0 5px 18px rgba(0,0,0,.20); transition:transform .2s;
+.rm-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:22px 24px 18px; position:relative; z-index:1;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(90deg,rgba(0,255,224,.04),transparent);
+}
+.rm-head-left{ display:flex; align-items:center; gap:14px; }
+.rm-head-icon{
+  width:48px; height:48px; border-radius:16px; font-size:22px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,rgba(0,255,224,.12),rgba(0,168,255,.08));
+  border:1px solid rgba(0,255,224,.18);
+  transition:all .3s; flex-shrink:0;
+}
+.rm-title{ font-size:17px; font-weight:900; color:#fff; margin:0; letter-spacing:-.2px; }
+.rm-subtitle{ font-size:12px; color:rgba(0,255,224,.65); font-weight:600; margin:3px 0 0; }
+.rm-close{
+  width:36px; height:36px; border-radius:10px; cursor:pointer;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.45); display:flex; align-items:center; justify-content:center;
+  transition:all .18s; flex-shrink:0;
+}
+.rm-close:hover{ background:rgba(231,76,60,.15); border-color:rgba(231,76,60,.35); color:#e74c3c; }
+
+.rm-body{ padding:0 24px 24px; position:relative; z-index:1; display:flex; flex-direction:column; gap:18px; }
+
+/* ── Stars ── */
+.rm-stars-section{ text-align:center; padding:22px 0 4px; }
+.rm-stars{
+  display:flex; justify-content:center; gap:6px;
+  font-size:46px; cursor:pointer; user-select:none;
+  filter:drop-shadow(0 0 0 transparent);
+}
+.rm-stars span{
+  color:rgba(255,255,255,.12); transition:all .15s cubic-bezier(.34,1.56,.64,1);
+  display:inline-block; line-height:1;
+}
+.rm-stars span.lit{
+  color:#ffd700;
+  filter:drop-shadow(0 0 8px rgba(255,215,0,.7));
+  transform:scale(1.15);
+}
+.rm-stars span:hover{ transform:scale(1.25) rotate(-5deg); }
+.rm-rating-label{
+  font-size:13px; color:rgba(255,255,255,.40); font-weight:600;
+  margin-top:10px; transition:all .3s; letter-spacing:.2px;
+}
+.rm-rating-label.has-rating{ color:#ffd700; font-weight:800; font-size:14px; }
+
+/* ── Category ratings ── */
+.rm-cats{
+  display:flex; flex-direction:column; gap:10px;
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
+  border-radius:16px; padding:14px 16px;
+}
+.rm-cat-row{ display:flex; align-items:center; gap:10px; }
+.rm-cat-ico{ font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+.rm-cat-lbl{ font-size:12px; font-weight:700; color:rgba(255,255,255,.60); flex:1; }
+.rm-cat-stars{
+  display:flex; gap:3px; font-size:18px; cursor:pointer; user-select:none;
+}
+.rm-cat-stars span{ color:rgba(255,255,255,.15); transition:all .12s; display:inline-block; }
+.rm-cat-stars span.lit{ color:#ffd700; filter:drop-shadow(0 0 4px rgba(255,215,0,.5)); transform:scale(1.1); }
+
+/* ── Section labels ── */
+.rm-section-label{
+  font-size:11px; font-weight:800; color:rgba(0,255,224,.55);
+  text-transform:uppercase; letter-spacing:.8px;
+}
+
+/* ── Tags ── */
+.rm-tags{ display:flex; flex-wrap:wrap; gap:8px; }
+.rm-tag{
+  padding:7px 13px; border-radius:20px; font-size:12px; font-weight:700;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  color:rgba(255,255,255,.60); cursor:pointer;
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+  user-select:none;
+}
+.rm-tag:hover{ background:rgba(0,255,224,.08); border-color:rgba(0,255,224,.20); color:#00ffe0; transform:translateY(-1px); }
+.rm-tag.selected{
+  background:linear-gradient(135deg,rgba(0,255,224,.18),rgba(0,168,255,.12));
+  border-color:rgba(0,255,224,.45); color:#00ffe0;
+  box-shadow:0 0 12px rgba(0,255,224,.15), inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateY(-1px) scale(1.03);
+}
+
+/* ── Textarea ── */
+.rm-textarea-wrap{ position:relative; }
+.rm-textarea{
+  width:100%; min-height:100px; padding:14px 16px;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  border-radius:16px; color:#e8f4ff; font-size:13.5px; font-family:"Segoe UI",Arial,sans-serif;
+  resize:none; outline:none; box-sizing:border-box;
+  transition:border-color .2s, box-shadow .2s;
+  line-height:1.6;
+}
+.rm-textarea::placeholder{ color:rgba(255,255,255,.25); }
+.rm-textarea:focus{
+  border-color:rgba(0,255,224,.30);
+  box-shadow:0 0 0 3px rgba(0,255,224,.06), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.rm-char-bar{
+  height:2px; background:rgba(255,255,255,.06); border-radius:2px;
+  margin-top:6px; overflow:hidden;
+}
+.rm-char-fill{
+  height:100%; width:0%; border-radius:2px;
+  background:linear-gradient(90deg,#00ffe0,#00a8ff);
+  transition:width .2s, background .3s;
+}
+.rm-char-count{
+  position:absolute; bottom:10px; right:14px;
+  font-size:10.5px; color:rgba(255,255,255,.28); font-weight:600;
+}
+
+/* ── Footer buttons ── */
+.rm-footer{ display:flex; gap:12px; padding-top:4px; }
+.rm-btn-cancel{
+  flex:1; padding:13px; border-radius:14px; font-size:13px; font-weight:700;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  color:rgba(255,255,255,.55); cursor:pointer; font-family:"Segoe UI",Arial,sans-serif;
+  transition:all .18s;
+}
+.rm-btn-cancel:hover{ background:rgba(255,255,255,.09); color:rgba(255,255,255,.80); }
+.rm-btn-submit{
+  flex:2; padding:13px; border-radius:14px; font-size:14px; font-weight:900;
+  background:linear-gradient(135deg,#00ffe0 0%,#00c8d4 50%,#00a8ff 100%);
+  border:none; color:#02101f; cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif; letter-spacing:.2px;
+  box-shadow:0 6px 20px rgba(0,255,224,.30), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:all .22s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.rm-btn-submit:hover:not(:disabled){
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 10px 28px rgba(0,255,224,.45), inset 0 1px 0 rgba(255,255,255,.25);
+  filter:brightness(1.06);
+}
+.rm-btn-submit:disabled{ opacity:.45; cursor:not-allowed; transform:none; filter:none; }
+.rm-submit-ico{ font-size:16px; }
+.rm-submit-txt{ font-size:13.5px; }
+
+/* ══════════════════════════════════════════
+   ROUTE VISUALIZATION
+══════════════════════════════════════════ */
+.tc-route-btn{
+  width:100%; background:transparent;
+  border:1px solid rgba(0,255,224,.30);
+  padding:7px 0; border-radius:11px;
+  font-weight:700; color:#00ffe0; font-size:12px;
+  cursor:pointer; transition:all .2s;
   font-family:"Segoe UI",Arial,sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:5px;
 }
-.review-submit:hover{ transform:translateY(-2px); }
-.review-cancel{
-  background:#e74c3c; border:none; padding:9px 22px; border-radius:28px;
-  color:#fff; font-weight:600; cursor:pointer; transition:background .2s;
-  font-family:"Segoe UI",Arial,sans-serif;
+.tc-route-btn:hover{ background:rgba(0,255,224,.10); border-color:rgba(0,255,224,.60); }
+
+/* Leaflet map override */
+#rteLeaflet{ width:100%; height:100%; }
+.leaflet-container{ background:#060d1a !important; font-family:"Segoe UI",Arial,sans-serif !important; }
+.leaflet-tile-pane{ filter:brightness(.90) saturate(.80) hue-rotate(190deg); }
+.leaflet-control-zoom a{ background:rgba(6,14,32,.92)!important; color:#00ffe0!important; border:1px solid rgba(0,255,224,.25)!important; }
+.leaflet-control-zoom a:hover{ background:rgba(0,255,224,.15)!important; }
+
+/* Custom markers */
+.rte-m-wrap{ position:relative; display:flex; flex-direction:column; align-items:center; }
+.rte-m-dot{
+  width:20px; height:20px; border-radius:50%;
+  border:3px solid #fff; position:relative; z-index:2;
 }
-.review-cancel:hover{ background:#c0392b; }
+.rte-m-dot::after{
+  content:""; position:absolute; inset:-6px; border-radius:50%;
+  animation:mPulse 1.6s ease-in-out infinite;
+}
+@keyframes mPulse{ 0%,100%{transform:scale(1);opacity:.6;} 50%{transform:scale(1.5);opacity:0;} }
+.rte-m-start .rte-m-dot{ background:#00a8ff; box-shadow:0 0 18px rgba(0,168,255,.80); }
+.rte-m-start .rte-m-dot::after{ background:rgba(0,168,255,.35); }
+.rte-m-end   .rte-m-dot{ background:#e74c3c; box-shadow:0 0 18px rgba(231,76,60,.80); }
+.rte-m-end   .rte-m-dot::after{ background:rgba(231,76,60,.35); }
+.rte-m-mid   .rte-m-dot{ width:12px; height:12px; background:#00ffe0; border-width:2px; box-shadow:0 0 10px rgba(0,255,224,.60); }
+.rte-m-mid   .rte-m-dot::after{ background:rgba(0,255,224,.25); }
+.rte-m-lbl{
+  margin-top:5px; background:rgba(4,10,24,.90); border:1px solid rgba(0,255,224,.30);
+  color:#e8f4ff; font-size:11px; font-weight:700; padding:3px 9px;
+  border-radius:8px; white-space:nowrap; pointer-events:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.50);
+}
+.rte-m-start .rte-m-lbl{ border-color:rgba(0,168,255,.45); color:#7eb8ff; }
+.rte-m-end   .rte-m-lbl{ border-color:rgba(231,76,60,.45); color:#ff8a8a; }
+.rte-bus-mk{ font-size:24px; filter:drop-shadow(0 0 10px rgba(0,255,224,.80)) drop-shadow(0 2px 4px rgba(0,0,0,.60)); line-height:1; }
+
+/* Leaflet tooltip */
+.rte-tip.leaflet-tooltip{
+  background:rgba(4,10,24,.92)!important; border:1px solid rgba(0,255,224,.28)!important;
+  color:#e8f4ff!important; font-size:12px!important; font-weight:700!important;
+  border-radius:9px!important; padding:5px 11px!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.50)!important;
+}
+.rte-tip.leaflet-tooltip::before{ border-top-color:rgba(0,255,224,.28)!important; }
+
+/* Progress line glow */
+.leaflet-overlay-pane svg .rte-prog-path{
+  filter:drop-shadow(0 0 5px rgba(0,255,224,.70)) drop-shadow(0 0 12px rgba(0,168,255,.40));
+}
+/* Dashed bg line flow animation */
+.rte-bg-dash{
+  stroke-dasharray:12 8;
+  animation:dashFlow 1.8s linear infinite;
+}
+@keyframes dashFlow{ to{ stroke-dashoffset:-20; } }
+
+/* Modal overlay */
+#routeModal{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  display:none; justify-content:center; align-items:center;
+  z-index:4500; animation:fadeIn .22s ease;
+}
+.rte-box{
+  width:min(1140px,98vw); height:min(760px,95vh);
+  background:linear-gradient(145deg,rgba(4,10,24,.99) 0%,rgba(2,7,18,.98) 100%);
+  border:1px solid rgba(0,255,224,.20);
+  border-radius:28px; overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,255,224,.06),
+             0 40px 120px rgba(0,0,0,.85),
+             0 0 80px rgba(0,255,224,.08),
+             inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex; flex-direction:column;
+  animation:rteIn .32s cubic-bezier(.22,.61,.36,1);
+}
+#routeModal.rte-fullscreen .rte-box{
+  width:100vw; height:100vh; border-radius:0; border:none;
+}
+@keyframes rteIn{ from{transform:scale(.92) translateY(20px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+
+.rte-header{
+  padding:16px 24px 14px; display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(90deg,rgba(0,255,224,.06),rgba(0,168,255,.03));
+  flex-shrink:0;
+}
+.rte-title{
+  flex:1; display:flex; align-items:center; gap:10px;
+  font-size:16px; font-weight:800;
+}
+.rte-title-route{
+  display:flex; align-items:center; gap:8px;
+}
+.rte-city-name{ font-weight:900; font-size:17px; }
+.rte-city-from{ color:#00a8ff; }
+.rte-city-to  { color:#00ffe0; }
+.rte-arrow-path{ color:rgba(255,255,255,.35); font-size:14px; }
+.rte-badge{
+  font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:20px;
+  background:rgba(0,255,224,.12); border:1px solid rgba(0,255,224,.28); color:#00ffe0;
+  white-space:nowrap;
+}
+
+.rte-controls{
+  display:flex; align-items:center; gap:8px; flex-shrink:0;
+}
+.rte-ctrl-btn{
+  padding:7px 13px; border-radius:10px; font-size:12px; font-weight:700;
+  cursor:pointer; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.75); font-family:"Segoe UI",Arial,sans-serif; transition:all .18s;
+  display:flex; align-items:center; gap:5px;
+}
+.rte-ctrl-btn:hover{ background:rgba(0,255,224,.12); border-color:rgba(0,255,224,.35); color:#00ffe0; }
+.rte-ctrl-btn.active{ background:rgba(0,255,224,.18); border-color:rgba(0,255,224,.50); color:#00ffe0; }
+.rte-close-btn{
+  width:34px; height:34px; border-radius:9px; cursor:pointer;
+  background:rgba(231,76,60,.15); border:1px solid rgba(231,76,60,.35); color:#e74c3c;
+  font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  transition:all .18s; font-family:monospace;
+}
+.rte-close-btn:hover{ background:rgba(231,76,60,.35); color:#fff; }
+
+.rte-speed{
+  display:flex; gap:3px;
+}
+.rte-spd-btn{
+  padding:5px 9px; border-radius:8px; font-size:10.5px; font-weight:700;
+  cursor:pointer; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.50); font-family:monospace; transition:all .18s;
+}
+.rte-spd-btn.active{ background:rgba(0,255,224,.20); border-color:rgba(0,255,224,.45); color:#00ffe0; }
+
+/* Auto-replay */
+.rte-replay{ display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(255,255,255,.45); cursor:pointer; }
+.rte-replay input{ accent-color:#00ffe0; }
+
+/* Main content */
+.rte-body{
+  flex:1; display:flex; overflow:hidden; min-height:0;
+}
+
+/* Canvas area */
+.rte-map-area{
+  flex:1; position:relative; background:transparent; overflow:hidden;
+}
+#rteCanvas{
+  position:absolute; inset:0; width:100%; height:100%;
+  display:block; cursor:crosshair;
+}
+.rte-progress-pill{
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,.70); border:1px solid rgba(0,255,224,.22);
+  border-radius:20px; padding:5px 14px;
+  font-size:12px; font-weight:700; color:#00ffe0;
+  pointer-events:none;
+}
+
+/* Trip stats bar inside modal */
+.rte-stats-bar{
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:0; border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.40); flex-shrink:0;
+  backdrop-filter:blur(10px);
+}
+.rte-stat{
+  padding:11px 0; text-align:center;
+  border-right:1px solid rgba(255,255,255,.05);
+  transition:background .2s;
+  cursor:default; position:relative;
+}
+.rte-stat:last-child{ border-right:none; }
+.rte-stat:hover{ background:rgba(0,255,224,.05); }
+.rte-stat-val{
+  font-size:15px; font-weight:900; color:#00ffe0;
+  line-height:1.1; font-variant-numeric:tabular-nums;
+}
+.rte-stat-lbl{
+  font-size:9px; color:rgba(255,255,255,.30); font-weight:700;
+  text-transform:uppercase; letter-spacing:.6px; margin-top:4px;
+}
+
+/* Timeline sidebar */
+.rte-sidebar{
+  width:256px; flex-shrink:0; border-left:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.20); display:flex; flex-direction:column; overflow:hidden;
+}
+.rte-sidebar-head{
+  padding:13px 16px 10px; border-bottom:1px solid rgba(255,255,255,.07);
+  font-size:11px; font-weight:800; color:rgba(0,255,224,.70); text-transform:uppercase; letter-spacing:1px;
+  flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
+}
+.rte-sidebar-badge{
+  font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px;
+  background:rgba(0,255,224,.12); border:1px solid rgba(0,255,224,.22); color:#00ffe0;
+}
+.rte-timeline{
+  flex:1; overflow-y:auto; padding:8px 0;
+}
+.rte-timeline::-webkit-scrollbar{ width:3px; }
+.rte-timeline::-webkit-scrollbar-thumb{ background:rgba(0,255,224,.18); border-radius:2px; }
+
+.rte-stop{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 14px; cursor:pointer; transition:background .18s;
+  position:relative;
+}
+.rte-stop::before{
+  content:""; position:absolute; left:20px; top:28px; bottom:-8px; width:1.5px;
+  background:linear-gradient(180deg,rgba(0,255,224,.25),rgba(0,255,224,.06));
+}
+.rte-stop:last-child::before{ display:none; }
+.rte-stop:hover{ background:rgba(0,255,224,.05); }
+.rte-stop.active{ background:rgba(0,255,224,.08); }
+.rte-stop.passed{ opacity:.55; }
+.rte-stop-dot{
+  width:14px; height:14px; border-radius:50%; flex-shrink:0; margin-top:3px;
+  border:2px solid rgba(0,255,224,.28); transition:all .3s; background:rgba(0,255,224,.08);
+}
+.rte-stop.active .rte-stop-dot{
+  background:#00ffe0!important; border-color:#00ffe0;
+  box-shadow:0 0 10px rgba(0,255,224,.70);
+  animation:stopPulse 1s ease-in-out infinite;
+}
+.rte-stop.start-stop .rte-stop-dot{ background:rgba(0,168,255,.35); border-color:#00a8ff; }
+.rte-stop.end-stop   .rte-stop-dot{ background:rgba(0,255,224,.35); border-color:#00ffe0; }
+@keyframes stopPulse{ 0%,100%{box-shadow:0 0 8px rgba(0,255,224,.50)} 50%{box-shadow:0 0 18px rgba(0,255,224,.90)} }
+
+.rte-stop-info{ flex:1; min-width:0; }
+.rte-stop-name{ font-size:12.5px; font-weight:800; color:rgba(255,255,255,.80); }
+.rte-stop.active .rte-stop-name{ color:#00ffe0; }
+.rte-stop.start-stop .rte-stop-name{ color:#00a8ff; }
+.rte-stop.end-stop   .rte-stop-name{ color:#00ffe0; }
+.rte-stop-meta{ font-size:10px; color:rgba(255,255,255,.35); margin-top:3px; font-weight:500; line-height:1.4; }
+.rte-stop-eta{ font-size:10.5px; color:rgba(0,255,224,.60); font-weight:700; margin-top:3px; }
+.rte-stop-weather{ font-size:14px; float:right; margin-top:-2px; }
+
+/* ── POPULAR ROUTES BAR ── */
+.popular-routes-bar{
+  width:min(1100px,94vw);margin:14px auto 0;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 4px;
+}
+.pop-routes-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.pop-route-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.65);cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.pop-route-chip:hover{background:rgba(0,255,224,.12);border-color:rgba(0,255,224,.30);color:#00ffe0;}
+
+/* ── TIME FILTER BAR ── */
+.time-filter-bar{
+  width:min(1100px,94vw);margin:18px auto 0;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.tf-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.tf-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.55);cursor:pointer;transition:all .22s;
+}
+.tf-chip:hover{background:rgba(0,168,255,.12);border-color:rgba(0,168,255,.28);color:#00a8ff;}
+.tf-chip.active{background:rgba(0,168,255,.18);border-color:rgba(0,168,255,.50);color:#00a8ff;box-shadow:0 0 12px rgba(0,168,255,.18);}
+
+/* ── HOT BADGE on trip card ── */
+.tc-hot-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.3px;
+  background:linear-gradient(135deg,rgba(255,80,0,.25),rgba(255,160,0,.20));
+  border:1px solid rgba(255,120,0,.40);color:#ff9f43;
+  text-transform:uppercase;
+}
+
+/* ── WISHLIST HEART BUTTON ── */
+.tc-wish-btn{
+  position:absolute;top:14px;right:194px;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;transition:all .22s;z-index:2;
+  color:rgba(255,255,255,.40);
+}
+.tc-wish-btn:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.30);color:#e74c3c;transform:scale(1.1);}
+.tc-wish-btn.wished{background:rgba(231,76,60,.18);border-color:rgba(231,76,60,.45);color:#e74c3c;}
+
+/* ── COMPARE FEATURE ── */
+.tc-compare-btn{
+  width:100%;background:rgba(108,92,231,.12);border:1px solid rgba(108,92,231,.25);color:#a29bfe;
+  padding:7px 0;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;margin-top:2px;
+}
+.tc-compare-btn:hover{background:rgba(108,92,231,.24);border-color:rgba(108,92,231,.50);}
+.tc-compare-btn.comparing{background:rgba(108,92,231,.30);border-color:rgba(108,92,231,.70);color:#fff;}
+
+/* Compare floating bar */
+.cmp-bar{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:4000;
+  background:rgba(8,14,30,.96);border:1px solid rgba(108,92,231,.45);
+  border-radius:16px;padding:12px 20px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 14px 50px rgba(0,0,0,.55),0 0 30px rgba(108,92,231,.20);
+  backdrop-filter:blur(14px);animation:cmpIn .3s ease;
+}
+@keyframes cmpIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.cmp-info{font-size:13px;color:rgba(255,255,255,.75);font-weight:700;}
+.cmp-info b{color:#a29bfe;}
+.cmp-do-btn{padding:9px 22px;border-radius:10px;border:none;cursor:pointer;font-weight:800;font-size:13px;font-family:"Segoe UI",Arial,sans-serif;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;transition:transform .2s;}
+.cmp-do-btn:hover{transform:scale(1.04);}
+.cmp-clear-btn{padding:7px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;}
+
+/* Compare modal */
+.cmp-modal{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;}
+.cmp-box{background:linear-gradient(160deg,#0a1628,#0d1e32);border:1px solid rgba(108,92,231,.30);border-radius:22px;max-width:820px;width:92vw;max-height:88vh;overflow-y:auto;padding:30px;box-shadow:0 28px 80px rgba(0,0,0,.65);}
+.cmp-box-title{font-size:17px;font-weight:800;color:#a29bfe;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;}
+.cmp-close{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.cmp-col{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;}
+.cmp-col-title{font-size:14px;font-weight:800;color:#00ffe0;margin-bottom:14px;}
+.cmp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.cmp-row:last-child{border-bottom:none;}
+.cmp-key{font-size:11.5px;color:rgba(255,255,255,.45);font-weight:700;}
+.cmp-val{font-size:12.5px;font-weight:800;color:#d8f0ff;}
+.cmp-better{color:#00ffe0!important;}
+
+/* Recent searches bar */
+.recent-search-bar{
+  width:min(1100px,94vw);margin:14px auto 0;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.rs-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.30);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.rs-chip{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;
+  font-size:11.5px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+  color:rgba(255,255,255,.50);cursor:pointer;transition:all .2s;
+}
+.rs-chip:hover{background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.22);color:#00ffe0;}
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/js/api.js"></script>
 </head>
 <body>
@@ -716,41 +1592,132 @@ nav a.ai-highlight{
   </div>
 </div>
 
-<!-- REVIEW MODAL -->
-<div id="reviewModal" class="review-modal">
-  <div class="review-box">
-    <h3>⭐ Đánh giá chuyến xe</h3>
-    <p style="opacity:.68;font-size:13px;">Hãy cho chúng tôi biết trải nghiệm của bạn</p>
-    <div id="starContainer" class="stars">
-      <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+<!-- ═══ REVIEW MODAL PREMIUM ═══ -->
+<div id="reviewModal" class="rm-overlay" onclick="if(event.target===this)closeReview()">
+  <div class="rm-box">
+    <!-- Animated gradient background that reacts to rating -->
+    <div class="rm-bg-glow" id="rmBgGlow"></div>
+
+    <!-- Header -->
+    <div class="rm-head">
+      <div class="rm-head-left">
+        <div class="rm-head-icon" id="rmHeadIcon">⭐</div>
+        <div class="rm-head-info">
+          <h3 class="rm-title">Đánh giá chuyến xe</h3>
+          <p class="rm-subtitle" id="rmRouteLine">Chia sẻ trải nghiệm của bạn</p>
+        </div>
+      </div>
+      <button class="rm-close" onclick="closeReview()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
     </div>
-    <textarea id="reviewComment" placeholder="Chia sẻ trải nghiệm về chuyến xe..."></textarea>
-    <div class="review-actions">
-      <button class="review-submit" onclick="submitReview()">🚀 Gửi đánh giá</button>
-      <button class="review-cancel" onclick="closeReview()">✖ Hủy</button>
+
+    <div class="rm-body">
+      <!-- STARS — big interactive -->
+      <div class="rm-stars-section">
+        <div class="rm-stars" id="starContainer">
+          <span data-v="1">★</span>
+          <span data-v="2">★</span>
+          <span data-v="3">★</span>
+          <span data-v="4">★</span>
+          <span data-v="5">★</span>
+        </div>
+        <div class="rm-rating-label" id="rmRatingLabel">Chạm vào sao để đánh giá</div>
+      </div>
+
+      <!-- CATEGORY RATINGS -->
+      <div class="rm-cats" id="rmCats">
+        <div class="rm-cat-row">
+          <span class="rm-cat-ico">⏱️</span>
+          <span class="rm-cat-lbl">Đúng giờ</span>
+          <div class="rm-cat-stars" data-cat="time">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+        </div>
+        <div class="rm-cat-row">
+          <span class="rm-cat-ico">🧹</span>
+          <span class="rm-cat-lbl">Vệ sinh</span>
+          <div class="rm-cat-stars" data-cat="clean">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+        </div>
+        <div class="rm-cat-row">
+          <span class="rm-cat-ico">😊</span>
+          <span class="rm-cat-lbl">Phục vụ</span>
+          <div class="rm-cat-stars" data-cat="service">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+        </div>
+        <div class="rm-cat-row">
+          <span class="rm-cat-ico">💺</span>
+          <span class="rm-cat-lbl">Tiện nghi</span>
+          <div class="rm-cat-stars" data-cat="comfort">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HIGHLIGHT TAGS -->
+      <div class="rm-section-label">✨ Điểm nổi bật</div>
+      <div class="rm-tags" id="rmTags">
+        <span class="rm-tag" onclick="toggleTag(this)">✅ Đúng giờ</span>
+        <span class="rm-tag" onclick="toggleTag(this)">🧹 Xe sạch sẽ</span>
+        <span class="rm-tag" onclick="toggleTag(this)">😊 Tài xế thân thiện</span>
+        <span class="rm-tag" onclick="toggleTag(this)">❄️ Điều hòa tốt</span>
+        <span class="rm-tag" onclick="toggleTag(this)">💺 Ghế êm ái</span>
+        <span class="rm-tag" onclick="toggleTag(this)">🔇 Yên tĩnh</span>
+        <span class="rm-tag" onclick="toggleTag(this)">📶 WiFi ổn</span>
+        <span class="rm-tag" onclick="toggleTag(this)">🏎️ Chạy êm</span>
+        <span class="rm-tag" onclick="toggleTag(this)">🎵 Nhạc hay</span>
+        <span class="rm-tag" onclick="toggleTag(this)">🛡️ An toàn</span>
+      </div>
+
+      <!-- COMMENT -->
+      <div class="rm-section-label">💬 Chia sẻ thêm</div>
+      <div class="rm-textarea-wrap">
+        <textarea id="reviewComment" class="rm-textarea" placeholder="Kể cho chúng tôi nghe về chuyến đi của bạn..." maxlength="500" oninput="rmCharCount()"></textarea>
+        <div class="rm-char-bar">
+          <div class="rm-char-fill" id="rmCharFill"></div>
+        </div>
+        <span class="rm-char-count"><span id="rmCC">0</span>/500</span>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="rm-footer">
+        <button class="rm-btn-cancel" onclick="closeReview()">Hủy</button>
+        <button class="rm-btn-submit" onclick="submitReview()" id="rmSubmitBtn">
+          <span class="rm-submit-ico">🚀</span>
+          <span class="rm-submit-txt">Gửi đánh giá</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ HEADER ═══ -->
+<!-- ═══ UNIFIED NAV ═══ -->
 <header>
-  <a class="hdr-logo" href="index.html">
-    <div class="hdr-logo-icon">🚌</div>
-    <div class="hdr-logo-text">SmartBusAI</div>
-  </a>
-  <nav>
-    <a href="index.html">Trang chủ</a>
-    <a href="nha-xe.html">🏢 Nhà xe</a>
-    <a href="booking.html">Vé của tôi</a>
-    <a href="profile.html">Tài khoản</a>
-    <a href="hotro.html" style="color:#5dc8ff;border-color:rgba(0,168,255,.22);background:rgba(0,168,255,.07);">🛟 Hỗ trợ</a>
-  </nav>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <div class="hdr-info">
-      <span>Xin chào,</span>
-      <span class="user-name" id="headerUserName">Khách</span>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="6" width="20" height="13" rx="3" fill="#040d18"/>
+        <rect x="4" y="8" width="4" height="3" rx="1" fill="#00ffe0"/>
+        <rect x="10" y="8" width="4" height="3" rx="1" fill="#00ffe0"/>
+        <circle cx="7" cy="19" r="2" fill="#00a8ff"/>
+        <circle cx="17" cy="19" r="2" fill="#00a8ff"/>
+      </svg>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <span class="nav-logo-text">SmartBusAI</span>
+  </a>
+  <nav class="nav-links">
+    <a href="index.html" class="active">🏠 Trang chủ</a>
+    <a href="nha-xe.html">🚌 Nhà xe</a>
+    <a href="booking.html">🎫 Đặt vé</a>
+    <a href="profile.html">👤 Tài khoản</a>
+    <a href="hotro.html">🛟 Hỗ trợ</a>
+  </nav>
+  <div class="nav-right">
+    <div class="nav-greeting">Xin chào, <span class="nav-uname" id="headerUserName">Khách</span></div>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -766,8 +1733,8 @@ nav a.ai-highlight{
     </div>
     <!-- Tab switcher -->
     <div class="ai-tabs">
-      <button class="ai-tab-btn active" id="tabChat" onclick="switchAITab('chat')">💬 Hỏi AI</button>
-      <button class="ai-tab-btn" id="tabBook" onclick="switchAITab('book')">🎯 Đặt vé tự động</button>
+      <button class="ai-tab-btn active" id="tabChat" onclick="switchAITab('chat')">Hỏi AI</button>
+      <button class="ai-tab-btn" id="tabBook" onclick="switchAITab('book')">Đặt vé tự động</button>
     </div>
     <!-- PANE 1: Chat -->
     <div class="ai-pane active" id="paneChat">
@@ -775,12 +1742,12 @@ nav a.ai-highlight{
         <!-- Messages appended by JS -->
       </div>
       <div class="ai-quick" id="aiQuickActions" style="padding:0 14px 10px;flex-shrink:0;">
-        <button class="ai-quick-btn" onclick="aiQuick('rẻ nhất')">💸 Rẻ nhất</button>
-        <button class="ai-quick-btn" onclick="aiQuick('sắp khởi hành')">⏰ Sắp khởi hành</button>
-        <button class="ai-quick-btn" onclick="aiQuick('VIP')">👑 Xe VIP</button>
-        <button class="ai-quick-btn" onclick="aiQuick('còn chỗ trống')">🟢 Còn chỗ</button>
-        <button class="ai-quick-btn" onclick="aiQuick('đánh giá cao nhất')">⭐ Đánh giá cao</button>
-        <button class="ai-quick-btn" onclick="aiQuick('tóm tắt tất cả chuyến')">📊 Tóm tắt</button>
+        <button class="ai-quick-btn" onclick="aiQuick('rẻ nhất')">Rẻ nhất</button>
+        <button class="ai-quick-btn" onclick="aiQuick('sắp khởi hành')">Sắp khởi hành</button>
+        <button class="ai-quick-btn" onclick="aiQuick('VIP')">Xe VIP</button>
+        <button class="ai-quick-btn" onclick="aiQuick('còn chỗ trống')">Còn chỗ</button>
+        <button class="ai-quick-btn" onclick="aiQuick('đánh giá cao nhất')">Đánh giá cao</button>
+        <button class="ai-quick-btn" onclick="aiQuick('tóm tắt tất cả chuyến')">Tóm tắt</button>
       </div>
       <div class="ai-drawer-input">
         <input id="aiInput" placeholder="Hỏi về chuyến đi..." onkeydown="if(event.key==='Enter')aiSend()">
@@ -854,14 +1821,102 @@ nav a.ai-highlight{
 
 <!-- ═══ ABOUT ═══ -->
 <section class="about">
-  <h2>🚀 SmartBusAI là gì?</h2>
-  <p>SmartBusAI là nền tảng đặt vé xe thông minh giúp người dùng tìm kiếm và đặt vé chỉ trong vài giây. Hệ thống sử dụng AI để đề xuất hành trình tối ưu, giúp tiết kiệm thời gian và chi phí.</p>
+  <h2>SmartBusAI là gì?</h2>
+  <p>Nền tảng đặt vé xe thông minh — tìm kiếm và giữ chỗ chỉ trong vài giây, được hỗ trợ bởi AI để tối ưu hành trình và tiết kiệm tối đa chi phí.</p>
   <div class="about-grid">
-    <div class="about-card"><h3>⚡ Tìm chuyến siêu nhanh</h3><p>Nhập điểm đi và điểm đến, hệ thống hiển thị ngay tất cả chuyến xe phù hợp.</p></div>
-    <div class="about-card"><h3>🤖 AI phân tích hành trình</h3><p>AI phân tích dữ liệu chuyến đi để tư vấn lựa chọn tối ưu nhất cho bạn.</p></div>
-    <div class="about-card"><h3>💳 Thanh toán linh hoạt</h3><p>Hỗ trợ VNPay, MoMo và nhiều phương thức thanh toán khác.</p></div>
+
+    <div class="about-card" onclick="toggleAbout(this,0)">
+      <div class="ac-body">
+        <div class="ac-toprow">
+          <div class="ac-num">01</div>
+          <div class="ac-icon">⚡</div>
+          <span class="about-card-arrow">▼</span>
+        </div>
+        <div class="ac-title">Tìm chuyến siêu nhanh</div>
+        <div class="ac-pill">Dưới 1 giây · Thời gian thực</div>
+        <p class="ac-desc">Nhập điểm đi, điểm đến — hệ thống hiển thị ngay toàn bộ chuyến phù hợp với giá, giờ, số ghế còn và đánh giá hãng xe.</p>
+        <div class="about-detail">
+          <div class="about-detail-inner">
+            <p>Công cụ tìm kiếm thực của SmartBusAI quét toàn bộ lịch trình trong chưa đến 1 giây, hiển thị đầy đủ:</p>
+            <ul>
+              <li>Giờ khởi hành & giờ đến dự kiến</li>
+              <li>Số ghế còn trống theo thời gian thực</li>
+              <li>Giá vé, loại xe (Thường / VIP / Limousine)</li>
+              <li>Đánh giá trung bình từ hành khách thực</li>
+              <li>Khoảng cách & hãng xe vận hành</li>
+            </ul>
+            <span class="det-tag" onclick="event.stopPropagation();document.querySelector('.search-box').scrollIntoView({behavior:'smooth',block:'center'})">Thử tìm chuyến ngay →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-card" onclick="toggleAbout(this,1)">
+      <div class="ac-body">
+        <div class="ac-toprow">
+          <div class="ac-num">02</div>
+          <div class="ac-icon">🤖</div>
+          <span class="about-card-arrow">▼</span>
+        </div>
+        <div class="ac-title">AI phân tích hành trình</div>
+        <div class="ac-pill">Gợi ý cá nhân hoá · Tự động đặt</div>
+        <p class="ac-desc">Hỏi AI bằng ngôn ngữ tự nhiên để tìm chuyến rẻ nhất, phù hợp nhất — hoặc để AI tự đặt vé theo ngân sách của bạn.</p>
+        <div class="about-detail">
+          <div class="about-detail-inner">
+            <p>AI được tích hợp sẵn trong panel bên trái màn hình, cho phép bạn:</p>
+            <ul>
+              <li>Hỏi tự nhiên: "Chuyến rẻ nhất đi Đà Nẵng?" hay "Còn VIP không?"</li>
+              <li>AI đặt vé tự động: nhập điểm đi, ngân sách — AI chọn & đặt chỗ</li>
+              <li>Gợi ý sắp xếp theo rating, giá, giờ khởi hành</li>
+              <li>Phân tích tổng quan toàn bộ chuyến trong hệ thống</li>
+            </ul>
+            <span class="det-tag" onclick="event.stopPropagation();toggleAIPanel();switchAITab('book')">Thử AI đặt vé →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-card" onclick="toggleAbout(this,2)">
+      <div class="ac-body">
+        <div class="ac-toprow">
+          <div class="ac-num">03</div>
+          <div class="ac-icon">💳</div>
+          <span class="about-card-arrow">▼</span>
+        </div>
+        <div class="ac-title">Thanh toán linh hoạt</div>
+        <div class="ac-pill">MoMo · ZaloPay · Tại quầy</div>
+        <p class="ac-desc">Đa dạng phương thức thanh toán — giữ ghế ngay, trả tiền khi thuận tiện. Hoàn tiền dễ dàng khi huỷ trước giờ khởi hành.</p>
+        <div class="about-detail">
+          <div class="about-detail-inner">
+            <p>SmartBusAI hỗ trợ đa phương thức, phù hợp mọi đối tượng hành khách:</p>
+            <ul>
+              <li>💜 <b>MoMo</b> — quét QR, thanh toán tức thì</li>
+              <li>💙 <b>ZaloPay</b> — ví điện tử phổ biến toàn quốc</li>
+              <li>🏢 <b>Tại quầy</b> — thanh toán tiền mặt tại nhà xe</li>
+              <li>⏰ <b>Đặt trước, trả sau</b> — giữ ghế, thanh toán khi sẵn sàng</li>
+            </ul>
+            <span class="det-tag" onclick="event.stopPropagation();window.location.href='profile.html#bookings'">Xem vé đã đặt →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
+
+<!-- ═══ RECENT SEARCHES ═══ -->
+<div class="recent-search-bar" id="recentSearchBar" style="display:none;"></div>
+
+<!-- ═══ POPULAR ROUTES ═══ -->
+<div class="popular-routes-bar">
+  <span class="pop-routes-lbl">🔥 Tuyến phổ biến:</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Đà Nẵng')">🏙 Hà Nội → Đà Nẵng</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Hồ Chí Minh')">🚌 Hà Nội → Hồ Chí Minh</span>
+  <span class="pop-route-chip" onclick="fillSearch('Đà Nẵng','Hồ Chí Minh')">🌊 Đà Nẵng → Hồ Chí Minh</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hồ Chí Minh','Cần Thơ')">🌿 HCM → Cần Thơ</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Vinh')">⚡ Hà Nội → Vinh</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hồ Chí Minh','Đà Lạt')">🏔 HCM → Đà Lạt</span>
+</div>
 
 <!-- ═══ SEARCH BOX ═══ -->
 <div class="search-box">
@@ -869,7 +1924,7 @@ nav a.ai-highlight{
   <input id="destination" placeholder="📍 Điểm đến">
   <input id="date" type="date">
   <select id="busType">
-    <option value="">🚌 Loại xe</option>
+    <option value="">Loại xe</option>
     <option value="NORMAL">Thường</option>
     <option value="VIP">VIP</option>
   </select>
@@ -883,32 +1938,142 @@ nav a.ai-highlight{
 
 <!-- ═══ STATS ═══ -->
 <div class="stats">
-  <div class="stat-box"><h2 class="counter" data-target="1200">0</h2><p>Chuyến xe mỗi ngày</p></div>
-  <div class="stat-box"><h2 class="counter" data-target="50000">0</h2><p>Khách hàng hài lòng</p></div>
-  <div class="stat-box"><h2 class="counter" data-target="98">0</h2><p>% Đánh giá 5 sao</p></div>
+  <div class="stat-box">
+    <h2 class="counter" data-target="1200" data-live="true" data-range="15">0</h2>
+    <p>Chuyến xe mỗi ngày <span class="stat-live">● LIVE</span></p>
+  </div>
+  <div class="stat-box">
+    <h2 class="counter" data-target="50000" data-live="true" data-range="80">0</h2>
+    <p>Khách hàng hài lòng <span class="stat-live">● LIVE</span></p>
+  </div>
+  <div class="stat-box">
+    <h2 class="counter" data-target="98" data-live="true" data-range="1">0</h2>
+    <p>% Đánh giá 5 sao <span class="stat-live">● LIVE</span></p>
+  </div>
+</div>
+
+<!-- ═══ TIME FILTER ═══ -->
+<div class="time-filter-bar">
+  <span class="tf-lbl">⏰ Giờ khởi hành:</span>
+  <span class="tf-chip active" onclick="setTimeFilter('all',this)">🌐 Tất cả</span>
+  <span class="tf-chip" onclick="setTimeFilter('0-6',this)">🌙 Đêm (00–06h)</span>
+  <span class="tf-chip" onclick="setTimeFilter('6-12',this)">☀️ Sáng (06–12h)</span>
+  <span class="tf-chip" onclick="setTimeFilter('12-18',this)">🌤️ Chiều (12–18h)</span>
+  <span class="tf-chip" onclick="setTimeFilter('18-24',this)">🌃 Tối (18–24h)</span>
 </div>
 
 <!-- ═══ TRIP LIST ═══ -->
 <div class="container">
-  <h2>🚍 Danh sách chuyến xe khả dụng</h2>
+  <div class="container-header">
+    <h2>🚍 Danh sách chuyến xe khả dụng</h2>
+    <span class="trip-count-badge" id="tripCountBadge"></span>
+  </div>
   <div id="tripList"></div>
+  <div id="pgWrap" class="pg-wrap" style="display:none;"></div>
 </div>
 
 <!-- ═══ FEATURES ═══ -->
 <div class="features">
-  <div class="feature-box"><h3>⚡ Đặt vé nhanh</h3><p>Tìm kiếm và giữ ghế chỉ trong vài giây với hệ thống thông minh.</p></div>
-  <div class="feature-box"><h3>🤖 Gợi ý AI</h3><p>Đề xuất chuyến xe phù hợp dựa trên lịch sử và hành vi người dùng.</p></div>
-  <div class="feature-box"><h3>🔒 Thanh toán an toàn</h3><p>Hỗ trợ Momo, VNPay và nhiều phương thức khác đảm bảo bảo mật.</p></div>
+  <div class="features-heading">Tại sao chọn SmartBusAI?</div>
+  <div class="features-sub">Ba lý do hàng triệu hành khách tin dùng mỗi ngày</div>
+
+  <div class="feature-box" onclick="toggleFeature(this)">
+    <div class="fx-body">
+      <div class="fx-toprow">
+        <div class="fx-icon">⚡</div>
+        <span class="about-card-arrow">▼</span>
+      </div>
+      <div class="fx-metric">&lt; 60 giây</div>
+      <div class="fx-title">Đặt vé siêu tốc</div>
+      <p class="fx-desc">Từ tìm kiếm đến xác nhận vé — toàn bộ quy trình chỉ 3 bước, hoàn tất trong chưa đầy một phút.</p>
+      <div class="about-detail">
+        <div class="about-detail-inner">
+          <p>Quy trình đặt vé trên SmartBusAI chỉ gồm 3 bước cực nhanh:</p>
+          <ul>
+            <li>① Nhập điểm đi / đến → kết quả hiển thị ngay lập tức</li>
+            <li>② Chọn chuyến → xem sơ đồ ghế → click chọn vị trí yêu thích</li>
+            <li>③ Xác nhận & thanh toán — hoàn tất trong dưới 1 phút</li>
+          </ul>
+          <p style="margin-top:8px;">Hoặc dùng <b style="color:#00ffe0;">AI đặt tự động</b>: nhập điểm đi, ngân sách — AI tìm & giữ ghế không cần thêm thao tác.</p>
+          <span class="det-tag" onclick="event.stopPropagation();document.getElementById('searchBtn').scrollIntoView({behavior:'smooth',block:'center'})">Đặt vé ngay →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-box" onclick="toggleFeature(this)">
+    <div class="fx-body">
+      <div class="fx-toprow">
+        <div class="fx-icon">🤖</div>
+        <span class="about-card-arrow">▼</span>
+      </div>
+      <div class="fx-metric">AI thông minh</div>
+      <div class="fx-title">Gợi ý cá nhân hoá</div>
+      <p class="fx-desc">AI học từ hành vi và lịch sử đặt vé để đề xuất chuyến phù hợp nhất — đúng giá, đúng giờ, đúng nhu cầu.</p>
+      <div class="about-detail">
+        <div class="about-detail-inner">
+          <p>AI Trip Analyzer phân tích hàng nghìn chuyến để gợi ý cá nhân hoá:</p>
+          <ul>
+            <li>Ưu tiên chuyến trong ngân sách, điểm rating cao</li>
+            <li>Phân tích giờ khởi hành phù hợp lịch trình của bạn</li>
+            <li>So sánh giá các nhà xe trên cùng tuyến đường</li>
+            <li>Cảnh báo chuyến sắp hết chỗ theo thời gian thực</li>
+          </ul>
+          <span class="det-tag" onclick="event.stopPropagation();toggleAIPanel();switchAITab('chat')">Hỏi AI ngay →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-box" onclick="toggleFeature(this)">
+    <div class="fx-body">
+      <div class="fx-toprow">
+        <div class="fx-icon">🔒</div>
+        <span class="about-card-arrow">▼</span>
+      </div>
+      <div class="fx-metric">100% bảo mật</div>
+      <div class="fx-title">Thanh toán an toàn</div>
+      <p class="fx-desc">Mã hoá end-to-end toàn bộ giao dịch. Hỗ trợ MoMo, ZaloPay, tại quầy và đặt trước — trả sau khi sẵn sàng.</p>
+      <div class="about-detail">
+        <div class="about-detail-inner">
+          <p>Mọi giao dịch trên SmartBusAI đều được bảo mật tuyệt đối:</p>
+          <ul>
+            <li>Mã hóa end-to-end toàn bộ thông tin thanh toán</li>
+            <li>MoMo & ZaloPay — xác thực 2 lớp qua QR</li>
+            <li>Đặt trước giữ ghế — trả tiền khi bạn sẵn sàng</li>
+            <li>Hoàn tiền dễ dàng khi huỷ vé trước giờ khởi hành</li>
+          </ul>
+          <span class="det-tag" onclick="event.stopPropagation();window.location.href='profile.html'">Xem tài khoản →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- ═══ REVIEWS SLIDER ═══ -->
-<div class="reviews">
-  <h2>Khách hàng nói gì?</h2>
-  <div class="review-slider">
-    <div class="review active">"Dịch vụ cực nhanh và dễ dùng!" ⭐⭐⭐⭐⭐</div>
-    <div class="review">"Tôi đặt vé chỉ trong 1 phút." ⭐⭐⭐⭐⭐</div>
-    <div class="review">"AI tư vấn chuyến hay quá, tiết kiệm tiền!" ⭐⭐⭐⭐⭐</div>
-    <div class="review">"Thanh toán MoMo rất tiện lợi." ⭐⭐⭐⭐</div>
+<!-- ═══ REVIEWS SECTION PREMIUM ═══ -->
+<section class="rv-section">
+  <div class="rv-section-inner">
+    <div class="rv-track-wrap">
+      <button class="rv-nav rv-prev" onclick="rvSlide(-1)">&#8249;</button>
+      <div class="rv-track" id="rvTrack"></div>
+      <button class="rv-nav rv-next" onclick="rvSlide(1)">&#8250;</button>
+    </div>
+    <div class="rv-dots" id="rvDots"></div>
+  </div>
+</section>
+
+<!-- Compare bar -->
+<div class="cmp-bar" id="cmpBar" style="display:none;">
+  <span class="cmp-info"><b id="cmpCount">0</b>/2 chuyến đã chọn</span>
+  <button class="cmp-do-btn" onclick="openCompareModal()">⚖️ So sánh ngay</button>
+  <button class="cmp-clear-btn" onclick="clearCompare()">✕ Xóa</button>
+</div>
+<!-- Compare modal -->
+<div class="cmp-modal" id="cmpModal" style="display:none;" onclick="if(event.target===this)closeCompareModal()">
+  <div class="cmp-box">
+    <div class="cmp-box-title">⚖️ So sánh 2 chuyến xe <button class="cmp-close" onclick="closeCompareModal()">✕</button></div>
+    <div class="cmp-grid" id="cmpGrid"></div>
   </div>
 </div>
 
@@ -926,7 +2091,7 @@ nav a.ai-highlight{
 
 <!-- ═══ FOOTER ═══ -->
 <footer>
-  <p>🚌 SmartBusAI © 2026 · Hệ thống đặt vé xe thông minh · Powered by AI</p>
+  <p>SmartBusAI © 2026 · Hệ thống đặt vé xe thông minh · Powered by AI</p>
 </footer>
 
 <!-- ===================================================
@@ -1005,12 +2170,89 @@ function nextSlide(){ slides[slideIdx].classList.remove("active"); slideIdx=(sli
 setInterval(nextSlide,6000);
 slides[0].classList.add("active");
 
-/* ── COUNTER ── */
+/* ── COUNTER + LIVE FLUCTUATION ── */
 document.querySelectorAll(".counter").forEach(el=>{
-  const target=+el.dataset.target, inc=target/80; let c=0;
-  const tick=()=>{ c+=inc; if(c<target){ el.textContent=Math.ceil(c); requestAnimationFrame(tick); } else el.textContent=target; };
+  const target=+el.dataset.target;
+  const isLive=el.dataset.live==="true";
+  const range=+el.dataset.range||0;
+  // Initial count-up animation
+  let c=0; const inc=target/80;
+  const tick=()=>{
+    c+=inc;
+    if(c<target){ el.textContent=Math.ceil(c).toLocaleString("vi-VN"); requestAnimationFrame(tick); }
+    else{
+      el.textContent=target.toLocaleString("vi-VN");
+      // After reaching target, start live fluctuation
+      if(isLive && range>0) startFluctuation(el, target, range);
+    }
+  };
   tick();
 });
+
+function startFluctuation(el, base, range){
+  let current=base;
+  let direction=1;
+  let stepMs=1800+Math.random()*1200; // 1.8–3s between each tick
+  function fluctuate(){
+    // random walk: drift ±range around base
+    const delta=Math.floor(Math.random()*Math.ceil(range/2)+1)*direction;
+    current+=delta;
+    // clamp within [base-range, base+range]
+    if(current>base+range){ current=base+range; direction=-1; }
+    if(current<base-range){ current=base-range; direction=1; }
+    // occasionally flip direction randomly
+    if(Math.random()<0.35) direction*=-1;
+    // animate the number change with a quick flash
+    el.style.transition="color .35s";
+    el.style.color=delta>0?"#2ecc71":"#e74c3c";
+    el.textContent=current.toLocaleString("vi-VN");
+    setTimeout(()=>{ el.style.color=""; },600);
+    stepMs=1400+Math.random()*2200;
+    setTimeout(fluctuate, stepMs);
+  }
+  setTimeout(fluctuate, stepMs);
+}
+
+/* ── ABOUT CARD EXPAND ── */
+const aboutCards=[...document.querySelectorAll(".about-card")];
+function toggleAbout(card, idx){
+  const detail=card.querySelector(".about-detail");
+  const isOpen=detail.classList.contains("open");
+  // close all first
+  aboutCards.forEach(c=>{
+    c.classList.remove("expanded");
+    c.querySelector(".about-detail").classList.remove("open");
+  });
+  // if wasn't open, open this one
+  if(!isOpen){
+    card.classList.add("expanded");
+    detail.classList.add("open");
+    // wait for expand animation then scroll so bottom of detail is visible
+    setTimeout(()=>{
+      const inner=detail.querySelector(".about-detail-inner");
+      inner.scrollIntoView({behavior:"smooth",block:"end"});
+    },420);
+  }
+}
+
+/* ── FEATURE BOX EXPAND ── */
+const featureBoxes=[...document.querySelectorAll(".feature-box")];
+function toggleFeature(box){
+  const detail=box.querySelector(".about-detail");
+  const isOpen=detail.classList.contains("open");
+  featureBoxes.forEach(b=>{
+    b.classList.remove("expanded");
+    b.querySelector(".about-detail").classList.remove("open");
+  });
+  if(!isOpen){
+    box.classList.add("expanded");
+    detail.classList.add("open");
+    setTimeout(()=>{
+      const inner=detail.querySelector(".about-detail-inner");
+      inner.scrollIntoView({behavior:"smooth",block:"end"});
+    },420);
+  }
+}
 
 /* ── REVIEW SLIDER ── */
 const revEls=[...document.querySelectorAll(".review")];
@@ -1026,6 +2268,7 @@ async function searchTrips(){
   const bt=document.getElementById("busType").value;
   const sp=document.getElementById("sortPrice").value;
   if(!o||!d){ alert("Vui lòng nhập điểm đi và điểm đến"); return; }
+  _searchActive=true;
   try{
     const res=await fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}`);
     renderTrips(await res.json());
@@ -1034,84 +2277,572 @@ async function searchTrips(){
 document.getElementById("searchBtn").addEventListener("click",searchTrips);
 document.addEventListener("keydown",e=>{ if(e.key==="Enter") searchTrips(); });
 
-/* ── RENDER TRIPS ── */
+/* ── RENDER TRIPS WITH PAGINATION ── */
 let allTripsData=[];
+let currentPage=1;
+const PAGE_SIZE=10;
 
 function renderTrips(trips){
   allTripsData=trips||[];
+  currentPage=1;
+  // update badge
+  const badge=document.getElementById("tripCountBadge");
+  if(badge) badge.textContent=allTripsData.length ? allTripsData.length+" chuyến" : "";
+  renderPage();
+}
+
+function renderPage(){
   const list=document.getElementById("tripList");
+  const pgWrap=document.getElementById("pgWrap");
   list.innerHTML="";
-  if(!trips||trips.length===0){
-    list.innerHTML="<p style='opacity:.65;text-align:center;padding:30px 0;'>Không tìm thấy chuyến nào phù hợp</p>"; return;
+  if(!allTripsData||allTripsData.length===0){
+    list.innerHTML=`<div style="text-align:center;padding:55px 20px;color:rgba(255,255,255,.38);">
+      <div style="font-size:52px;margin-bottom:12px;filter:opacity(.45);">🚌</div>
+      <p style="font-size:15px;font-weight:600;">Không tìm thấy chuyến nào phù hợp</p>
+      <p style="font-size:13px;margin-top:6px;color:rgba(255,255,255,.26);">Thử thay đổi điểm đi / đến hoặc ngày khởi hành</p>
+    </div>`;
+    pgWrap.style.display="none"; return;
   }
+  let filtered=allTripsData;
+  if(_timeFilter!=="all"){
+    const [h1,h2]=_timeFilter.split("-").map(Number);
+    filtered=allTripsData.filter(t=>{
+      const h=new Date(t.departure_time).getHours();
+      return h>=h1&&h<h2;
+    });
+  }
+  const total=filtered.length;
+  const totalPages=Math.ceil(total/PAGE_SIZE)||1;
+  const start=(currentPage-1)*PAGE_SIZE;
+  const end=Math.min(start+PAGE_SIZE,total);
+  const paginated=filtered.slice(start,end);
+
   const frag=document.createDocumentFragment();
-  trips.forEach(t=>{
-    const total=Number(t.total_seats)||0;
-    const avail=Number(t.available_seats)||0;
-    const pct  =total?Math.round(((total-avail)/total)*100):0;
-    const rat  =t.avg_rating?Number(t.avg_rating).toFixed(1):"0";
-    const dist =t.distance_km?t.distance_km+" km":"—";
-    const plate=t.plate_number||"—";
-    const opName=t.operator_name||"Chưa rõ";
+  paginated.forEach(t=>{
+    const total  = Number(t.total_seats)||0;
+    const avail  = Number(t.available_seats)||0;
+    const pct    = total ? Math.round(((total-avail)/total)*100) : 0;
+    const rat    = t.avg_rating ? Number(t.avg_rating).toFixed(1) : "—";
+    const dist   = t.distance_km ? t.distance_km+" km" : "—";
+    const plate  = t.plate_number||"—";
+    const opName = t.operator_name||"Chưa rõ";
+    const isOpen = avail>0 && t.status==="OPEN";
+
+    /* departure / arrival formatting */
+    const dep    = new Date(t.departure_time);
+    const arr    = new Date(t.arrival_time);
+    const durMs  = arr - dep;
+    const durH   = Math.floor(durMs/3600000);
+    const durM   = Math.floor((durMs%3600000)/60000);
+    const durStr = durMs>0
+      ? (durH>0 ? (durM>0 ? durH+"h"+String(durM).padStart(2,"0") : durH+" giờ") : durM+" phút")
+      : "—";
+    const depTime = dep.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+    const arrTime = arr.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+    const depDate = dep.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"});
+    const arrDate = arr.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"});
+
+    /* seat bar color */
+    const seatCls = pct>=90 ? "empty" : pct>=60 ? "warn" : "ok";
+
+    /* bus type label */
+    const btLabel = {VIP:"VIP Cao Cấp",LIMOUSINE:"Limousine",NORMAL:"Tiêu Chuẩn"}[t.bus_type] || t.bus_type || "Tiêu Chuẩn";
+    const isVip   = ["VIP","LIMOUSINE"].includes(t.bus_type);
+    const isLimo  = t.bus_type === "LIMOUSINE";
+
+    /* FOMO badges */
+    const ratingNum  = Number(t.avg_rating||0);
+    const revCount   = Number(t.review_count||0);
+    const fomoTags   = [];
+    if(pct >= 80)                             fomoTags.push({cls:'hot',  lbl:'🔥 BÁN CHẠY'});
+    else if(pct >= 60)                        fomoTags.push({cls:'warm', lbl:'⚡ HOT'});
+    if(ratingNum >= 4.7 && revCount >= 3)     fomoTags.push({cls:'top',  lbl:'⭐ ĐÁNH GIÁ CAO'});
+    if(pct < 35 && ratingNum >= 4.3)          fomoTags.push({cls:'best', lbl:'💎 BEST VALUE'});
+    if(isLimo)                                fomoTags.push({cls:'limo', lbl:'👑 LIMOUSINE'});
+    const fomoHtml = fomoTags.length
+      ? `<div class="tc-fomo-badges">${fomoTags.slice(0,2).map(b=>`<div class="tc-fbadge ${b.cls}">${b.lbl}</div>`).join('')}</div>`
+      : '';
+
+    /* seat bar urgency label */
+    const seatUrgency = avail<=3 && avail>0 ? `<span class="tc-seat-urgent">⚠️ Còn ${avail} chỗ cuối!</span>` : '';
+
+    /* amenity chips */
+    let amenityHtml = "";
+    if(isLimo){
+      amenityHtml = `<div class="tc-amenities">
+        <span class="tc-chip">❄️ Điều hoà</span>
+        <span class="tc-chip">🔌 USB</span>
+        <span class="tc-chip">📶 WiFi</span>
+        <span class="tc-chip">🍱 Đồ ăn</span>
+        <span class="tc-chip">🛏️ Giường nằm</span>
+        <span class="tc-chip">🎬 Màn hình</span>
+      </div>`;
+    } else if(isVip){
+      amenityHtml = `<div class="tc-amenities">
+        <span class="tc-chip">❄️ Điều hoà</span>
+        <span class="tc-chip">🔌 USB</span>
+        <span class="tc-chip">📶 WiFi</span>
+        <span class="tc-chip">🍱 Đồ ăn</span>
+      </div>`;
+    } else {
+      amenityHtml = `<div class="tc-amenities">
+        <span class="tc-chip">❄️ Điều hoà</span>
+        <span class="tc-chip">🎒 Hành lý</span>
+      </div>`;
+    }
 
     const card=document.createElement("div");
-    card.className="trip-card";
+    card.className="trip-card" + (isVip ? " vip-card" : "");
+    card.dataset.tripId=t.trip_id;
+    card.dataset.dep=dep.getTime();
     card.innerHTML=`
-      <div class="trip-left">
-        <div class="trip-top">
-          <div class="route">
-            <div class="route-origin"><span class="pin">📍</span><strong>${t.origin}</strong></div>
-            <div class="route-middle">
-              <div class="route-dashes"></div>
-              <span class="route-bus">🚌</span>
-              <div class="route-dashes"></div>
+      ${fomoHtml}
+      <button class="tc-wish-btn" onclick="event.stopPropagation();toggleWishlist(${t.trip_id},this)" title="Lưu yêu thích">${isWished(t.trip_id)?'❤️':'🤍'}</button>
+      <div class="tc-left">
+        <div class="tc-topbar">
+          <span class="tc-badge ${isVip?'vip':'normal'}">${btLabel}</span>
+          <span class="tc-rating">★ ${rat}
+            <span style="font-weight:500;color:#8fa8c0;font-size:10.5px;">(${revCount} đánh giá)</span>
+          </span>
+          <span class="tc-cdwn" data-dep="${dep.getTime()}"></span>
+          <span class="tc-status ${isOpen?'open':'full'}">${isOpen?'● Còn vé':'✕ Hết vé'}</span>
+        </div>
+
+        <div class="tc-route">
+          <div class="tc-city left">
+            <div class="tc-city-name">${t.origin}</div>
+            <div class="tc-city-time">${depTime}</div>
+            <div class="tc-city-date">${depDate}</div>
+            ${t.pickup_point ? `<div class="tc-city-sub" title="${t.pickup_point}">📍 ${t.pickup_point}</div>` : ''}
+          </div>
+          <div class="tc-route-mid">
+            <div class="tc-mid-dur">${durStr}</div>
+            <div class="tc-route-line">
+              <div class="tc-dash"></div>
+              <div class="tc-bus-ico">🚌</div>
+              <div class="tc-dash"></div>
             </div>
-            <div class="route-dest"><span class="pin">📍</span><strong>${t.destination}</strong></div>
-            <div class="route-dist">${dist}</div>
+          </div>
+          <div class="tc-city right">
+            <div class="tc-city-name">${t.destination}</div>
+            <div class="tc-city-time">${arrTime}</div>
+            <div class="tc-city-date">${arrDate}</div>
+            ${t.dropoff_point ? `<div class="tc-city-sub" title="${t.dropoff_point}">🏁 ${t.dropoff_point}</div>` : ''}
           </div>
         </div>
-        <div class="trip-grid">
-          <div class="trip-box">Giờ xuất phát<b>${fmtT(t.departure_time)}</b></div>
-          <div class="trip-box">Giờ đến<b>${fmtT(t.arrival_time)}</b></div>
-          <div class="trip-box">Hãng xe<b>${opName}</b></div>
-          <div class="trip-box">Biển số<b>${plate}</b></div>
-          <div class="trip-box">Ghế trống<b>${avail}/${total}</b></div>
+
+        <div class="tc-meta">
+          <div class="tc-meta-box">
+            <span class="tc-meta-ico">🏢</span>
+            <div class="tc-meta-lbl">Nhà xe</div>
+            <div class="tc-meta-val" title="${opName}">${opName}</div>
+          </div>
+          <div class="tc-meta-box">
+            <span class="tc-meta-ico">${isLimo?'👑':isVip?'💎':'🚌'}</span>
+            <div class="tc-meta-lbl">Loại xe</div>
+            <div class="tc-meta-val" style="color:${isLimo?'#c084fc':isVip?'#00ffe0':'#b8d8f0'}">${btLabel}</div>
+          </div>
+          <div class="tc-meta-box">
+            <span class="tc-meta-ico">🚗</span>
+            <div class="tc-meta-lbl">Biển số</div>
+            <div class="tc-meta-val">${plate}</div>
+          </div>
+          <div class="tc-meta-box">
+            <span class="tc-meta-ico">📏</span>
+            <div class="tc-meta-lbl">Cự ly</div>
+            <div class="tc-meta-val">${dist}</div>
+          </div>
+          <div class="tc-meta-box m-dur">
+            <span class="tc-meta-ico">⏱️</span>
+            <div class="tc-meta-lbl">Hành trình</div>
+            <div class="tc-meta-val">${durStr !== '—' ? durStr : '—'}</div>
+          </div>
+          <div class="tc-meta-box m-seats">
+            <span class="tc-meta-ico">💺</span>
+            <div class="tc-meta-lbl">Còn trống</div>
+            <div class="tc-meta-val">${avail} / ${total} ghế</div>
+          </div>
+          <div class="tc-meta-box m-rating">
+            <span class="tc-meta-ico">⭐</span>
+            <div class="tc-meta-lbl">Đánh giá</div>
+            <div class="tc-meta-val">${rat !== '—' ? rat+' <span style="font-size:10px;color:#8fa0b4;font-weight:600;">('+revCount+')</span>' : '<span style="color:#666">Chưa có</span>'}</div>
+          </div>
+          <div class="tc-meta-box m-booked">
+            <span class="tc-meta-ico">👥</span>
+            <div class="tc-meta-lbl">Đã đặt</div>
+            <div class="tc-meta-val">${total-avail > 0 ? (total-avail)+' người' : 'Chưa có'}</div>
+          </div>
         </div>
-        <div class="trip-bottom">
-          <span class="tag ${t.bus_type==='VIP'?'vip':'normal'}">${t.bus_type||"NORMAL"}</span>
-          <span class="rating">⭐ ${rat}</span>
-          <span style="color:#636e72;">🗨 ${t.review_count||0} đánh giá</span>
-          <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
-          <span class="badge ${t.status==='OPEN'?'open':'full'}">${t.status==='OPEN'?'Còn vé':'Hết vé'}</span>
-          <button class="review-btn" onclick="openReview(${t.trip_id})">⭐ Đánh giá</button>
+
+        ${amenityHtml}
+
+        <div class="tc-seat-row">
+          <div class="tc-seat-row-top">
+            <span class="tc-seat-lbl">Tỉ lệ đặt chỗ</span>
+            <span class="tc-seat-txt">${pct}% · còn ${avail} chỗ ${seatUrgency}</span>
+          </div>
+          <div class="tc-seat-bar">
+            <div class="tc-seat-fill ${seatCls}" style="width:${pct}%"></div>
+          </div>
         </div>
       </div>
-      <div class="trip-right">
-        <div class="price-label">Giá vé từ</div>
-        <div class="trip-price">${fmt(t.base_price)}</div>
-        <button class="book-btn" onclick="goBooking(${t.trip_id})">Chọn ghế →</button>
+
+      <div class="tc-right">
+        <div class="tc-price-lbl">Giá vé từ</div>
+        <div id="dp-${t.trip_id}" class="tc-dp-wrap">
+          <div class="tc-price">${fmt(t.base_price)}</div>
+        </div>
+        <div class="tc-per-person">/ người</div>
+        <div class="tc-book-now-lbl">ĐẶT NGAY</div>
+        <button class="tc-book-btn" ${!isOpen?'disabled':''} onclick="${isOpen?`goBooking(${t.trip_id})`:''}">${isOpen?'Chọn ghế →':'Hết chỗ'}</button>
+        <button class="tc-route-btn" onclick="openRouteModal(${t.trip_id})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+          Lộ trình
+        </button>
+        <button class="tc-review-btn" onclick="openReview(${t.trip_id})">★ Đánh giá</button>
+        <button class="tc-compare-btn ${compareSet.has(t.trip_id)?'comparing':''}" onclick="event.stopPropagation();toggleCompare(${t.trip_id},this)">⚖️ So sánh</button>
       </div>`;
     frag.appendChild(card);
   });
   list.appendChild(frag);
+
+  // pagination controls
+  renderPagination(totalPages,total,start,end);
+
+  // Async: fetch dynamic prices for visible trip cards
+  _loadDynamicPrices(pageTrips.map(t=>t.trip_id));
 }
 
+/* ── Load & render dynamic prices for trip cards ── */
+async function _loadDynamicPrices(tripIds){
+  if(!tripIds||!tripIds.length) return;
+  // Fetch in parallel
+  await Promise.all(tripIds.map(async (tid)=>{
+    const wrap=document.getElementById('dp-'+tid);
+    if(!wrap) return;
+    try{
+      const res=await fetch(`/api/trips/dynamic-price/${tid}`);
+      if(!res.ok) return;
+      const dp=await res.json();
+      const base=dp.basePrice||0;
+      const dyn=dp.dynamicPrice||base;
+      let html='';
+      if(dp.discount_pct>0){
+        html=`
+          <div class="tc-price-orig">${fmt(base)}</div>
+          <div class="tc-price">${fmt(dyn)}</div>
+          <div class="tc-dp-badge discount">🏷️ Giảm ${dp.discount_pct}%</div>`;
+      } else if(dp.surcharge_pct>0){
+        html=`
+          <div class="tc-price" style="background:linear-gradient(135deg,#ff7675,#fd79a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${fmt(dyn)}</div>
+          <div class="tc-dp-badge surcharge">🔥 Cao điểm +${dp.surcharge_pct}%</div>`;
+      } else {
+        html=`<div class="tc-price">${fmt(dyn)}</div>`;
+      }
+      wrap.innerHTML=html;
+    }catch(e){}
+  }));
+}
+
+/* build smart page number array: [1, '...', 4,5,6, '...', 12] */
+function buildPageRange(cur,total){
+  if(total<=7) return Array.from({length:total},(_,i)=>i+1);
+  const pages=[];
+  pages.push(1);
+  if(cur>3) pages.push('...');
+  for(let p=Math.max(2,cur-1);p<=Math.min(total-1,cur+1);p++) pages.push(p);
+  if(cur<total-2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function renderPagination(totalPages,total,start,end){
+  const pgWrap=document.getElementById("pgWrap");
+  if(totalPages<=1){ pgWrap.style.display="none"; return; }
+  pgWrap.style.display="flex";
+
+  let html=`<div class="pg-info">Hiển thị <b style="color:rgba(255,255,255,.70)">${start+1}–${end}</b> trong tổng số <b style="color:#00ffe0">${total}</b> chuyến xe</div>`;
+
+  // Prev
+  html+=`<button class="pg-btn pg-prev" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">‹ Trước</button>`;
+
+  // Pages
+  buildPageRange(currentPage,totalPages).forEach(p=>{
+    if(p==='...') html+=`<button class="pg-btn pg-dots">···</button>`;
+    else          html+=`<button class="pg-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+
+  // Next
+  html+=`<button class="pg-btn pg-next" ${currentPage===totalPages?'disabled':''} onclick="goPage(${currentPage+1})">Tiếp ›</button>`;
+
+  pgWrap.innerHTML=html;
+}
+
+function goPage(page){
+  currentPage=page;
+  renderPage();
+  // scroll lên đầu danh sách chuyến
+  document.querySelector(".container").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+let _showingTomorrow=false;
+let _noTripRetryTimer=null;
+
 async function loadAllTrips(){
-  try{ const r=await fetch("/api/trips?nocache="+Date.now()); renderTrips(await r.json()); }
-  catch(e){ console.error(e); }
+  try{
+    const r=await fetch("/api/trips?nocache="+Date.now());
+    const raw=await r.json();
+    // Backend đã filter departure_time > NOW(), chỉ trả về chuyến chưa xuất phát
+    const trips=Array.isArray(raw)?raw:[];
+
+    if(trips.length===0){
+      // Không có chuyến → hiện trạng thái "đang cập nhật" và retry
+      _showUpdatingBanner();
+      // Retry sau 20 giây (server advance trong ~1 phút)
+      if(!_noTripRetryTimer){
+        _noTripRetryTimer=setInterval(async()=>{
+          const r3=await fetch("/api/trips?nocache="+Date.now());
+          const raw3=await r3.json();
+          const now3=Date.now();
+          const t3=Array.isArray(raw3)?raw3.filter(t=>new Date(String(t.departure_time).replace(' ','T')).getTime()>now3):[];
+          if(t3.length>0){
+            clearInterval(_noTripRetryTimer); _noTripRetryTimer=null;
+            _hideTomorrowBanner();
+            _showingTomorrow=false;
+            // Kiểm tra có phải ngày mai không
+            const depDate=new Date(String(t3[0].departure_time).replace(' ','T'));
+            const todayStr=new Date().toDateString();
+            if(depDate.toDateString()!==todayStr){
+              _showingTomorrow=true;
+              _showTomorrowBanner(depDate);
+            } else {
+              _hideTomorrowBanner();
+            }
+            renderTrips(t3);
+          }
+        }, 20*1000);
+      }
+      renderTrips([]); // render empty state với thông báo đang cập nhật
+      return;
+    }
+
+    // Có chuyến — hủy retry nếu đang chạy
+    if(_noTripRetryTimer){ clearInterval(_noTripRetryTimer); _noTripRetryTimer=null; }
+
+    // Kiểm tra chuyến thuộc ngày nào
+    const depDate=new Date(String(trips[0].departure_time).replace(' ','T'));
+    const todayStr=new Date().toDateString();
+    if(depDate.toDateString()!==todayStr){
+      _showingTomorrow=true;
+      _showTomorrowBanner(depDate);
+    } else {
+      if(_showingTomorrow){ _hideTomorrowBanner(); _showingTomorrow=false; }
+    }
+    renderTrips(trips);
+  }catch(e){ console.error(e); }
+}
+
+function _showUpdatingBanner(){
+  let el=document.getElementById("tomorrowBanner");
+  if(!el){
+    el=document.createElement("div");
+    el.id="tomorrowBanner";
+    el.style.cssText="margin:0 auto 18px;max-width:820px;padding:12px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(0,255,224,.06));border:1px solid rgba(243,156,18,.25);display:flex;align-items:center;gap:12px;font-size:13.5px;color:rgba(255,255,255,.88);";
+    const container=document.querySelector(".container");
+    const tripList=document.getElementById("tripList");
+    if(container&&tripList) container.insertBefore(el,tripList);
+  }
+  el.style.display="flex";
+  el.innerHTML=`<span style="font-size:20px;animation:spin 1.2s linear infinite;display:inline-block;">⏳</span>
+    <span>🔄 <strong>Đang cập nhật lịch trình chuyến mới...</strong> Hệ thống sẽ tự động hiển thị chuyến ngày mai trong giây lát.</span>`;
+}
+
+function _showTomorrowBanner(tomorrow){
+  let el=document.getElementById("tomorrowBanner");
+  if(!el){
+    el=document.createElement("div");
+    el.id="tomorrowBanner";
+    el.style.cssText="margin:0 auto 18px;max-width:820px;padding:12px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(0,255,224,.08),rgba(108,92,231,.10));border:1px solid rgba(0,255,224,.18);display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13.5px;color:rgba(255,255,255,.88);";
+    const container=document.querySelector(".container");
+    const tripList=document.getElementById("tripList");
+    if(container&&tripList) container.insertBefore(el,tripList);
+  }
+  const dayStr=tomorrow.toLocaleDateString("vi-VN",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"});
+  el.innerHTML=`
+    <span>🌅 <strong>Hôm nay không còn chuyến nào.</strong> Đang hiển thị chuyến của <strong>${dayStr}</strong></span>
+    <button onclick="document.getElementById('tomorrowBanner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;font-size:18px;line-height:1;padding:0 4px;">×</button>
+  `;
+  el.style.display="flex";
+}
+
+function _hideTomorrowBanner(){
+  const el=document.getElementById("tomorrowBanner");
+  if(el) el.style.display="none";
 }
 function goBooking(id){ window.location.href=`booking.html?tripId=${id}`; }
+
+/* ── POPULAR ROUTE FILL ── */
+function fillSearch(from,to){
+  document.getElementById("origin").value=from;
+  document.getElementById("destination").value=to;
+  searchTrips();
+  saveRecentSearch(from,to);
+}
+
+/* ── RECENT SEARCHES ── */
+const RS_KEY="sb_recent_searches";
+function saveRecentSearch(from,to){
+  let arr=[];try{arr=JSON.parse(localStorage.getItem(RS_KEY)||"[]");}catch{}
+  arr=arr.filter(r=>!(r.from===from&&r.to===to));
+  arr.unshift({from,to});
+  if(arr.length>4) arr.length=4;
+  localStorage.setItem(RS_KEY,JSON.stringify(arr));
+  renderRecentSearches();
+}
+function renderRecentSearches(){
+  const arr=JSON.parse(localStorage.getItem(RS_KEY)||"[]");
+  const bar=document.getElementById("recentSearchBar");
+  if(!arr.length){bar.style.display="none";return;}
+  bar.style.display="flex";
+  bar.innerHTML=`<span class="rs-lbl">🕐 Gần đây:</span>`+
+    arr.map(r=>`<span class="rs-chip" onclick="fillSearch('${escH(r.from)}','${escH(r.to)}')">📍 ${escH(r.from)} → ${escH(r.to)}</span>`).join("");
+}
+function escH(s){return String(s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));}
+
+/* ── TIME FILTER ── */
+let _timeFilter="all";
+function setTimeFilter(range,chip){
+  _timeFilter=range;
+  document.querySelectorAll(".tf-chip").forEach(c=>c.classList.remove("active"));
+  chip.classList.add("active");
+  currentPage=1;
+  renderPage();
+}
+
+/* ── WISHLIST ── */
+const WL_KEY="sb_wishlist";
+function getWishlist(){try{return new Set(JSON.parse(localStorage.getItem(WL_KEY)||"[]"));}catch{return new Set();}}
+function isWished(id){return getWishlist().has(id);}
+function toggleWishlist(id,btn){
+  const wl=getWishlist();
+  if(wl.has(id)){wl.delete(id);btn.textContent="🤍";}else{wl.add(id);btn.textContent="❤️";btn.style.color="#e74c3c";}
+  localStorage.setItem(WL_KEY,JSON.stringify([...wl]));
+  btn.classList.toggle("wished",wl.has(id));
+}
+
+/* ── COMPARE ── */
+const compareSet=new Set();
+function toggleCompare(id,btn){
+  if(compareSet.has(id)){
+    compareSet.delete(id);btn.classList.remove("comparing");btn.textContent="⚖️ So sánh";
+  }else{
+    if(compareSet.size>=2){alert("Chỉ được chọn tối đa 2 chuyến để so sánh.");return;}
+    compareSet.add(id);btn.classList.add("comparing");btn.textContent="✓ Đã chọn";
+  }
+  const bar=document.getElementById("cmpBar");
+  if(compareSet.size>0){bar.style.display="flex";document.getElementById("cmpCount").textContent=compareSet.size;}
+  else bar.style.display="none";
+}
+function clearCompare(){
+  compareSet.clear();
+  document.getElementById("cmpBar").style.display="none";
+  document.querySelectorAll(".tc-compare-btn").forEach(b=>{b.classList.remove("comparing");b.textContent="⚖️ So sánh";});
+}
+function openCompareModal(){
+  if(compareSet.size<2){alert("Hãy chọn đúng 2 chuyến để so sánh.");return;}
+  const ids=[...compareSet];
+  const t1=allTripsData.find(t=>t.trip_id===ids[0]);
+  const t2=allTripsData.find(t=>t.trip_id===ids[1]);
+  if(!t1||!t2) return;
+  function fmt2(n){return new Intl.NumberFormat("vi-VN").format(Number(n)||0)+" VNĐ";}
+  function cmpCol(t,other){
+    const avail=Number(t.available_seats)||0;
+    const total=Number(t.total_seats)||0;
+    const price=Number(t.base_price)||0;
+    const oPrice=Number(other.base_price)||0;
+    return `<div class="cmp-col">
+      <div class="cmp-col-title">🚌 ${t.origin} → ${t.destination}</div>
+      <div class="cmp-row"><span class="cmp-key">Nhà xe</span><span class="cmp-val">${t.operator_name||"—"}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Loại xe</span><span class="cmp-val">${t.bus_type||"—"}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Khởi hành</span><span class="cmp-val">${new Date(t.departure_time).toLocaleString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"})}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Ghế trống</span><span class="cmp-val ${avail>0?"":"" }">${avail}/${total}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Giá vé</span><span class="cmp-val ${price<=oPrice?"cmp-better":""}">${fmt2(price)}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Đánh giá</span><span class="cmp-val">★ ${t.avg_rating?Number(t.avg_rating).toFixed(1):"N/A"}</span></div>
+      <div class="cmp-row"><span class="cmp-key">Khoảng cách</span><span class="cmp-val">${t.distance_km?t.distance_km+" km":"—"}</span></div>
+    </div>`;
+  }
+  document.getElementById("cmpGrid").innerHTML=cmpCol(t1,t2)+cmpCol(t2,t1);
+  document.getElementById("cmpModal").style.display="flex";
+}
+function closeCompareModal(){document.getElementById("cmpModal").style.display="none";}
+
+/* ── REAL-TIME COUNTDOWN ── */
+let _searchActive=false;
+
+function updateCountdowns(){
+  const now=Date.now();
+  document.querySelectorAll(".tc-cdwn[data-dep]").forEach(badge=>{
+    const dep=parseInt(badge.dataset.dep);
+    const diffMs=dep-now;
+    const card=badge.closest(".trip-card");
+    if(!card) return;
+
+    if(diffMs<=0){
+      // Departed — fade and remove
+      if(!card.classList.contains("departing")){
+        card.classList.add("departing");
+        setTimeout(()=>{
+          card.remove();
+          // Update allTripsData and badge count
+          const tid=parseInt(card.dataset.tripId);
+          allTripsData=allTripsData.filter(t=>t.trip_id!==tid);
+          const bc=document.getElementById("tripCountBadge");
+          if(bc) bc.textContent=allTripsData.length ? allTripsData.length+" chuyến" : "";
+        },600);
+      }
+      return;
+    }
+
+    const diffMin=Math.floor(diffMs/60000);
+    const diffH=Math.floor(diffMin/60);
+    const remMin=diffMin%60;
+
+    if(diffMin<=60){
+      badge.classList.add("visible");
+      if(diffMin<=15){
+        badge.className="tc-cdwn visible urgent";
+        badge.textContent=`🔴 Còn ${diffMin} phút`;
+      } else {
+        badge.className="tc-cdwn visible soon";
+        const label=diffH>0 ? `${diffH}g ${remMin}p` : `${diffMin}p`;
+        badge.textContent=`⏳ Khởi hành sau ${label}`;
+      }
+    } else {
+      badge.classList.remove("visible");
+    }
+  });
+}
+
+// Tick every second for live countdown
+setInterval(updateCountdowns,1000);
+
+// Auto-refresh full list every 5 minutes (only when not in search mode)
+setInterval(()=>{ if(!_searchActive) loadAllTrips(); }, 5*60*1000);
+
 loadAllTrips();
+renderRecentSearches();
 
 /* ── AI TOUR ── */
 let tourStep=0;
 const tourSteps=[
-  { el:".search-box",               text:"Bước 1: Nhập điểm đi, điểm đến và ngày để tìm chuyến xe." },
-  { el:".container",                text:"Bước 2: Danh sách chuyến xe hiển thị tại đây." },
-  { el:".trip-card",                text:"Bước 3: Mỗi card là một chuyến xe. Nhấn <b>Chọn ghế →</b> để đặt vé!", highlightBtn:".book-btn" },
-  { el:"a[href='booking.html']",    text:"Bước 4: Sau khi đặt, xem vé tại <b>'Vé của tôi'</b>." },
-  { el:"a[href='profile.html']",    text:"Bước 5: Quản lý tài khoản tại <b>'Tài khoản'</b>." },
-  { el:".features",                 text:"Bước 6: Hệ thống có AI tư vấn và thanh toán an toàn." }
+  { el:".search-box",              text:"Bước 1: Nhập điểm đi, điểm đến và ngày khởi hành để tìm chuyến phù hợp." },
+  { el:".trip-card",               text:"Bước 2: Mỗi card là một chuyến xe. Xem giờ khởi hành, hãng xe, ghế trống và nhấn <b>Chọn ghế →</b> để đặt vé!", highlightBtn:".tc-book-btn" },
+  { el:".features",                text:"Bước 3: SmartBusAI tích hợp <b>AI tư vấn</b> và thanh toán an toàn, tiện lợi." },
+  { el:"a[href='index.html']",     text:"Bước 4: Nhấn <b>Trang chủ</b> để quay lại trang tìm kiếm và đặt chuyến bất kỳ lúc nào.", noOverlay:true },
+  { el:"a[href='nha-xe.html']",    text:"Bước 5: Xem danh sách <b>Nhà xe</b> — đánh giá chất lượng và lịch sử hoạt động." },
+  { el:"a[href='booking.html']",   text:"Bước 6: Theo dõi toàn bộ <b>Vé của tôi</b> — trạng thái, mã vé và lịch sử đặt." },
+  { el:"a[href='profile.html']",   text:"Bước 7: Vào <b>Tài khoản</b> để cập nhật thông tin cá nhân và đổi mật khẩu." },
+  { el:"a[href='hotro.html']",     text:"Bước 8: Gặp sự cố? Nhấn <b>Hỗ trợ</b> để liên hệ đội ngũ chăm sóc khách hàng." },
 ];
 
 function toggleAI(){ const b=document.getElementById("aiChat"); const open=b.style.display==="block"; b.style.display=open?"none":"block"; }
@@ -1168,18 +2899,18 @@ function removeHL(){ document.querySelectorAll(".ai-highlight").forEach(e=>e.cla
 
 function updateSpotlight(el){
   const ov=document.getElementById("aiOverlay");
-  if(el.closest("nav")){ ov.style.background="rgba(0,0,0,0.68)"; return; }
+  if(tourSteps[tourStep].noOverlay){
+    ov.style.background="transparent";
+    return;
+  }
+  if(el.closest("nav")){
+    ov.style.background="rgba(0,0,0,0.68)";
+    return;
+  }
   const rect=el.getBoundingClientRect();
   const pad=20;
   const x1=rect.left-pad, y1=rect.top-pad;
   const x2=rect.right+pad, y2=rect.bottom+pad;
-  // Dùng radial-gradient to create proper dark surround
-  const cx=rect.left+rect.width/2;
-  const cy=rect.top+rect.height/2;
-  const rw=rect.width/2+pad;
-  const rh=rect.height/2+pad;
-  const rx=Math.max(rw,rh);
-  // Use box-based approach via SVG mask via CSS background
   ov.style.background=`
     linear-gradient(rgba(0,0,0,.80) ${y1}px, transparent ${y1}px, transparent ${y2}px, rgba(0,0,0,.80) ${y2}px),
     linear-gradient(90deg, rgba(0,0,0,.80) ${x1}px, transparent ${x1}px, transparent ${x2}px, rgba(0,0,0,.80) ${x2}px)
@@ -1187,28 +2918,143 @@ function updateSpotlight(el){
 }
 document.getElementById("aiOverlay").addEventListener("click",endTour);
 
-/* ── REVIEW MODAL ── */
+/* ── REVIEW MODAL PREMIUM ── */
 let selRating=0, curTrip=null;
-function openReview(id){ curTrip=id; selRating=0; document.getElementById("reviewComment").value=""; document.querySelectorAll("#starContainer span").forEach(s=>s.classList.remove("active")); document.getElementById("reviewModal").style.display="flex"; }
-function closeReview(){ document.getElementById("reviewModal").style.display="none"; }
+const RL_LABELS=["","😞 Rất tệ","😕 Tệ","😐 Bình thường","😊 Tốt","🤩 Tuyệt vời!"];
 
+function openReview(id){
+  curTrip=id; selRating=0;
+  document.getElementById("reviewComment").value="";
+  document.getElementById("rmCC").textContent="0";
+  document.getElementById("rmRatingLabel").textContent="Chạm vào sao để đánh giá";
+  document.getElementById("rmRatingLabel").className="rm-rating-label";
+  document.querySelectorAll("#starContainer span").forEach(s=>s.classList.remove("lit"));
+  document.querySelectorAll(".rm-tag").forEach(t=>t.classList.remove("selected"));
+  document.querySelectorAll(".rm-cat-stars span").forEach(s=>s.classList.remove("lit"));
+  const rmFill=document.getElementById("rmCharFill"); if(rmFill) rmFill.style.width="0%";
+  const rmGlow=document.getElementById("rmBgGlow"); if(rmGlow) rmGlow.style.background="radial-gradient(circle,rgba(0,255,224,.06) 0%,transparent 70%)";
+  const rmIcon=document.getElementById("rmHeadIcon"); if(rmIcon) rmIcon.textContent="⭐";
+  const t=allTripsData.find(x=>x.trip_id==id);
+  if(t) document.getElementById("rmRouteLine").textContent=`${t.origin||''} → ${t.destination||''}`;
+  document.getElementById("reviewModal").style.display="flex";
+}
+function closeReview(){ document.getElementById("reviewModal").style.display="none"; }
+function toggleTag(el){ el.classList.toggle("selected"); }
+function rmCharCount(){
+  const len=document.getElementById("reviewComment").value.length;
+  document.getElementById("rmCC").textContent=len;
+  const fill=document.getElementById("rmCharFill");
+  if(fill){
+    fill.style.width=(len/500*100)+'%';
+    fill.style.background=len>450?'linear-gradient(90deg,#e74c3c,#ff7675)':len>300?'linear-gradient(90deg,#f39c12,#fdcb6e)':'linear-gradient(90deg,#00ffe0,#00a8ff)';
+  }
+}
+
+// Star interactions
 const starEls=document.querySelectorAll("#starContainer span");
 starEls.forEach((s,i)=>{
-  s.addEventListener("mouseover",()=>{ starEls.forEach((ss,ii)=>ss.classList.toggle("active",ii<=i)); });
-  s.addEventListener("click",()=>{ selRating=i+1; });
+  s.addEventListener("mouseover",()=>{
+    starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<=i));
+    document.getElementById("rmRatingLabel").textContent=RL_LABELS[i+1];
+    document.getElementById("rmRatingLabel").className="rm-rating-label has-rating";
+  });
+  s.addEventListener("click",()=>{
+    selRating=i+1;
+    starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
+    _rmUpdateGlow(selRating);
+  });
 });
-document.getElementById("starContainer").addEventListener("mouseleave",()=>{ starEls.forEach((s,i)=>s.classList.toggle("active",i<selRating)); });
+document.getElementById("starContainer").addEventListener("mouseleave",()=>{
+  starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
+  document.getElementById("rmRatingLabel").textContent=selRating?RL_LABELS[selRating]:"Chạm vào sao để đánh giá";
+  document.getElementById("rmRatingLabel").className="rm-rating-label"+(selRating?" has-rating":"");
+});
+
+// Category star interactions
+document.querySelectorAll('.rm-cat-stars').forEach(container=>{
+  const spans=container.querySelectorAll('span');
+  let catVal=0;
+  spans.forEach((s,i)=>{
+    s.addEventListener('mouseover',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<=i)));
+    s.addEventListener('mouseout',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal)));
+    s.addEventListener('click',()=>{
+      catVal=i+1;
+      spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal));
+    });
+  });
+});
+
+// Rating-reactive background glow
+function _rmUpdateGlow(rating){
+  const glow=document.getElementById('rmBgGlow');
+  const icon=document.getElementById('rmHeadIcon');
+  const label=document.getElementById('rmRatingLabel');
+  if(!glow) return;
+  const colors={
+    1:'rgba(231,76,60,.10)',
+    2:'rgba(230,126,34,.08)',
+    3:'rgba(241,196,15,.08)',
+    4:'rgba(46,204,113,.08)',
+    5:'rgba(0,255,224,.10)'
+  };
+  const icons={1:'😞',2:'😕',3:'😊',4:'😄',5:'🤩'};
+  glow.style.background=`radial-gradient(circle,${colors[rating]||'rgba(0,255,224,.06)'} 0%,transparent 70%)`;
+  if(icon) icon.textContent=icons[rating]||'⭐';
+}
 
 async function submitReview(){
   const comment=document.getElementById("reviewComment").value;
   const user=JSON.parse(localStorage.getItem("user")||"null");
-  if(!user){ alert("Bạn cần đăng nhập"); return; }
-  if(!selRating){ alert("Vui lòng chọn số sao"); return; }
+  if(!user){ showToast("Bạn cần đăng nhập để đánh giá","error"); return; }
+  if(!selRating){ showToast("Vui lòng chọn số sao","error"); return; }
+  const tags=[...document.querySelectorAll(".rm-tag.selected")].map(t=>t.textContent.trim()).join(", ");
+  const fullComment=(tags?tags+(comment?"\n"+comment:""):comment)||"";
+  const btn=document.getElementById("rmSubmitBtn");
+  btn.disabled=true; btn.textContent="Đang gửi...";
   try{
-    await fetch("/api/reviews",{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ user_id:user.user_id, trip_id:curTrip, rating:Number(selRating), comment }) });
-    alert("Đánh giá thành công!"); closeReview(); loadAllTrips();
-  }catch{ alert("Lỗi gửi đánh giá"); }
+    await fetch("/api/reviews",{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ user_id:user.user_id, trip_id:curTrip, rating:Number(selRating), comment:fullComment }) });
+    showToast("🎉 Cảm ơn bạn đã đánh giá!","success"); closeReview(); loadAllTrips();
+  }catch{ showToast("Lỗi gửi đánh giá, thử lại!","error"); }
+  finally{ btn.disabled=false; btn.textContent="🚀 Gửi đánh giá"; }
 }
+
+/* ── REVIEWS CARDS CAROUSEL ── */
+const RV_DATA=[
+  {name:"Nguyễn Minh Khoa",av:"NK",avBg:"linear-gradient(135deg,#6c5ce7,#a29bfe)",route:"HCM → Đà Lạt",rating:5,date:"20/03/2026",tags:["Đúng giờ","Xe sạch sẽ","Tài xế thân thiện"],comment:"Chuyến xe tuyệt vời! Tài xế lái rất ổn định, ghế nằm êm ái. Đặt vé online trong 1 phút, hệ thống AI tư vấn chuyến rất hay."},
+  {name:"Trần Thị Lan Anh",av:"LA",avBg:"linear-gradient(135deg,#fd79a8,#e84393)",route:"HCM → Nha Trang",rating:5,date:"22/03/2026",tags:["Ghế êm ái","Điều hòa tốt","Yên tĩnh"],comment:"Lần đầu dùng SmartBusAI, rất ấn tượng. Thanh toán ZaloPay siêu nhanh, xe đến đúng giờ, nhân viên nhiệt tình."},
+  {name:"Phạm Đức Hùng",av:"PH",avBg:"linear-gradient(135deg,#00b894,#00cec9)",route:"Đà Nẵng → Huế",rating:4,date:"18/03/2026",tags:["Đúng giờ","WiFi ổn"],comment:"Dịch vụ tốt, app dễ dùng. Chỉ tiếc WiFi trên xe hơi chập chờn giữa đường, nhưng ghế ngồi rất OK."},
+  {name:"Lê Thị Mai",av:"LM",avBg:"linear-gradient(135deg,#0984e3,#74b9ff)",route:"HN → Hạ Long",rating:5,date:"25/03/2026",tags:["Tài xế thân thiện","Xe sạch sẽ","Chạy êm"],comment:"Tuyệt vời từ A đến Z! AI phân tích chuyến đi giúp tôi tiết kiệm được 80k. Sẽ dùng mãi."},
+  {name:"Võ Thành Nam",av:"VN",avBg:"linear-gradient(135deg,#e17055,#d63031)",route:"Cần Thơ → HCM",rating:5,date:"15/03/2026",tags:["Ghế êm ái","Đúng giờ"],comment:"Sử dụng dịch vụ thường xuyên, chưa bao giờ thất vọng. Tính năng so sánh chuyến xe rất tiện!"},
+  {name:"Hoàng Phúc Thịnh",av:"HT",avBg:"linear-gradient(135deg,#fdcb6e,#e67e22)",route:"HCM → Vũng Tàu",rating:5,date:"27/03/2026",tags:["Xe sạch sẽ","Điều hòa tốt","Yên tĩnh"],comment:"Ghế VIP xịn lắm, điều hòa mát rượi. Màn hình giải trí hay. Sẽ tiếp tục ủng hộ SmartBusAI!"},
+];
+let rvPage=0;
+const RV_PER=3;
+function rvRender(){
+  const track=document.getElementById("rvTrack");
+  const dots=document.getElementById("rvDots");
+  if(!track||!dots) return;
+  const pages=Math.ceil(RV_DATA.length/RV_PER);
+  track.innerHTML=RV_DATA.slice(rvPage*RV_PER,(rvPage+1)*RV_PER).map(r=>`
+    <div class="rv-card">
+      <div class="rv-card-top">
+        <div class="rv-avatar" style="background:${r.avBg}">${r.av}</div>
+        <div class="rv-author-info">
+          <div class="rv-author-name">${r.name}</div>
+          <div class="rv-author-route">🚌 ${r.route}</div>
+        </div>
+        <div class="rv-author-date">${r.date}</div>
+      </div>
+      <div class="rv-card-stars">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
+      <div class="rv-card-body">${r.comment}</div>
+      <div class="rv-card-tags">${r.tags.map(t=>`<span class="rv-card-tag">${t}</span>`).join("")}</div>
+      <div class="rv-verified">✔ Đã xác minh chuyến đi</div>
+    </div>`).join("");
+  dots.innerHTML=Array.from({length:pages},(_,i)=>`<div class="rv-dot${i===rvPage?" active":""}" onclick="rvGo(${i})"></div>`).join("");
+}
+function rvSlide(dir){ const pages=Math.ceil(RV_DATA.length/RV_PER); rvPage=(rvPage+dir+pages)%pages; rvRender(); }
+function rvGo(p){ rvPage=p; rvRender(); }
+// init on load
+setTimeout(rvRender,200);
 
 /* ============================================================
    AI LEFT PANEL — Trip Analyzer
@@ -1424,24 +3270,62 @@ async function smartBook(){
   resEl.innerHTML=html;
 }
 
-function selectSbTrip(i){
+async function selectSbTrip(i){
   const t=window._sbAllTrips[i];
   sbConfirmTrip={trip:t, seats:_sbSeats, user_id:_sbUser.user_id};
-  const total=Number(t.base_price)*_sbSeats;
-  // Highlight card chọn, ẩn các card khác
+
   document.querySelectorAll('[id^="sbCard"]').forEach((el,idx)=>{
     el.style.display=idx===i?"block":"none";
   });
-  // Thêm confirm UI vào card đã chọn
+
   const card=document.getElementById(`sbCard${i}`);
-  // remove existing confirm if any
   const old=card.querySelector(".sb-confirm-wrap");
   if(old) old.remove();
   const wrap=document.createElement("div");
   wrap.className="sb-confirm-wrap";
+  wrap.innerHTML=`<div style="border-top:1px solid rgba(0,255,224,.15);margin-top:10px;padding-top:10px;text-align:center;color:#7ab5c8;font-size:12px;">⏳ Đang tải sơ đồ ghế...</div>`;
+  card.appendChild(wrap);
+
+  let seatList=[];
+  try{
+    const sr=await fetch(`/api/seats/trip/${t.trip_id}`);
+    seatList=await sr.json();
+  }catch{
+    wrap.innerHTML=`<div class="sb-err">❌ Không tải được ghế. Thử lại.</div>
+      <button class="sb-btn-cancel" style="margin-top:6px;" onclick="smartBook()">← Chọn lại</button>`;
+    return;
+  }
+
+  const freeSeats=seatList.filter(s=>s.isBooked===0);
+  if(freeSeats.length<_sbSeats){
+    wrap.innerHTML=`<div class="sb-err">❌ Chỉ còn ${freeSeats.length} ghế trống, không đủ ${_sbSeats} ghế. Hãy chọn chuyến khác.</div>
+      <button class="sb-btn-cancel" style="margin-top:6px;" onclick="smartBook()">← Chọn lại</button>`;
+    return;
+  }
+
+  window._sbSeatList=seatList;
+  window._sbSelected=new Set();
+
+  let gridHTML='<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;" id="sbSeatGrid">';
+  seatList.forEach(s=>{
+    const booked=s.isBooked===1;
+    gridHTML+=`<button class="sb-seat-btn${booked?" sb-seat-booked":""}" id="sbseat${s.seat_id}"
+      ${booked?"disabled":`onclick="sbToggleSeat(${s.seat_id})"`}
+      title="${s.seat_number} (${s.seat_type})">${s.seat_number}</button>`;
+  });
+  gridHTML+='</div>';
+
   wrap.innerHTML=`
     <div style="border-top:1px solid rgba(0,255,224,.15);margin-top:10px;padding-top:10px;">
-      <div style="font-size:12px;color:#7ab5c8;margin-bottom:8px;">💳 Chọn thanh toán:</div>
+      <div style="font-size:12px;color:#7ab5c8;margin-bottom:5px;">🪑 Chọn <b style="color:#00ffe0;">${_sbSeats}</b> ghế (còn trống: ${freeSeats.length}/${seatList.length}):</div>
+      <div style="font-size:10px;color:#555;display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#1a4a3a;border:1px solid #2ecc71;border-radius:2px;vertical-align:middle;"></span> Trống</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#222;border:1px solid #444;border-radius:2px;vertical-align:middle;"></span> Đã đặt</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:rgba(0,255,224,.2);border:1px solid #00ffe0;border-radius:2px;vertical-align:middle;"></span> Đã chọn</span>
+      </div>
+      ${gridHTML}
+      <div id="sbSeatStatus" style="font-size:11px;color:#00ffe0;margin:8px 0;text-align:center;">Đã chọn: 0/${_sbSeats}</div>
+      <div style="font-size:12px;color:#7ab5c8;margin-bottom:6px;">💳 Thanh toán:</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
           <input type="radio" name="sbPay" value="CASH" checked style="width:auto;"> 🏢 Tại quầy
@@ -1453,32 +3337,49 @@ function selectSbTrip(i){
           <input type="radio" name="sbPay" value="ZALOPAY" style="width:auto;"> 💙 ZaloPay
         </label>
       </div>
-      <button class="sb-btn" id="sbConfirmBtn" onclick="confirmSmartBook()">🎯 Xác nhận đặt vé</button>
+      <button class="sb-btn" id="sbConfirmBtn" onclick="confirmSmartBook()" disabled>🎯 Xác nhận đặt vé</button>
       <button class="sb-btn-cancel" style="margin-top:6px;" onclick="smartBook()">← Chọn lại</button>
     </div>`;
-  card.appendChild(wrap);
+}
+
+function sbToggleSeat(seatId){
+  const sel=window._sbSelected;
+  const btn=document.getElementById(`sbseat${seatId}`);
+  if(sel.has(seatId)){
+    sel.delete(seatId);
+    btn.classList.remove("sb-seat-selected");
+  }else{
+    if(sel.size>=_sbSeats){
+      const first=sel.values().next().value;
+      sel.delete(first);
+      const fb=document.getElementById(`sbseat${first}`);
+      if(fb) fb.classList.remove("sb-seat-selected");
+    }
+    sel.add(seatId);
+    btn.classList.add("sb-seat-selected");
+  }
+  const status=document.getElementById("sbSeatStatus");
+  if(status) status.textContent=`Đã chọn: ${sel.size}/${_sbSeats}`;
+  const confirmBtn=document.getElementById("sbConfirmBtn");
+  if(confirmBtn) confirmBtn.disabled=sel.size<_sbSeats;
 }
 
 async function confirmSmartBook(){
   if(!sbConfirmTrip) return;
   const {trip, seats, user_id}=sbConfirmTrip;
+  const sel=window._sbSelected;
+  if(!sel||sel.size<seats) return;
+
   const payMethod=(document.querySelector('input[name="sbPay"]:checked')||{value:"CASH"}).value;
   const btn=document.getElementById("sbConfirmBtn");
   if(btn){ btn.disabled=true; btn.textContent="⏳ Đang đặt vé..."; }
 
+  const seatObjs=[...sel].map(sid=>{
+    const s=(window._sbSeatList||[]).find(x=>x.seat_id===sid);
+    return {id:sid, type:s?.seat_type||"NORMAL"};
+  });
+
   try{
-    // Lấy ghế còn trống
-    const sr=await fetch(`/api/seats/trip/${trip.trip_id}`);
-    const seatList=await sr.json();
-    const available=seatList.filter(s=>s.status==="AVAILABLE").slice(0,seats);
-    if(available.length<seats){
-      if(btn){ btn.disabled=false; btn.textContent="🎯 Xác nhận đặt vé"; }
-      document.getElementById("sbResult").insertAdjacentHTML("afterbegin",
-        `<div class="sb-err">❌ Ghế vừa hết. Vui lòng chọn chuyến khác.</div>`);
-      return;
-    }
-    const seatObjs=available.map(s=>({id:s.seat_id, type:s.seat_type||"NORMAL"}));
-    // Tạo booking PENDING (thanh toán sau ở profile)
     const bkRes=await fetch("/api/bookings",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -1494,7 +3395,7 @@ async function confirmSmartBook(){
         <div style="text-align:center;color:#aaa;font-size:12px;margin-top:4px;">Mã vé: <b style="color:#00ffe0;">#${bkData.booking_id}</b> · ⏳ Chờ thanh toán</div>
         <div style="text-align:center;margin-top:8px;font-size:11.5px;color:#7ab5c8;">
           ${trip.origin} → ${trip.destination}<br>
-          ${fmtT(trip.departure_time)} · ${seats} ghế · ${fmt(Number(trip.base_price)*seats)}
+          ${fmtT(trip.departure_time)} · ${seatObjs.length} ghế · ${fmt(Number(trip.base_price)*seatObjs.length)}
         </div>
         <button class="sb-btn" style="margin-top:10px;" onclick="window.location.href='profile.html#bookings'">💳 Thanh toán ngay</button>
         <button class="sb-btn-cancel" style="margin-top:6px;" onclick="document.getElementById('sbResult').innerHTML=''">Đóng</button>
@@ -1569,6 +3470,771 @@ async function confirmSmartBook(){
   }
   scheduleNext();
 })();
+</script>
+
+<!-- ═══ ROUTE VISUALIZATION MODAL ═══ -->
+<div id="routeModal">
+  <div class="rte-box">
+    <!-- Header -->
+    <div class="rte-header">
+      <div class="rte-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#00ffe0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+        <div class="rte-title-route">
+          <span class="rte-city-name rte-city-from" id="rtOrigin">—</span>
+          <span class="rte-arrow-path">→</span>
+          <span class="rte-city-name rte-city-to" id="rtDest">—</span>
+        </div>
+        <span class="rte-badge" id="rteStopCount"></span>
+      </div>
+
+      <div class="rte-controls">
+        <!-- Play / Pause -->
+        <button class="rte-ctrl-btn" id="rtePlayBtn" onclick="rteTogglePlay()">
+          <svg id="rtePlayIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span id="rtePlayLbl">Pause</span>
+        </button>
+
+        <!-- Speed -->
+        <div class="rte-speed">
+          <button class="rte-spd-btn" data-spd="0" onclick="rteSetSpeed(0)">0.3×</button>
+          <button class="rte-spd-btn active" data-spd="1" onclick="rteSetSpeed(1)">1×</button>
+          <button class="rte-spd-btn" data-spd="2" onclick="rteSetSpeed(2)">2.5×</button>
+        </div>
+
+        <!-- Toggle 2D / 3D -->
+        <button class="rte-ctrl-btn" id="rte3DBtn" onclick="rteToggleMode()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>
+          <span id="rteModeLbl">3D View</span>
+        </button>
+
+        <!-- Auto-replay -->
+        <label class="rte-replay" title="Tự phát lại">
+          <input type="checkbox" id="rteAutoReplay" checked>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </label>
+
+        <!-- Fullscreen -->
+        <button class="rte-ctrl-btn" id="rteFsBtn" onclick="rteToggleFullscreen()" title="Toàn màn hình">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+          <span id="rteFsLbl">Fullscreen</span>
+        </button>
+        <!-- Close -->
+        <button class="rte-close-btn" onclick="closeRouteModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- Trip Stats Bar -->
+    <div class="rte-stats-bar" id="rteStatsBar">
+      <div class="rte-stat">
+        <div class="rte-stat-val" id="rtStatDist">—</div>
+        <div class="rte-stat-lbl">📏 Cự ly</div>
+      </div>
+      <div class="rte-stat">
+        <div class="rte-stat-val" id="rtStatDur">—</div>
+        <div class="rte-stat-lbl">⏱️ Hành trình</div>
+      </div>
+      <div class="rte-stat">
+        <div class="rte-stat-val" id="rtStatStops">—</div>
+        <div class="rte-stat-lbl">📍 Điểm dừng</div>
+      </div>
+      <div class="rte-stat">
+        <div class="rte-stat-val" id="rtStatBus">—</div>
+        <div class="rte-stat-lbl">🚌 Loại xe</div>
+      </div>
+      <div class="rte-stat">
+        <div class="rte-stat-val" id="rtStatPrice">—</div>
+        <div class="rte-stat-lbl">💰 Giá vé</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="rte-body">
+      <!-- Map area (Leaflet 2D hoặc Canvas 3D) -->
+      <div class="rte-map-area">
+        <div id="rteLeaflet"></div>
+        <canvas id="rteCanvas" style="display:none;"></canvas>
+        <div class="rte-progress-pill"><span id="rteProgress">0%</span> · <span id="rteETA">—</span></div>
+      </div>
+
+      <!-- Timeline sidebar -->
+      <div class="rte-sidebar">
+        <div class="rte-sidebar-head">
+          <span>📍 Lộ trình</span>
+          <span class="rte-sidebar-badge" id="rteStopCount2"></span>
+        </div>
+        <div class="rte-timeline" id="rteTimeline">
+          <!-- built by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   ROUTE VISUALIZATION ENGINE
+══════════════════════════════════════════════════════════ */
+
+/* ── Geographic database (lat, lng) ── */
+const PROVINCE_GEO={
+  'Hà Nội':[21.028,105.854],'Hải Phòng':[20.844,106.688],
+  'Hải Dương':[20.940,106.331],'Hưng Yên':[20.646,106.051],
+  'Quảng Ninh':[21.010,107.293],'Bắc Ninh':[21.186,106.076],
+  'Bắc Giang':[21.273,106.194],'Thái Nguyên':[21.594,105.848],
+  'Vĩnh Phúc':[21.311,105.597],'Phú Thọ':[21.401,105.228],
+  'Hà Nam':[20.583,105.914],'Nam Định':[20.420,106.162],
+  'Thái Bình':[20.446,106.336],'Ninh Bình':[20.252,105.975],
+  'Thanh Hóa':[19.806,105.785],'Nghệ An':[18.679,105.682],
+  'Vinh':[18.679,105.682],'Hà Tĩnh':[18.355,105.887],
+  'Quảng Bình':[17.468,106.622],'Đồng Hới':[17.468,106.622],
+  'Quảng Trị':[16.753,107.185],'Huế':[16.467,107.590],
+  'Đà Nẵng':[16.068,108.212],'Quảng Nam':[15.574,108.474],
+  'Hội An':[15.878,108.335],'Quảng Ngãi':[15.121,108.792],
+  'Bình Định':[14.167,109.205],'Quy Nhơn':[13.776,109.223],
+  'Phú Yên':[13.096,109.297],'Tuy Hòa':[13.096,109.297],
+  'Khánh Hòa':[12.247,109.197],'Nha Trang':[12.247,109.197],
+  'Ninh Thuận':[11.574,108.990],'Phan Rang':[11.574,108.990],
+  'Bình Thuận':[11.090,108.109],'Phan Thiết':[10.928,108.100],
+  'Đồng Nai':[11.097,107.196],'Biên Hòa':[10.958,106.825],
+  'Bình Dương':[11.134,106.651],
+  'TP.HCM':[10.823,106.629],'Hồ Chí Minh':[10.823,106.629],'Sài Gòn':[10.823,106.629],
+  'Long An':[10.695,106.381],'Tiền Giang':[10.354,106.362],
+  'Mỹ Tho':[10.354,106.362],'Bến Tre':[10.240,106.375],
+  'Vĩnh Long':[10.253,105.972],'Cần Thơ':[10.045,105.788],
+  'Trà Vinh':[9.950,106.340],'Sóc Trăng':[9.603,105.981],
+  'An Giang':[10.522,105.126],'Cà Mau':[9.177,105.150],
+  'Đà Lạt':[11.940,108.458],'Lâm Đồng':[11.500,108.200],
+  'Buôn Ma Thuột':[12.667,108.050],'Đắk Lắk':[12.667,108.050],
+  'Gia Lai':[13.983,108.001],'Pleiku':[13.983,108.001],
+  'Kon Tum':[14.345,107.982],
+};
+
+/* ── Highway 1 spine (North→South) ── */
+const HWY1=['Hà Nội','Hà Nam','Nam Định','Ninh Bình','Thanh Hóa',
+  'Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế',
+  'Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên',
+  'Khánh Hòa','Ninh Thuận','Bình Thuận','Đồng Nai','TP.HCM'];
+
+/* ── Known routes ── */
+const ROUTE_DB={
+  'hà nội|hải phòng':['Hà Nội','Hưng Yên','Hải Dương','Hải Phòng'],
+  'hải phòng|hà nội':['Hải Phòng','Hải Dương','Hưng Yên','Hà Nội'],
+  'hà nội|quảng ninh':['Hà Nội','Bắc Giang','Quảng Ninh'],
+  'hà nội|đà nẵng':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế','Đà Nẵng'],
+  'hà nội|huế':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế'],
+  'hà nội|tp.hcm':['Hà Nội','Thanh Hóa','Nghệ An','Quảng Bình','Huế','Đà Nẵng','Bình Định','Khánh Hòa','Bình Thuận','Đồng Nai','TP.HCM'],
+  'hà nội|hồ chí minh':['Hà Nội','Thanh Hóa','Nghệ An','Quảng Bình','Huế','Đà Nẵng','Bình Định','Khánh Hòa','Bình Thuận','Đồng Nai','TP.HCM'],
+  'tp.hcm|hà nội':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Bình Định','Đà Nẵng','Huế','Quảng Bình','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
+  'hồ chí minh|hà nội':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Bình Định','Đà Nẵng','Huế','Quảng Bình','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
+  'tp.hcm|đà nẵng':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Phú Yên','Bình Định','Quảng Ngãi','Quảng Nam','Đà Nẵng'],
+  'đà nẵng|tp.hcm':['Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Ninh Thuận','Bình Thuận','Đồng Nai','TP.HCM'],
+  'đà nẵng|hà nội':['Đà Nẵng','Huế','Quảng Trị','Quảng Bình','Hà Tĩnh','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
+  'hà nội|vinh':['Hà Nội','Hà Nam','Ninh Bình','Thanh Hóa','Vinh'],
+  'vinh|hà nội':['Vinh','Thanh Hóa','Ninh Bình','Hà Nam','Hà Nội'],
+  'tp.hcm|đà lạt':['TP.HCM','Đồng Nai','Lâm Đồng','Đà Lạt'],
+  'đà lạt|tp.hcm':['Đà Lạt','Lâm Đồng','Đồng Nai','TP.HCM'],
+  'tp.hcm|cần thơ':['TP.HCM','Long An','Tiền Giang','Vĩnh Long','Cần Thơ'],
+  'cần thơ|tp.hcm':['Cần Thơ','Vĩnh Long','Tiền Giang','Long An','TP.HCM'],
+  'tp.hcm|nha trang':['TP.HCM','Đồng Nai','Bình Thuận','Nha Trang'],
+  'nha trang|tp.hcm':['Nha Trang','Bình Thuận','Đồng Nai','TP.HCM'],
+  'hà nội|nha trang':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Huế','Đà Nẵng','Quảng Ngãi','Bình Định','Phú Yên','Nha Trang'],
+  'tp.hcm|buôn ma thuột':['TP.HCM','Đồng Nai','Lâm Đồng','Buôn Ma Thuột'],
+  'hà nội|buôn ma thuột':['Hà Nội','Thanh Hóa','Nghệ An','Huế','Đà Nẵng','Gia Lai','Buôn Ma Thuột'],
+  'tp.hcm|phan thiết':['TP.HCM','Đồng Nai','Phan Thiết'],
+  'hà nội|ninh bình':['Hà Nội','Hà Nam','Ninh Bình'],
+  'hà nội|nam định':['Hà Nội','Hà Nam','Nam Định'],
+  'hà nội|hải dương':['Hà Nội','Hưng Yên','Hải Dương'],
+};
+
+function normP(s){ return (s||'').toLowerCase().trim().replace(/thành phố\s*/,'').replace(/tỉnh\s*/,'').replace(/tp\.\s*/,'tp.').replace(/hcm|hồ chí minh/,'tp.hcm'); }
+
+function findGeo(name){
+  const n=normP(name);
+  for(const[k,v]of Object.entries(PROVINCE_GEO)){if(normP(k)===n)return v;}
+  for(const[k,v]of Object.entries(PROVINCE_GEO)){if(normP(k).includes(n)||n.includes(normP(k)))return v;}
+  return null;
+}
+
+function inferRoute(origin,dest){
+  const o=normP(origin),d=normP(dest);
+  const key=`${o}|${d}`;
+  if(ROUTE_DB[key]) return ROUTE_DB[key];
+
+  /* Try HWY1 spine */
+  const oIdx=HWY1.findIndex(p=>normP(p)===o||normP(p).includes(o)||o.includes(normP(p)));
+  const dIdx=HWY1.findIndex(p=>normP(p)===d||normP(p).includes(d)||d.includes(normP(p)));
+  if(oIdx>=0&&dIdx>=0){
+    const[s,e]=oIdx<dIdx?[oIdx,dIdx]:[dIdx,oIdx];
+    let stops=HWY1.slice(s,e+1);
+    if(stops.length>9){const step=(stops.length-1)/5;const r=[stops[0]];for(let i=1;i<5;i++)r.push(stops[Math.round(i*step)]);r.push(stops[stops.length-1]);stops=r;}
+    return oIdx<=dIdx?stops:[...stops].reverse();
+  }
+
+  /* Geographic fallback */
+  const oG=findGeo(origin),dG=findGeo(dest);
+  if(!oG||!dG) return [origin,dest];
+  const[oLat]=oG,[dLat]=dG;
+  const minL=Math.min(oLat,dLat),maxL=Math.max(oLat,dLat);
+  const between=Object.entries(PROVINCE_GEO)
+    .filter(([n,[lat]])=>normP(n)!==o&&normP(n)!==d&&lat>=minL-0.5&&lat<=maxL+0.5)
+    .sort(([,a],[,b])=>oLat>dLat?b[0]-a[0]:a[0]-b[0]).slice(0,5).map(([n])=>n);
+  return [origin,...between,dest];
+}
+
+/* ── Canvas coordinate mapping ── */
+const VNB={minLat:8.3,maxLat:23.8,minLng:102.0,maxLng:110.8};
+const VN_POLY=[[105.3,23.3],[106.5,22.4],[107.5,22.1],[108.6,21.5],
+  [107.9,20.9],[107.1,20.4],[106.8,19.8],[106.5,18.4],[107.3,16.8],
+  [108.2,16.1],[108.9,15.1],[109.5,13.1],[109.1,11.5],[108.5,11.0],
+  [107.5,10.8],[106.6,10.3],[105.0,9.5],[104.2,10.0],[103.0,10.5],
+  [102.5,11.0],[102.3,12.5],[102.0,14.5],[102.2,16.5],[103.0,18.5],
+  [103.5,21.5],[103.0,22.0],[103.5,22.5],[104.5,22.9],[105.3,23.3]];
+
+function geo2c(lat,lng,W,H){
+  return[
+    (lng-VNB.minLng)/(VNB.maxLng-VNB.minLng)*W*0.86+W*0.07,
+    (VNB.maxLat-lat)/(VNB.maxLat-VNB.minLat)*H*0.90+H*0.05
+  ];
+}
+
+/* ── State ── */
+let RTE={open:false,trip:null,stops:[],progress:0,playing:true,speed:1,animId:null,mode:'2d',lastTs:0};
+
+/* ── Weather by region ── */
+function _regionWeather(lat){
+  if(lat>=20)  return{ico:'⛅',lbl:'Mát mẻ'};
+  if(lat>=15)  return{ico:'🌤️',lbl:'Nắng nhẹ'};
+  if(lat>=12)  return{ico:'☀️',lbl:'Nắng nóng'};
+  return{ico:'🌧️',lbl:'Mưa nhiều'};
+}
+
+/* ── Haversine distance (km) ── */
+function _haverDist([lat1,lng1],[lat2,lng2]){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+
+/* ── Open modal ── */
+function openRouteModal(tripId){
+  const t=allTripsData.find(x=>x.trip_id===tripId);
+  if(!t) return;
+  RTE.trip=t;
+  RTE.progress=0; RTE.playing=true; RTE.speed=1;
+  const names=inferRoute(t.origin,t.destination);
+  RTE.stops=names.map(name=>({name,geo:findGeo(name)||[0,0]}));
+
+  // Header
+  document.getElementById('rtOrigin').textContent=t.origin;
+  document.getElementById('rtDest').textContent=t.destination;
+  document.getElementById('rteStopCount').textContent=RTE.stops.length+' điểm';
+
+  // Stats bar
+  const depMs=new Date(t.departure_time).getTime();
+  const arrMs=new Date(t.arrival_time).getTime();
+  const durMs=arrMs-depMs;
+  const durH=Math.floor(durMs/3600000);
+  const durM=Math.floor((durMs%3600000)/60000);
+  const durStr=durMs>0?(durH>0?(durM>0?durH+'h'+String(durM).padStart(2,'0'):durH+' giờ'):durM+' phút'):'—';
+  const btLabel={'VIP':'💎 VIP','LIMOUSINE':'👑 Limousine','NORMAL':'🚌 Tiêu Chuẩn'}[t.bus_type]||'🚌 Xe khách';
+  const fmtP=v=>Number(v||0).toLocaleString('vi-VN')+'đ';
+
+  document.getElementById('rtStatDist').textContent  = t.distance_km ? t.distance_km+' km' : '—';
+  document.getElementById('rtStatDur').textContent   = durStr;
+  document.getElementById('rtStatStops').textContent = RTE.stops.length+' điểm';
+  document.getElementById('rtStatBus').textContent   = btLabel;
+  document.getElementById('rtStatPrice').textContent = fmtP(t.base_price);
+  const sb2=document.getElementById('rteStopCount2');
+  if(sb2) sb2.textContent=RTE.stops.length+' điểm';
+
+  document.getElementById('routeModal').style.display='flex';
+  document.getElementById('rtePlayLbl').textContent='Pause';
+  document.querySelectorAll('.rte-spd-btn').forEach(b=>b.classList.toggle('active',+b.dataset.spd===1));
+  buildTimeline();
+  if(RTE.animId) cancelAnimationFrame(RTE.animId);
+  if(RTE.mode==='2d') _startLeafletMap(); else _startCanvas3D();
+}
+
+function closeRouteModal(){
+  document.getElementById('routeModal').style.display='none';
+  if(RTE.animId){cancelAnimationFrame(RTE.animId);RTE.animId=null;}
+  RTE.playing=false;
+  if(_lfMap){_lfMap.remove();_lfMap=null;_lfProgLine=null;_lfBusMk=null;}
+}
+
+function rteTogglePlay(){
+  RTE.playing=!RTE.playing;
+  if(RTE.playing&&RTE.progress>=1){RTE.progress=0;}
+  document.getElementById('rtePlayLbl').textContent=RTE.playing?'Pause':'Play';
+  const icon=document.getElementById('rtePlayIcon');
+  icon.innerHTML=RTE.playing
+    ?'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+    :'<path d="M8 5v14l11-7z"/>';
+}
+
+function rteSetSpeed(v){
+  RTE.speed=v;
+  document.querySelectorAll('.rte-spd-btn').forEach(b=>b.classList.toggle('active',+b.dataset.spd===v));
+}
+
+function rteToggleMode(){
+  if(RTE.animId){cancelAnimationFrame(RTE.animId);RTE.animId=null;}
+  RTE.mode=RTE.mode==='2d'?'3d':'2d';
+  document.getElementById('rteModeLbl').textContent=RTE.mode==='2d'?'3D View':'2D Map';
+  RTE.progress=0; RTE.playing=true;
+  if(RTE.mode==='2d'){
+    document.getElementById('rteLeaflet').style.display='block';
+    document.getElementById('rteCanvas').style.display='none';
+    _startLeafletMap();
+  } else {
+    document.getElementById('rteLeaflet').style.display='none';
+    document.getElementById('rteCanvas').style.display='block';
+    _startCanvas3D();
+  }
+}
+
+function rteToggleFullscreen(){
+  const modal=document.getElementById('routeModal');
+  const isFs=modal.classList.toggle('rte-fullscreen');
+  document.getElementById('rteFsLbl').textContent=isFs?'Exit':'Fullscreen';
+  if(_lfMap) setTimeout(()=>_lfMap.invalidateSize(),100);
+}
+
+/* ── Timeline ── */
+function buildTimeline(){
+  const t=RTE.trip;
+  const stops=RTE.stops;
+  const depMs=new Date(t.departure_time).getTime();
+  const arrMs=new Date(t.arrival_time).getTime();
+  const durMs=arrMs-depMs;
+  const segMs=durMs/Math.max(stops.length-1,1);
+  const totalDist=Number(t.distance_km)||0;
+
+  // Build cumulative distances using haversine between consecutive geo coords
+  const cumDist=[0];
+  for(let i=1;i<stops.length;i++){
+    const gA=stops[i-1].geo, gB=stops[i].geo;
+    const d=(gA[0]||0)&&(gB[0]||0)?_haverDist(gA,gB):(totalDist>0?Math.round(totalDist/(stops.length-1)):0);
+    cumDist.push(cumDist[i-1]+d);
+  }
+  const scaleFactor = totalDist>0 && cumDist[cumDist.length-1]>0 ? totalDist/cumDist[cumDist.length-1] : 1;
+
+  const html=stops.map((s,i)=>{
+    const eta=new Date(depMs+i*segMs);
+    const ts=eta.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    const realCumKm=Math.round(cumDist[i]*scaleFactor);
+    const segKm=i>0?Math.round((cumDist[i]-cumDist[i-1])*scaleFactor):0;
+    const isFirst=i===0, isLast=i===stops.length-1;
+    const stopType=isFirst?'start-stop':isLast?'end-stop':'';
+    const w=_regionWeather(s.geo[0]||16);
+    let metaLines='';
+    if(isFirst){
+      metaLines=`🚀 Điểm xuất phát · Km 0`;
+    } else if(isLast){
+      metaLines=`🏁 Điểm đến · Km ${realCumKm}`;
+    } else {
+      metaLines=`📍 Điểm dừng · Km ${realCumKm}<br>↕ +${segKm} km từ điểm trước`;
+    }
+    return`<div class="rte-stop ${stopType}" id="rteStop${i}" onclick="rteJumpTo(${i})">
+      <div class="rte-stop-dot"></div>
+      <div class="rte-stop-info">
+        <div class="rte-stop-name">${s.name} <span class="rte-stop-weather">${w.ico}</span></div>
+        <div class="rte-stop-eta">🕐 ${ts}</div>
+        <div class="rte-stop-meta">${metaLines}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('rteTimeline').innerHTML=html;
+}
+
+function rteJumpTo(idx){
+  RTE.progress=idx/(RTE.stops.length-1);
+  if(!RTE.playing){RTE.playing=true;document.getElementById('rtePlayLbl').textContent='Pause';}
+}
+
+/* ── Leaflet Real Map ── */
+let _lfMap=null, _lfBusMk=null, _lfProgLine=null;
+
+function _startLeafletMap(){
+  const cv=document.getElementById('rteCanvas');
+  cv.style.display='none';
+  const lDiv=document.getElementById('rteLeaflet');
+  lDiv.style.display='block'; lDiv.style.position='absolute'; lDiv.style.inset='0';
+
+  if(_lfMap){_lfMap.remove();_lfMap=null;}
+  const stops=RTE.stops;
+  const lls=stops.map(s=>[s.geo[0],s.geo[1]]).filter(([a,b])=>a!==0||b!==0);
+  if(!lls.length) return;
+
+  _lfMap=L.map('rteLeaflet',{
+    zoomControl:false, attributionControl:false,
+    preferCanvas:false, zoomSnap:0.5, zoomDelta:0.5
+  });
+
+  // Custom dark tile with high contrast
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    subdomains:'abcd', maxZoom:19, opacity:0.92
+  }).addTo(_lfMap);
+
+  // Custom zoom control bottom-right
+  L.control.zoom({position:'bottomright'}).addTo(_lfMap);
+
+  // Fit bounds with padding
+  try{ _lfMap.fitBounds(L.latLngBounds(lls).pad(0.22)); }catch(e){}
+
+  // Shadow/halo line (thick, blurred behind)
+  L.polyline(lls,{color:'rgba(0,200,255,0.12)',weight:14,lineCap:'round',lineJoin:'round'}).addTo(_lfMap);
+
+  // Background dashed route line
+  const bgL=L.polyline(lls,{color:'rgba(0,255,224,0.18)',weight:2.5,dashArray:'8 6'}).addTo(_lfMap);
+  setTimeout(()=>{
+    const el=bgL.getElement();
+    if(el) el.querySelectorAll('path').forEach(p=>p.classList.add('rte-bg-dash'));
+  },300);
+
+  // Progress glow line (animated)
+  _lfProgLine=L.polyline([lls[0]],{color:'#00ffe0',weight:5,lineCap:'round',lineJoin:'round',opacity:0.95}).addTo(_lfMap);
+  setTimeout(()=>{
+    const el=_lfProgLine.getElement();
+    if(el) el.querySelectorAll('path').forEach(p=>p.classList.add('rte-prog-path'));
+  },300);
+
+  // START marker — premium pulse
+  const mkStart=L.divIcon({
+    html:`<div style="position:relative;display:flex;align-items:center;gap:6px;">
+      <div style="width:14px;height:14px;border-radius:50%;background:#00a8ff;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,168,255,.25),0 0 16px rgba(0,168,255,.8);animation:stopPulse 1.2s ease infinite;flex-shrink:0;"></div>
+      <div style="background:rgba(0,10,28,.88);border:1px solid rgba(0,168,255,.45);border-radius:8px;padding:3px 9px;font-size:11px;font-weight:800;color:#7eb8ff;white-space:nowrap;backdrop-filter:blur(8px);">🟢 ${stops[0].name}</div>
+    </div>`,
+    iconSize:[0,0],iconAnchor:[7,7],className:''
+  });
+  L.marker(lls[0],{icon:mkStart}).addTo(_lfMap)
+    .bindTooltip(`<b>🚀 Điểm xuất phát</b><br>${stops[0].name}`,{direction:'right',className:'rte-tip'});
+
+  // END marker
+  const mkEnd=L.divIcon({
+    html:`<div style="position:relative;display:flex;align-items:center;gap:6px;">
+      <div style="width:14px;height:14px;border-radius:50%;background:#00ffe0;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,255,224,.25),0 0 16px rgba(0,255,224,.8);flex-shrink:0;"></div>
+      <div style="background:rgba(0,10,28,.88);border:1px solid rgba(0,255,224,.45);border-radius:8px;padding:3px 9px;font-size:11px;font-weight:800;color:#00ffe0;white-space:nowrap;backdrop-filter:blur(8px);">🏁 ${stops[stops.length-1].name}</div>
+    </div>`,
+    iconSize:[0,0],iconAnchor:[7,7],className:''
+  });
+  L.marker(lls[lls.length-1],{icon:mkEnd}).addTo(_lfMap)
+    .bindTooltip(`<b>🏁 Điểm đến</b><br>${stops[stops.length-1].name}`,{direction:'left',className:'rte-tip'});
+
+  // Intermediate stops with km tooltip
+  const totalDist=Number(RTE.trip.distance_km)||0;
+  for(let i=1;i<stops.length-1&&i<lls.length-1;i++){
+    const depMs=new Date(RTE.trip.departure_time).getTime();
+    const durMs=new Date(RTE.trip.arrival_time).getTime()-depMs;
+    const ratio=i/(stops.length-1);
+    const stopTime=new Date(depMs+durMs*ratio).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    const kmEst=totalDist?Math.round(totalDist*ratio)+' km':'—';
+    const mkMid=L.divIcon({
+      html:`<div style="width:9px;height:9px;border-radius:50%;background:rgba(0,212,255,.7);border:1.5px solid rgba(0,255,224,.6);box-shadow:0 0 8px rgba(0,212,255,.5);"></div>`,
+      iconSize:[9,9],iconAnchor:[4.5,4.5],className:''
+    });
+    L.marker(lls[i],{icon:mkMid}).addTo(_lfMap)
+      .bindTooltip(`<b>📍 ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}`,{direction:'top',className:'rte-tip'});
+  }
+
+  // Animated bus marker
+  const mkBus=L.divIcon({
+    html:`<div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(0,255,224,.9)) drop-shadow(0 2px 4px rgba(0,0,0,.8));transform:translateX(-50%) translateY(-50%);line-height:1;">🚌</div>`,
+    iconSize:[0,0],iconAnchor:[0,0],className:''
+  });
+  _lfBusMk=L.marker(lls[0],{icon:mkBus,zIndexOffset:1000}).addTo(_lfMap);
+
+  // Km scale ruler (custom control)
+  const ruler=L.control({position:'bottomleft'});
+  ruler.onAdd=()=>{
+    const d=L.DomUtil.create('div');
+    d.style.cssText='background:rgba(0,10,24,.80);border:1px solid rgba(0,255,224,.18);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;color:#00ffe0;pointer-events:none;backdrop-filter:blur(6px);';
+    d.innerHTML=`📏 ${totalDist?totalDist+' km tổng':'—'} &nbsp;·&nbsp; ${stops.length} điểm dừng`;
+    return d;
+  };
+  ruler.addTo(_lfMap);
+
+  // Animation loop
+  const SPEED=[0.25,0.9,2.2];
+  let lastTs=0;
+  function frame(ts){
+    const dt=Math.min(ts-lastTs,50); lastTs=ts;
+    if(RTE.playing){
+      RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+      if(RTE.progress>=1){
+        RTE.progress=1; RTE.playing=false;
+        document.getElementById('rtePlayLbl').textContent='Play';
+        const ri=document.getElementById('rtePlayIcon'); if(ri) ri.innerHTML='<path d="M8 5v14l11-7z"/>';
+        if(document.getElementById('rteAutoReplay').checked)
+          setTimeout(()=>{if(RTE.animId){RTE.progress=0;RTE.playing=true;document.getElementById('rtePlayLbl').textContent='Pause';}},1600);
+      }
+    }
+    // Update progress line
+    const n=lls.length-1;
+    const fi=Math.min(RTE.progress*n,n);
+    const si=Math.floor(fi), ei=Math.min(si+1,n);
+    const frac=fi-si;
+    const interp=[
+      lls[si][0]+(lls[ei][0]-lls[si][0])*frac,
+      lls[si][1]+(lls[ei][1]-lls[si][1])*frac
+    ];
+    const progPts=lls.slice(0,si+1);
+    progPts.push(interp);
+    _lfProgLine.setLatLngs(progPts);
+    if(_lfBusMk) _lfBusMk.setLatLng(interp);
+
+    // Highlight active stop
+    const activeIdx=Math.round(RTE.progress*(stops.length-1));
+    document.querySelectorAll('.rte-stop').forEach((el,i)=>{
+      el.classList.toggle('active',i===activeIdx);
+      el.classList.toggle('passed',i<activeIdx);
+    });
+    if(activeIdx!==RTE._lastActiveStop){
+      RTE._lastActiveStop=activeIdx;
+      const activeEl=document.getElementById('rteStop'+activeIdx);
+      if(activeEl) activeEl.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+
+    // Update progress pill
+    const pct=Math.round(RTE.progress*100);
+    const remMs=(new Date(RTE.trip.arrival_time).getTime()-new Date(RTE.trip.departure_time).getTime())*(1-RTE.progress);
+    const remH=Math.floor(remMs/3600000), remM=Math.floor((remMs%3600000)/60000);
+    const etaStr=remMs>0?(remH>0?remH+'h'+String(remM).padStart(2,'0'):remM+' phút'):'Đã đến';
+    const prog=document.getElementById('rteProgress'); if(prog) prog.textContent=pct+'%';
+    const eta=document.getElementById('rteETA'); if(eta) eta.textContent='còn '+etaStr;
+
+    RTE.animId=requestAnimationFrame(frame);
+  }
+  RTE._lastActiveStop=-1;
+  RTE.animId=requestAnimationFrame(frame);
+}
+
+/* ── 2D Canvas ── */
+function _startCanvas2D(){
+  const cv=document.getElementById('rteCanvas');
+  const ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const R=cv.getBoundingClientRect();
+  cv.width=R.width*dpr; cv.height=R.height*dpr;
+  ctx.scale(dpr,dpr);
+  const W=R.width,H=R.height;
+  const SPEED=[0.25,0.9,2.2];
+  RTE.lastTs=0;
+
+  function frame(ts){
+    const dt=Math.min(ts-RTE.lastTs,50); RTE.lastTs=ts;
+    if(RTE.playing){
+      RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+      if(RTE.progress>=1){
+        RTE.progress=1; RTE.playing=false;
+        document.getElementById('rtePlayLbl').textContent='Play';
+        const ri=document.getElementById('rtePlayIcon'); if(ri) ri.innerHTML='<path d="M8 5v14l11-7z"/>';
+        if(document.getElementById('rteAutoReplay').checked)
+          setTimeout(()=>{if(!RTE.playing&&RTE.animId){RTE.progress=0;RTE.playing=true;document.getElementById('rtePlayLbl').textContent='Pause';}},1600);
+      }
+    }
+    ctx.clearRect(0,0,W,H);
+
+    /* BG */
+    const bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#060d1a'); bg.addColorStop(1,'#081220');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    /* grid */
+    ctx.strokeStyle='rgba(0,255,224,0.03)'; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=W/9){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=H/12){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    /* Vietnam outline */
+    ctx.beginPath();
+    VN_POLY.forEach(([ln,lt],i)=>{const[x,y]=geo2c(lt,ln,W,H);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.closePath();
+    ctx.fillStyle='rgba(0,255,224,0.04)'; ctx.fill();
+    ctx.strokeStyle='rgba(0,255,224,0.14)'; ctx.lineWidth=1.5; ctx.stroke();
+
+    /* pre-compute stop coords */
+    const pts=RTE.stops.map(s=>geo2c(s.geo[0],s.geo[1],W,H));
+    const n=pts.length;
+    const progIdx=RTE.progress*(n-1);
+    const segI=Math.floor(progIdx);
+    const segF=progIdx-segI;
+
+    /* dim dashed guide line */
+    ctx.setLineDash([5,5]); ctx.strokeStyle='rgba(0,255,224,0.10)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* glowing animated line */
+    if(segI>0||segF>0){
+      ctx.shadowColor='#00ffe0'; ctx.shadowBlur=8;
+      const g=ctx.createLinearGradient(pts[0][0],pts[0][1],pts[Math.min(segI+1,n-1)][0],pts[Math.min(segI+1,n-1)][1]);
+      g.addColorStop(0,'#00a8ff'); g.addColorStop(1,'#00ffe0');
+      ctx.strokeStyle=g; ctx.lineWidth=3;
+      ctx.beginPath();
+      for(let i=0;i<=segI&&i<n;i++) i?ctx.lineTo(pts[i][0],pts[i][1]):ctx.moveTo(pts[i][0],pts[i][1]);
+      if(segI<n-1){const[x1,y1]=pts[segI],[x2,y2]=pts[Math.min(segI+1,n-1)];ctx.lineTo(x1+(x2-x1)*segF,y1+(y2-y1)*segF);}
+      ctx.stroke(); ctx.shadowBlur=0;
+    }
+
+    /* stop nodes */
+    const now=performance.now()/1000;
+    pts.forEach(([x,y],i)=>{
+      const passed=i<=progIdx;
+      const cur=Math.round(progIdx)===i;
+      const terminal=i===0||i===n-1;
+      const r=terminal?9:cur?7.5:5.5;
+      if(cur){
+        const p=0.5+0.5*Math.sin(now*3.8);
+        ctx.beginPath(); ctx.arc(x,y,r+5+p*5,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,255,224,${0.10+p*0.10})`; ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=passed?'#00ffe0':terminal?'#2a6090':'#1a3a58';
+      ctx.shadowColor=passed?'#00ffe0':'transparent'; ctx.shadowBlur=passed?10:0;
+      ctx.fill(); ctx.shadowBlur=0;
+      if(terminal){ctx.beginPath();ctx.arc(x,y,r-3,0,Math.PI*2);ctx.fillStyle='#04111f';ctx.fill();}
+      ctx.fillStyle=cur?'#00ffe0':passed?'rgba(200,255,240,.85)':'rgba(255,255,255,.35)';
+      ctx.font=`${cur?700:600} ${cur?12:10}px "Segoe UI",Arial`;
+      ctx.textAlign='center';
+      const ly=y+(i===n-1&&y>H*0.72?-14:17);
+      ctx.fillText(RTE.stops[i].name,x,ly);
+    });
+
+    /* animated bus */
+    if(RTE.progress>0&&RTE.progress<1&&segI<n-1){
+      const[x1,y1]=pts[segI],[x2,y2]=pts[Math.min(segI+1,n-1)];
+      const bx=x1+(x2-x1)*segF,by=y1+(y2-y1)*segF;
+      ctx.beginPath(); ctx.arc(bx,by,15,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,255,224,0.12)'; ctx.fill();
+      ctx.beginPath(); ctx.arc(bx,by,9,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,.95)'; ctx.shadowColor='#00ffe0'; ctx.shadowBlur=18;
+      ctx.fill(); ctx.shadowBlur=0;
+      ctx.font='11px Arial'; ctx.textAlign='center'; ctx.fillText('🚌',bx,by+4);
+    }
+
+    /* sync timeline */
+    const act=Math.min(Math.round(progIdx),n-1);
+    document.querySelectorAll('.rte-stop').forEach((el,i)=>el.classList.toggle('active',i===act));
+    const pEl=document.getElementById('rteProgress'); if(pEl) pEl.textContent=Math.round(RTE.progress*100)+'%';
+    const eEl=document.getElementById('rteETA');
+    if(eEl&&RTE.trip){
+      const depMs=new Date(RTE.trip.departure_time).getTime();
+      const eta=new Date(depMs+(new Date(RTE.trip.arrival_time).getTime()-depMs)*RTE.progress);
+      eEl.textContent=eta.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    }
+    RTE.animId=requestAnimationFrame(frame);
+  }
+  RTE.animId=requestAnimationFrame(frame);
+}
+
+/* ── 3D Canvas (Three.js) ── */
+function _startCanvas3D(){
+  function _init(){
+    const cv=document.getElementById('rteCanvas');
+    const R=cv.getBoundingClientRect();
+    const W=R.width,H=R.height;
+    const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+    renderer.setSize(W,H); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.setClearColor(0x060d1a,1);
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(42,W/H,0.1,300);
+    camera.position.set(0,9,15); camera.lookAt(0,0,0);
+    scene.add(new THREE.AmbientLight(0x223355,2));
+    const sun=new THREE.DirectionalLight(0xaaddff,1.2);
+    sun.position.set(5,12,8); scene.add(sun);
+
+    /* Ground plane */
+    const pg=new THREE.PlaneGeometry(22,30);
+    const pm=new THREE.MeshLambertMaterial({color:0x060f20});
+    const plane=new THREE.Mesh(pg,pm); plane.rotation.x=-Math.PI/2; scene.add(plane);
+    const grid=new THREE.GridHelper(24,22,0x0d2244,0x091b38); scene.add(grid);
+
+    /* Map stops to 3D */
+    function g3d(lat,lng){return new THREE.Vector3((lng-106.3)*1.7,0,-(lat-16.0)*1.55);}
+    const pts3=RTE.stops.map(s=>g3d(s.geo[0],s.geo[1]));
+    const curvePts=pts3.map(p=>new THREE.Vector3(p.x,0.15,p.z));
+    const curve=new THREE.CatmullRomCurve3(curvePts);
+
+    /* Route tube */
+    const tubeG=new THREE.TubeGeometry(curve,64,0.065,6,false);
+    const tubeM=new THREE.MeshBasicMaterial({color:0x00ffe0,transparent:true,opacity:.75});
+    scene.add(new THREE.Mesh(tubeG,tubeM));
+
+    /* City markers */
+    pts3.forEach((p,i)=>{
+      const isT=i===0||i===pts3.length-1;
+      const r=isT?.22:.14;
+      const col=i===0?0x00a8ff:i===pts3.length-1?0x00ffe0:0x2af0d0;
+      const sp=new THREE.Mesh(new THREE.SphereGeometry(r,12,8),new THREE.MeshBasicMaterial({color:col}));
+      sp.position.set(p.x,r,p.z); scene.add(sp);
+      const gl=new THREE.PointLight(col,1.5,2.5); gl.position.set(p.x,0.5,p.z); scene.add(gl);
+    });
+
+    /* Bus */
+    const busG=new THREE.SphereGeometry(.22,10,8);
+    const busM=new THREE.MeshBasicMaterial({color:0xffffff});
+    const bus=new THREE.Mesh(busG,busM); scene.add(bus);
+    const busGlow=new THREE.PointLight(0x00ffe0,2.5,4); bus.add(busGlow);
+
+    const SPEED=[0.25,0.9,2.2];
+    let camAngle=.35,lt=0;
+    function frame3(ts){
+      const dt=Math.min(ts-lt,50); lt=ts;
+      camAngle+=0.004;
+      camera.position.x=Math.sin(camAngle)*16;
+      camera.position.z=Math.cos(camAngle)*13;
+      camera.position.y=8.5;
+      camera.lookAt(0,0,0);
+      if(RTE.playing){
+        RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+        if(RTE.progress>=1){
+          RTE.progress=1; RTE.playing=false;
+          if(document.getElementById('rteAutoReplay').checked)
+            setTimeout(()=>{if(!RTE.playing){RTE.progress=0;RTE.playing=true;}},1600);
+        }
+      }
+      const tp=Math.min(RTE.progress,.9999);
+      const pos=curve.getPoint(tp); bus.position.set(pos.x,.28,pos.z);
+      const act=Math.min(Math.round(RTE.progress*(RTE.stops.length-1)),RTE.stops.length-1);
+      document.querySelectorAll('.rte-stop').forEach((el,i)=>el.classList.toggle('active',i===act));
+      const pEl=document.getElementById('rteProgress'); if(pEl) pEl.textContent=Math.round(RTE.progress*100)+'%';
+      renderer.render(scene,camera);
+      RTE.animId=requestAnimationFrame(frame3);
+    }
+    RTE.animId=requestAnimationFrame(frame3);
+  }
+  if(window.THREE) _init();
+  else{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js';
+    s.onload=_init; document.head.appendChild(s);
+  }
+}
+
+/* close on backdrop click */
+document.getElementById('routeModal').addEventListener('click',function(e){if(e.target===this)closeRouteModal();});
+</script>
+
+<!-- ── PWA: Service Worker Registration ── -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(reg => {
+        console.log('[PWA] Service Worker registered:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available
+              if (window.showToast) showToast('🔄 Phiên bản mới có sẵn — tải lại để cập nhật', 'info');
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>

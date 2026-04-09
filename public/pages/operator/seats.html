@@ -78,24 +78,33 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .btn-sec:hover{color:var(--neon);border-color:rgba(0,255,224,.25);}
 
 /* ── TWO COLUMN LAYOUT ── */
-.layout{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start;}
+.layout{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start;}
 
 /* ── LEFT PANEL: Selector + Stats ── */
 .left-panel{display:flex;flex-direction:column;gap:16px;}
-.panel{background:var(--glass);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-.panel-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-.panel-head h3{font-size:14px;font-weight:800;}
+.panel{background:rgba(6,14,28,.88);border:1px solid rgba(255,255,255,.12);border-radius:18px;overflow:visible;
+  box-shadow:0 8px 28px rgba(0,0,0,.4);}
+.panel-head{padding:15px 20px 13px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;
+  background:rgba(0,255,224,.04);border-radius:18px 18px 0 0;}
+.panel-head h3{font-size:13.5px;font-weight:800;color:var(--text);}
 .panel-body{padding:18px 20px;}
 
 /* Selector */
-.sel-group{margin-bottom:14px;}
+.sel-group{margin-bottom:16px;}
 .sel-group:last-child{margin-bottom:0;}
-.sel-label{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
-.sel{width:100%;padding:10px 13px;border-radius:11px;background:rgba(255,255,255,.07);
-  border:1px solid var(--border2);color:var(--text);font-size:13px;
-  font-family:"Segoe UI",Arial,sans-serif;outline:none;cursor:pointer;transition:border .2s;}
-.sel:focus{border-color:rgba(0,255,224,.4);box-shadow:0 0 0 3px rgba(0,255,224,.08);}
-.sel option{background:#0d1827;}
+.sel-label{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.sel{width:100%;padding:11px 14px;border-radius:11px;
+  background:rgba(8,20,44,0.9);
+  border:1px solid rgba(255,255,255,.18);
+  color:var(--text);font-size:13px;font-weight:600;
+  font-family:"Segoe UI",Arial,sans-serif;outline:none;cursor:pointer;
+  transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300ffe0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;}
+.sel:focus{border-color:rgba(0,255,224,.5);box-shadow:0 0 0 3px rgba(0,255,224,.10);}
+.sel:hover{border-color:rgba(0,255,224,.30);}
+.sel option{background:#0d1827;color:#e8f4f8;}
 
 /* Bus info card */
 .bus-info-card{background:rgba(0,255,224,.05);border:1px solid rgba(0,255,224,.15);
@@ -280,6 +289,19 @@ select.form-control option{background:#0d1827;}
 /* Responsive */
 @media(max-width:1100px){.layout{grid-template-columns:1fr;}}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── PREMIUM ── */
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+.pg-head-left h1{background:linear-gradient(90deg,#fff,#a29bfe 50%,#00ffe0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.pg-sub{font-size:13px;color:var(--neon);margin-top:3px;font-weight:600;opacity:.8;}
+.hdr-logo-ic{font-size:20px;}
+/* Pulse animation on selected seat */
+@keyframes seatPulse{0%,100%{box-shadow:0 0 18px rgba(0,255,224,.3)}50%{box-shadow:0 0 28px rgba(0,255,224,.55)}}
+.seat.selected{animation:seatPulse 1.8s ease-in-out infinite;}
+/* Left panel — sticky but no overflow clip (would cut off <select> dropdown) */
+.left-panel{position:sticky;top:80px;align-self:start;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -311,9 +333,9 @@ select.form-control option{background:#0d1827;}
   <div class="hdr-actions">
     <div class="op-chip">
       <div class="op-avatar">🏢</div>
-      <span class="op-name">Nhà xe</span>
+      <span class="op-name" id="opNameChip">Nhà xe</span>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -321,10 +343,10 @@ select.form-control option{background:#0d1827;}
   <div class="pg-head">
     <div class="pg-head-left">
       <h1>💺 Sơ đồ Ghế</h1>
-      <p>Xem trạng thái, phân loại ghế NORMAL / VIP và lịch sử đặt — SEAT table</p>
+      <p class="pg-sub" id="seatClock">Đang tải...</p>
     </div>
     <div style="display:flex;gap:10px;">
-      <button class="btn btn-sec" onclick="loadAll()">🔄 Làm mới</button>
+      <button class="btn btn-sec" onclick="loadAll()">Làm mới</button>
       <button class="btn btn-add" onclick="openAddSeat()">＋ Thêm ghế</button>
     </div>
   </div>
@@ -408,7 +430,7 @@ select.form-control option{background:#0d1827;}
 
         <!-- Bus route bar -->
         <div class="bus-header-bar">
-          <span class="bh-route" id="shellRoute">🚌 Chọn xe để xem sơ đồ ghế</span>
+          <span class="bh-route" id="shellRoute">Chọn xe để xem sơ đồ ghế</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <span class="bh-departure" id="shellDep"></span>
             <span class="bh-status" id="shellStatus" style="display:none;">OPEN</span>
@@ -418,7 +440,7 @@ select.form-control option{background:#0d1827;}
         <!-- Seat map body -->
         <div class="bus-body" id="busSeatBody">
           <div style="text-align:center;padding:60px 20px;color:var(--text3);">
-            <div style="font-size:52px;margin-bottom:16px;opacity:.3;">🚌</div>
+            <div style="font-size:52px;margin-bottom:16px;opacity:.3;"></div>
             <div style="font-size:14px;font-weight:600;">Chọn xe ở bên trái để hiển thị sơ đồ ghế</div>
             <div style="font-size:12px;margin-top:6px;">SEAT.bus_id → BUS.bus_id</div>
           </div>
@@ -671,7 +693,7 @@ async function onTripChange(){
   if(!id){
     currentTrip=null;
     if(currentBus){
-      document.getElementById("shellRoute").textContent=`🚌 ${currentBus.plate_number} — ${currentBus.bus_type||""}`;
+      document.getElementById("shellRoute").textContent=`${currentBus.plate_number} — ${currentBus.bus_type||""}`;
       document.getElementById("shellStatus").style.display="none";
       document.getElementById("shellDep").textContent="";
     }
@@ -756,17 +778,17 @@ function renderShell(){
   if(!currentBus||!seats.length){
     document.getElementById("busSeatBody").innerHTML=`
       <div style="text-align:center;padding:60px 20px;color:var(--text3);">
-        <div style="font-size:52px;margin-bottom:16px;opacity:.3;">🚌</div>
+        <div style="font-size:52px;margin-bottom:16px;opacity:.3;"></div>
         <div style="font-size:14px;font-weight:600;">Chọn xe ở bên trái để hiển thị sơ đồ ghế</div>
         <div style="font-size:12px;margin-top:6px;">SEAT.bus_id → BUS.bus_id</div>
       </div>`;
     document.getElementById("seatCountBar").style.display="none";
-    document.getElementById("shellRoute").textContent="🚌 Chọn xe để xem sơ đồ ghế";
+    document.getElementById("shellRoute").textContent="Chọn xe để xem sơ đồ ghế";
     document.getElementById("shellStatus").style.display="none";
     document.getElementById("shellDep").textContent="";
     return;
   }
-  document.getElementById("shellRoute").textContent=`🚌 ${currentBus.plate_number} — ${currentBus.bus_type||""}`;
+  document.getElementById("shellRoute").textContent=`${currentBus.plate_number} — ${currentBus.bus_type||""}`;
   document.getElementById("seatCountBar").style.display="flex";
   renderSeatMap();
 }
@@ -866,7 +888,7 @@ function openSeatDetail(seat,booked){
     ["🔢 Số ghế",seat.seat_number],
     ["🏷️ Loại ghế",curType],
     ["🚌 Bus ID","#"+seat.bus_id],
-    ["📊 Trạng thái",booked?"ĐÃ ĐẶT":"TRỐNG"],
+    ["Trạng thái",booked?"ĐÃ ĐẶT":"TRỐNG"],
     ["💰 Loại vé",isVip?"VIP (BOOKING_DETAIL.price cao hơn)":"Thường"],
   ].map(([l,v])=>`<div class="dg-item"><div class="dg-label">${l}</div><div class="dg-val">${v}</div></div>`).join("");
   // Disable type change if booked
@@ -922,29 +944,66 @@ function openAddSeat(){
   if(!currentBus){toast("Vui lòng chọn xe trước","error");return;}
   document.getElementById("addSeatModal").classList.add("open");
 }
-function addSeats(){
+async function addSeats(){
   const num=document.getElementById("add_seatNum").value.trim();
   const type=document.getElementById("add_seatType").value;
   const count=Number(document.getElementById("add_seatCount").value)||1;
   if(!num){toast("Nhập mã ghế","error");return;}
+  let added=0;
   for(let i=0;i<count;i++){
     const label=count>1?`${num}-${i+1}`:num;
     if(seats.find(s=>s.seat_number===label)){toast(`Ghế ${label} đã tồn tại`,"error");continue;}
-    const newId=Math.max(0,...seats.map(s=>s.seat_id))+1;
-    seats.push({seat_id:newId,bus_id:currentBus.bus_id,seat_number:label,seat_type:type});
+    try{
+      const res=await fetch(`${API}/seats`,{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({bus_id:currentBus.bus_id,seat_number:label,seat_type:type})
+      });
+      if(res.ok){
+        const s=await res.json();
+        seats.push({seat_id:s.seat_id,bus_id:currentBus.bus_id,seat_number:label,seat_type:type});
+        added++;
+      }else{
+        const err=await res.json().catch(()=>({}));
+        toast(err.message||`Lỗi thêm ghế ${label}`,"error");
+      }
+    }catch{
+      // Fallback: add locally with temp id
+      const newId=Math.max(0,...seats.map(s=>s.seat_id))+1;
+      seats.push({seat_id:newId,bus_id:currentBus.bus_id,seat_number:label,seat_type:type});
+      added++;
+    }
   }
   closeModal("addSeatModal");renderSeatMap();updateStats();
-  toast(`Đã thêm ${count} ghế ${type}`,"success");
+  if(added>0)toast(`Đã thêm ${added} ghế ${type}`,"success");
 }
 
 /* ── Delete seat ── */
-function deleteSeat(seatId){
+async function deleteSeat(seatId){
   if(bookedSeatIds.has(seatId)){toast("Không thể xóa ghế đã có booking","error");return;}
+  try{
+    const res=await fetch(`${API}/seats/${seatId}`,{method:"DELETE"});
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      toast(err.message||"Lỗi xóa ghế","error");return;
+    }
+  }catch{}
   seats=seats.filter(s=>s.seat_id!==seatId);delete pendingChanges[seatId];
   if(selectedSeatId===seatId)selectedSeatId=null;
   closeModal("seatDetailModal");renderSeatMap();updateStats();
   toast("Đã xóa ghế","info");
 }
+
+/* ── Operator name & live clock ── */
+(function(){
+  const nm=localStorage.getItem("operator_name")||"Nhà xe";
+  const chip=document.getElementById("opNameChip");if(chip)chip.textContent=nm;
+  function tick(){
+    const d=new Date();const pad=n=>String(n).padStart(2,"0");
+    const el=document.getElementById("seatClock");
+    if(el)el.textContent="📅 "+d.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"})+" · ⏰ "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  tick();setInterval(tick,1000);
+})();
 
 /* ── Init ── */
 async function loadAll(){

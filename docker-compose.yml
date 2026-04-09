@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: smartbusai_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass123}
+      MYSQL_DATABASE: ${DB_NAME:-smartbusai}
+      MYSQL_USER: ${DB_USER:-smartbus}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-smartpass123}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./smartbusai.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - smartbusai_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpass123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app:
+    build: .
+    container_name: smartbusai_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 2704
+      DB_HOST: db
+      DB_USER: ${DB_USER:-smartbus}
+      DB_PASSWORD: ${DB_PASSWORD:-smartpass123}
+      DB_NAME: ${DB_NAME:-smartbusai}
+      DB_PORT: 3306
+      NODE_ENV: production
+    ports:
+      - "2704:2704"
+    networks:
+      - smartbusai_net
+
+volumes:
+  db_data:
+
+networks:
+  smartbusai_net:
+    driver: bridge

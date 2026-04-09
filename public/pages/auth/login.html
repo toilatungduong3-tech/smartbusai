@@ -2,601 +2,666 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>SmartBusAI - Đăng nhập</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SmartBusAI — Đăng nhập</title>
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:"Segoe UI",Arial;
+:root{
+  --neon:#00ffe0; --blue:#00a8ff; --purple:#7c5ce7;
+  --card:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  --border:rgba(255,255,255,0.09);
 }
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html,body{min-height:100vh;background:#04090f;}
 body{
-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-background:radial-gradient(circle at 20% 20%,#1a1a40,#000814 70%);
-overflow:hidden;
-color:white;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse at 15% 25%,rgba(0,255,224,.07) 0%,transparent 45%),
+    radial-gradient(ellipse at 80% 70%,rgba(108,92,231,.09) 0%,transparent 45%),
+    radial-gradient(ellipse at 50% 5%, rgba(0,164,255,.07) 0%,transparent 40%),
+    #04090f;
+  animation:pageIn .35s ease;
+}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CANVAS ── */
+#gc{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* ── METEORS ── */
+.mt{position:fixed;pointer-events:none;z-index:1;width:1.5px;height:55px;
+  background:linear-gradient(rgba(255,255,255,.9),transparent);
+  transform:rotate(42deg);animation:mtfall linear infinite;}
+.mt:nth-child(1){top:5%; left:10%;animation-duration:16s;}
+.mt:nth-child(2){top:25%;left:55%;animation-duration:22s;animation-delay:6s;}
+.mt:nth-child(3){top:60%;left:78%;animation-duration:18s;animation-delay:11s;}
+@keyframes mtfall{0%{transform:translate3d(0,0,0)rotate(42deg);opacity:1}100%{transform:translate3d(700px,700px,0)rotate(42deg);opacity:0}}
+
+/* ── PLANETS ── */
+.pl{position:fixed;border-radius:50%;pointer-events:none;z-index:1;}
+.pl1{width:140px;height:140px;top:60px;right:80px;
+  background:radial-gradient(circle at 30% 30%,#d8ccff,#6c5ce7 44%,#1a0a40 78%);
+  box-shadow:0 0 60px rgba(108,92,231,.55),0 0 120px rgba(108,92,231,.20);}
+.pl2{width:60px;height:60px;bottom:100px;left:60px;
+  background:radial-gradient(circle at 38% 38%,#fff,#00d4ff 54%,#001a33 84%);
+  box-shadow:0 0 38px rgba(0,212,255,.65);animation:pfloat 11s ease-in-out infinite;}
+@keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+
+/* ── STAR LAYER ── */
+.sf{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.ts{position:absolute;border-radius:50%;background:#fff;
+  animation:twinkle var(--td,3s) ease-in-out var(--dl,0s) infinite alternate;}
+@keyframes twinkle{0%{opacity:.06;transform:scale(.8)}100%{opacity:.85;transform:scale(1.3)}}
+
+/* ════════════ LAYOUT ════════════ */
+.wrap{
+  position:relative;z-index:10;
+  display:flex;gap:64px;align-items:center;
+  width:min(1120px,96vw);padding:36px 24px;
 }
 
-/* GALAXY BACKGROUND */
+/* ════════════ LEFT — INTRO ════════════ */
+.intro{flex:1;min-width:0;}
 
-body::before,
-body::after{
-content:"";
-position:absolute;
-width:200%;
-height:200%;
-
-background-image:
-radial-gradient(2px 2px at 20px 30px,#fff,transparent),
-radial-gradient(2px 2px at 40px 70px,#8bd3ff,transparent),
-radial-gradient(1px 1px at 90px 40px,#ffffff,transparent),
-radial-gradient(2px 2px at 130px 80px,#caa6ff,transparent);
-
-background-size:200px 200px;
-
-animation:starsMove 120s linear infinite;
-
-opacity:0.35;
+.intro-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+.logo-icon{
+  width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 22px rgba(0,255,224,.45);
+}
+.logo-icon svg{width:26px;height:26px;fill:#030d18;}
+.logo-name{
+  font-size:22px;font-weight:900;letter-spacing:.4px;
+  background:linear-gradient(90deg,#00ffe0,#7eb8ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo-badge{
+  font-size:9px;font-weight:900;padding:3px 9px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(0,255,224,.20),rgba(0,168,255,.14));
+  border:1px solid rgba(0,255,224,.35);color:#00ffe0;
+  letter-spacing:.8px;text-transform:uppercase;
+  box-shadow:0 0 10px rgba(0,255,224,.18);
 }
 
-body::after{
-animation-duration:180s;
-opacity:0.2;
+.intro-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:20px;margin-bottom:18px;
+  background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.24);
+  font-size:11.5px;font-weight:700;color:#00ffe0;letter-spacing:.3px;
 }
-
-@keyframes starsMove{
-from{transform:translateY(0);}
-to{transform:translateY(-2000px);}
-}
-
-/* MAIN */
-
-.container{
-display:flex;
-gap:80px;
-align-items:center;
-z-index:2;
-}
-
-/* INTRO */
-
-.intro{
-width:460px;
-}
-
-.badge{
-display:inline-block;
-
-padding:6px 12px;
-
-border-radius:20px;
-
-background:rgba(0,200,255,0.15);
-border:1px solid rgba(0,200,255,0.4);
-
-font-size:12px;
-
-margin-bottom:15px;
-}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#00ffe0;
+  box-shadow:0 0 8px #00ffe0;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
 
 .intro h1{
-
-font-size:42px;
-
-margin-bottom:15px;
-
-background:linear-gradient(90deg,#7aa6ff,#c084ff,#ff7edb);
--webkit-background-clip:text;
-color:transparent;
-
+  font-size:40px;font-weight:900;line-height:1.15;margin-bottom:14px;
+  background:linear-gradient(120deg,#fff 30%,#7eb8ff 65%,#00ffe0 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-.3px;
 }
-
 .intro p{
-color:#cfd8ff;
-line-height:1.7;
-margin-bottom:25px;
+  font-size:14.5px;color:rgba(255,255,255,.62);line-height:1.75;
+  margin-bottom:28px;font-weight:500;max-width:430px;
 }
 
-/* FEATURES */
+/* ── STATS ROW ── */
+.stats-row{
+  display:flex;gap:0;margin-bottom:30px;
+  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
+  border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 28px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.stat-item{
+  flex:1;padding:14px 16px;text-align:center;position:relative;
+}
+.stat-item+.stat-item::before{
+  content:"";position:absolute;left:0;top:20%;height:60%;
+  width:1px;background:rgba(255,255,255,.08);
+}
+.stat-num{
+  font-size:20px;font-weight:900;line-height:1;margin-bottom:4px;
+  background:linear-gradient(135deg,#fff,var(--neon));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-lbl{font-size:10.5px;color:rgba(255,255,255,.40);font-weight:700;letter-spacing:.3px;}
 
-.features{
-display:flex;
-flex-direction:column;
-gap:12px;
-margin-bottom:25px;
+/* ── FEATURE CARDS ── */
+.feat-list{display:flex;flex-direction:column;gap:10px;}
+
+.feat-card{
+  border-radius:16px;overflow:hidden;cursor:pointer;
+  border:1px solid rgba(255,255,255,.09);
+  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
+  transition:border-color .25s,box-shadow .25s;
+  box-shadow:0 4px 16px rgba(0,0,0,.30);
+}
+.feat-card:hover{border-color:rgba(255,255,255,.16);}
+.feat-card.open{border-color:var(--fc,rgba(0,255,224,.28));box-shadow:0 8px 30px rgba(0,0,0,.40),0 0 24px var(--fc-glow,rgba(0,255,224,.08));}
+
+.feat-card:nth-child(1){--fc:rgba(0,255,224,.30);--fc-glow:rgba(0,255,224,.10);--fc-color:#00ffe0;--fc-bg:rgba(0,255,224,.08);}
+.feat-card:nth-child(2){--fc:rgba(0,168,255,.30);--fc-glow:rgba(0,168,255,.10);--fc-color:#00a8ff;--fc-bg:rgba(0,168,255,.08);}
+.feat-card:nth-child(3){--fc:rgba(124,92,231,.30);--fc-glow:rgba(124,92,231,.10);--fc-color:#a78bfa;--fc-bg:rgba(124,92,231,.08);}
+
+.feat-head{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;
+  user-select:none;
+}
+.feat-ico{
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  background:var(--fc-bg,rgba(0,255,224,.08));
+  border:1px solid var(--fc,rgba(0,255,224,.22));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow:0 0 12px var(--fc-glow,rgba(0,255,224,.06));
+  transition:box-shadow .25s;
+}
+.feat-card.open .feat-ico{box-shadow:0 0 20px var(--fc-glow,rgba(0,255,224,.18));}
+.feat-info{flex:1;min-width:0;}
+.feat-title{font-size:13.5px;font-weight:800;color:#fff;margin-bottom:2px;transition:color .22s;}
+.feat-card.open .feat-title{color:var(--fc-color,#00ffe0);}
+.feat-pill{
+  display:inline-block;padding:2px 9px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.2px;
+  background:var(--fc-bg,rgba(0,255,224,.08));
+  border:1px solid var(--fc,rgba(0,255,224,.20));
+  color:var(--fc-color,#00ffe0);
+}
+.feat-arrow{
+  font-size:12px;color:rgba(255,255,255,.28);
+  transition:transform .3s,color .25s;flex-shrink:0;
+}
+.feat-card.open .feat-arrow{transform:rotate(180deg);color:var(--fc-color,#00ffe0);}
+
+/* expand panel */
+.feat-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .42s cubic-bezier(.22,.61,.36,1),opacity .32s;
+  opacity:0;
+}
+.feat-body.open{max-height:300px;opacity:1;}
+.feat-body-inner{
+  padding:0 16px 16px;border-top:1px solid rgba(255,255,255,.06);
+  padding-top:13px;
+}
+.feat-body-inner p{
+  font-size:12.5px;color:rgba(200,230,245,.75);line-height:1.72;font-weight:500;margin-bottom:10px;
+}
+.feat-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.feat-tag{
+  padding:3px 11px;border-radius:20px;font-size:10.5px;font-weight:700;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.60);
 }
 
-.feature{
-
-display:flex;
-align-items:center;
-gap:12px;
-
-padding:12px 14px;
-
-background:rgba(255,255,255,0.05);
-border-radius:10px;
-
-border:1px solid rgba(255,255,255,0.08);
-
-}
-
-.feature svg{
-width:20px;
-height:20px;
-fill:#7aa6ff;
-}
-
-/* STATS */
-
-.stats{
-display:flex;
-gap:25px;
-}
-
-.stat{
-text-align:center;
-}
-
-.stat h3{
-font-size:20px;
-color:#8bd3ff;
-}
-
-.stat span{
-font-size:12px;
-color:#bbb;
-}
-
-/* LOGIN CARD */
-
+/* ════════════ RIGHT — LOGIN CARD ════════════ */
 .card{
-
-width:380px;
-
-padding:40px 35px;
-
-background:rgba(15,20,40,0.85);
-
-backdrop-filter:blur(30px);
-
-border-radius:18px;
-
-border:1px solid rgba(255,255,255,0.25);
-
-box-shadow:
-0 0 30px rgba(0,140,255,0.3),
-0 0 80px rgba(140,0,255,0.25);
-
+  width:380px;flex-shrink:0;
+  background:linear-gradient(145deg,rgba(6,14,36,.94),rgba(3,9,24,.90));
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,255,255,.11);
+  border-top:1px solid rgba(255,255,255,.16);
+  border-radius:24px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.04),
+    0 24px 60px rgba(0,0,0,.65),
+    0 0 50px rgba(0,168,255,.08),
+    0 0 90px rgba(124,92,231,.06),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  overflow:hidden;
 }
 
-.card h2{
-
-text-align:center;
-margin-bottom:25px;
-
-font-size:26px;
-
-background:linear-gradient(90deg,#7aa6ff,#ff7edb);
--webkit-background-clip:text;
-color:transparent;
-
+/* card top stripe */
+.card::before{
+  content:"";display:block;height:3px;
+  background:linear-gradient(90deg,#00ffe0,#00a8ff,#7c5ce7);
 }
 
-/* INPUT */
+.card-body{padding:32px 30px 28px;}
 
-.input-group{
-margin-bottom:18px;
+.card-head{text-align:center;margin-bottom:26px;}
+.card-head h2{
+  font-size:24px;font-weight:900;
+  background:linear-gradient(135deg,#fff 0%,#7eb8ff 55%,#00ffe0 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:5px;
 }
+.card-head p{font-size:12px;color:rgba(255,255,255,.35);font-weight:600;}
 
-label{
-font-size:13px;
-color:#cfd8ff;
+/* inputs */
+.input-group{margin-bottom:16px;}
+.input-group label{
+  display:block;font-size:11.5px;font-weight:800;
+  color:rgba(255,255,255,.50);text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:7px;
 }
-
-input{
-width:100%;
-padding:12px;
-margin-top:6px;
-
-border-radius:10px;
-
-border:1px solid rgba(255,255,255,0.2);
-
-background:rgba(0,0,0,0.45);
-
-color:white;
+.input-wrap{position:relative;}
+.input-wrap input{
+  width:100%;padding:11px 14px;border-radius:12px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;font-size:13.5px;font-weight:500;
+  font-family:"Segoe UI",Arial,sans-serif;
+  transition:border-color .22s,box-shadow .22s,background .22s;
 }
-
-input:focus{
-outline:none;
-border-color:#7aa6ff;
-box-shadow:0 0 10px #7aa6ff;
+.input-wrap input:focus{
+  outline:none;border-color:rgba(0,255,224,.45);
+  background:rgba(0,255,224,.04);
+  box-shadow:0 0 0 3px rgba(0,255,224,.08),0 0 12px rgba(0,255,224,.12);
 }
+.input-wrap input::placeholder{color:rgba(255,255,255,.22);}
 
-/* CAPTCHA */
-.captcha-box{
-
-display:flex;
-align-items:center;
-gap:12px;
-
-margin-top:8px;
-
-padding:10px;
-border-radius:8px;
-background:rgba(0,0,0,0.4);
-border:1px solid rgba(255,255,255,0.2);
-}
-
+/* captcha */
+.captcha-row{display:flex;gap:10px;margin-top:8px;align-items:stretch;}
 .captcha-code{
-flex:1;
-text-align:center;
-font-size:20px;
-font-weight:bold;
-letter-spacing:5px;
-padding:8px 12px;
-border-radius:6px;
-background:rgba(255,255,255,0.05);
-border:1px solid rgba(255,255,255,0.15);
-color:#8bd3ff;
+  flex:1;display:flex;align-items:center;justify-content:center;
+  font-size:21px;font-weight:900;letter-spacing:7px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);
+  border-radius:11px;padding:10px;color:#00ffe0;
+  text-shadow:0 0 14px rgba(0,255,224,.50);
+  user-select:none;cursor:default;
+  font-family:"Courier New",monospace;
+  position:relative;overflow:hidden;
 }
-
+.captcha-code::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,255,224,.03) 3px,rgba(0,255,224,.03) 4px);
+  pointer-events:none;
+}
 .refresh-btn{
-
-border:none;
-
-padding:9px 16px;
-
-border-radius:6px;
-
-background:linear-gradient(135deg,#00c6ff,#7a5cff);
-
-color:white;
-
-font-size:13px;
-
-font-weight:600;
-
-cursor:pointer;
-
-white-space:nowrap;
-
-/* Quan trọng: đặt width cố định để nút không bị đè bởi button full-width bên dưới */
-width:auto;
-margin-top:0;
-
+  padding:0 16px;border-radius:11px;border:1px solid rgba(0,255,224,.26);
+  background:rgba(0,255,224,.08);color:#00ffe0;
+  font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;
+  font-family:"Segoe UI",Arial,sans-serif;letter-spacing:.2px;
+  transition:all .22s;
 }
+.refresh-btn:hover:not(:disabled){background:rgba(0,255,224,.18);border-color:rgba(0,255,224,.45);}
+.refresh-btn:disabled{opacity:.40;cursor:not-allowed;}
 
-.refresh-btn:hover{
-box-shadow:0 0 10px #7aa6ff;
+/* login button */
+.login-btn{
+  width:100%;margin-top:20px;padding:13px;border:none;border-radius:13px;
+  font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.3px;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff,#7c5ce7);
+  color:#030d18;
+  box-shadow:0 0 20px rgba(0,255,224,.30),0 6px 22px rgba(0,0,0,.30);
+  transition:transform .22s,box-shadow .22s;
+  font-family:"Segoe UI",Arial,sans-serif;position:relative;overflow:hidden;
 }
-
-.refresh-btn:disabled{
-background:#555;
-cursor:not-allowed;
+.login-btn::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  border-radius:13px;
 }
-
-/* LOGIN BUTTON */
-
-button.login-btn{
-
-width:100%;
-
-margin-top:5px;
-
-padding:13px;
-
-border:none;
-
-border-radius:10px;
-
-font-size:16px;
-font-weight:bold;
-
-background:linear-gradient(135deg,#00c6ff,#7a5cff,#ff7edb);
-
-color:white;
-
-cursor:pointer;
-
-transition:0.3s;
-
+.login-btn:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 0 32px rgba(0,255,224,.50),0 10px 28px rgba(0,0,0,.35);
 }
+.login-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
 
-button.login-btn:hover{
-
-transform:translateY(-2px);
-
-box-shadow:
-0 0 12px #7aa6ff,
-0 0 20px #ff7edb;
-
-}
-
-button.login-btn:disabled{
-opacity:0.7;
-cursor:not-allowed;
-transform:none;
-}
-
-/* MESSAGE */
-
+/* message */
 .message{
-text-align:center;
-margin-top:12px;
-font-size:14px;
-min-height:20px;
+  text-align:center;margin-top:12px;font-size:12.5px;min-height:18px;
+  font-weight:700;letter-spacing:.1px;
+}
+.success{color:#2ecc71;}
+.error{color:#e74c3c;}
+
+/* forgot + register */
+.card-links{margin-top:16px;text-align:center;}
+.forgot-link{
+  display:inline-block;padding:8px 22px;border-radius:25px;
+  font-size:12.5px;font-weight:800;letter-spacing:.2px;
+  color:#7eb8ff;text-decoration:none;
+  border:1px solid rgba(126,184,255,.28);
+  background:rgba(126,184,255,.07);
+  transition:all .22s;
+}
+.forgot-link:hover{
+  background:rgba(126,184,255,.18);
+  border-color:rgba(126,184,255,.55);
+  color:#fff;box-shadow:0 0 14px rgba(126,184,255,.20);
 }
 
-.success{color:#7cffb2;}
-.error{color:#ff6b6b;}
-
-/* FOOTER */
-
-.footer{
-margin-top:20px;
-text-align:center;
-font-size:14px;
-color:#cfd8ff;
+.divider{
+  display:flex;align-items:center;gap:12px;margin:18px 0 14px;
 }
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.07);}
+.divider span{font-size:10.5px;color:rgba(255,255,255,.28);font-weight:700;letter-spacing:.4px;white-space:nowrap;}
 
-.footer a{
-
-display:inline-block;
-margin-top:8px;
-
-padding:7px 14px;
-
-border-radius:20px;
-
-background:linear-gradient(135deg,#00c6ff,#7a5cff);
-
-color:white;
-
-text-decoration:none;
-font-weight:bold;
-
+.register-wrap{text-align:center;}
+.register-wrap p{font-size:12.5px;color:rgba(255,255,255,.38);margin-bottom:10px;font-weight:600;}
+.register-btn{
+  display:inline-block;padding:9px 28px;border-radius:25px;
+  border:1px solid rgba(0,255,224,.28);
+  background:rgba(0,255,224,.07);
+  color:#00ffe0;font-size:12.5px;font-weight:800;
+  text-decoration:none;letter-spacing:.2px;
+  transition:all .22s;
 }
-
-.footer a:hover{
-box-shadow:0 0 10px #7aa6ff;
-}
-
+.register-btn:hover{background:rgba(0,255,224,.18);border-color:rgba(0,255,224,.50);box-shadow:0 0 18px rgba(0,255,224,.20);}
 </style>
 <script src="/js/api.js"></script>
 </head>
-
 <body>
 
-<div class="container">
+<canvas id="gc"></canvas>
+<div class="sf" id="starField"></div>
+<div class="pl pl1"></div>
+<div class="pl pl2"></div>
+<div class="mt"></div><div class="mt"></div><div class="mt"></div>
 
-<!-- INTRO -->
+<div class="wrap">
 
-<div class="intro">
+  <!-- ════ LEFT INTRO ════ -->
+  <div class="intro">
 
-<div class="badge">🚀 AI Smart Transportation Platform</div>
+    <!-- Logo -->
+    <div class="intro-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 3H7C5.3 3 4 4.3 4 6v11c0 1.1.6 2 1.5 2.5L6 21h2v-1h8v1h2l.5-1.5C19.4 19 20 18.1 20 17V6c0-1.7-1.3-3-3-3zm1 14H6V6h12v11zM9 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm6 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zM8 9h8v3H8z"/></svg>
+      </div>
+      <div class="logo-name">SmartBusAI</div>
+      <div class="logo-badge">AI PLATFORM</div>
+    </div>
 
-<h1>SmartBusAI</h1>
+    <!-- Badge -->
+    <div class="intro-badge">
+      <span class="badge-dot"></span>
+      Hệ thống vận tải thông minh thế hệ mới
+    </div>
 
-<p>
-Nền tảng đặt vé xe và quản lý vận hành thông minh ứng dụng AI giúp
-tối ưu tuyến đường, phân tích nhu cầu hành khách và nâng cao hiệu quả
-vận hành cho doanh nghiệp vận tải.
-</p>
+    <h1>Đặt vé thông minh<br>cùng trí tuệ AI</h1>
 
-<div class="features">
+    <p>Nền tảng đặt vé xe và quản lý vận hành ứng dụng AI — tối ưu tuyến đường, dự đoán nhu cầu hành khách và tối đa hoá doanh thu cho doanh nghiệp vận tải.</p>
 
-<div class="feature">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">Tuyến xe</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">50K+</div>
+        <div class="stat-lbl">Người dùng</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">99.9%</div>
+        <div class="stat-lbl">Uptime</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4.9★</div>
+        <div class="stat-lbl">Đánh giá</div>
+      </div>
+    </div>
 
-<svg viewBox="0 0 24 24">
-<path d="M12 2L2 7l10 5 10-5-10-5z"/>
-</svg>
+    <!-- Feature Cards (expandable) -->
+    <div class="feat-list">
 
-AI tối ưu tuyến xe và dự đoán nhu cầu
+      <div class="feat-card" id="fc0" onclick="toggleFeat(0)">
+        <div class="feat-head">
+          <div class="feat-ico">🤖</div>
+          <div class="feat-info">
+            <div class="feat-title">AI tối ưu tuyến & dự đoán nhu cầu</div>
+            <div class="feat-pill">Machine Learning · Real-time</div>
+          </div>
+          <span class="feat-arrow">▼</span>
+        </div>
+        <div class="feat-body" id="fb0">
+          <div class="feat-body-inner">
+            <p>Hệ thống AI phân tích dữ liệu lịch sử đặt vé, thời tiết, sự kiện và xu hướng hành khách để tự động đề xuất tuyến tối ưu, điều chỉnh giá linh hoạt và dự báo lượng khách chính xác tới 92%.</p>
+            <div class="feat-tags">
+              <span class="feat-tag">⚡ Phân tích thời gian thực</span>
+              <span class="feat-tag">📈 Dự báo nhu cầu</span>
+              <span class="feat-tag">🗺️ Tối ưu tuyến đường</span>
+              <span class="feat-tag">💡 Gợi ý cá nhân hoá</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-</div>
+      <div class="feat-card" id="fc1" onclick="toggleFeat(1)">
+        <div class="feat-head">
+          <div class="feat-ico">🎫</div>
+          <div class="feat-info">
+            <div class="feat-title">Đặt vé siêu nhanh — dưới 60 giây</div>
+            <div class="feat-pill">3 bước · Mọi thiết bị</div>
+          </div>
+          <span class="feat-arrow">▼</span>
+        </div>
+        <div class="feat-body" id="fb1">
+          <div class="feat-body-inner">
+            <p>Quy trình đặt vé tối giản gồm 3 bước: tìm chuyến → chọn ghế → thanh toán. Hỗ trợ MoMo, ZaloPay, VNPAY và giữ ghế trả sau. Mọi thao tác hoàn tất trong chưa đầy 60 giây trên mọi thiết bị.</p>
+            <div class="feat-tags">
+              <span class="feat-tag">💜 MoMo & ZaloPay</span>
+              <span class="feat-tag">🔒 Thanh toán bảo mật</span>
+              <span class="feat-tag">📱 Mobile-first</span>
+              <span class="feat-tag">⏰ Đặt trước trả sau</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<div class="feature">
+      <div class="feat-card" id="fc2" onclick="toggleFeat(2)">
+        <div class="feat-head">
+          <div class="feat-ico">📊</div>
+          <div class="feat-info">
+            <div class="feat-title">Dashboard quản lý & phân tích doanh thu</div>
+            <div class="feat-pill">Admin · Operator · Analytics</div>
+          </div>
+          <span class="feat-arrow">▼</span>
+        </div>
+        <div class="feat-body" id="fb2">
+          <div class="feat-body-inner">
+            <p>Dashboard toàn diện với biểu đồ doanh thu, tỷ lệ lấp đầy xe, hành vi người dùng và AI analytics. Nhà xe theo dõi chuyến đi, quản lý ghế và tối ưu hoạt động theo thời gian thực.</p>
+            <div class="feat-tags">
+              <span class="feat-tag">📊 Biểu đồ trực quan</span>
+              <span class="feat-tag">🏢 Quản lý nhà xe</span>
+              <span class="feat-tag">💰 Phân tích doanh thu</span>
+              <span class="feat-tag">🤖 AI Insights</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<svg viewBox="0 0 24 24">
-<path d="M13 2H6a2 2 0 0 0-2 2v16l7-3 7 3V9z"/>
-</svg>
+    </div>
+  </div><!-- /intro -->
 
-Đặt vé nhanh chỉ vài giây
+  <!-- ════ RIGHT LOGIN CARD ════ -->
+  <div class="card">
+    <div class="card-body">
 
-</div>
+      <div class="card-head">
+        <h2>Chào mừng trở lại</h2>
+        <p>Đăng nhập để tiếp tục hành trình của bạn</p>
+      </div>
 
-<div class="feature">
+      <div class="input-group">
+        <label>Email</label>
+        <div class="input-wrap">
+          <input type="email" id="email" placeholder="Địa chỉ email">
+        </div>
+      </div>
 
-<svg viewBox="0 0 24 24">
-<path d="M3 3h18v18H3z"/>
-</svg>
+      <div class="input-group">
+        <label>Mật khẩu</label>
+        <div class="input-wrap">
+          <input type="password" id="password" placeholder="Mật khẩu của bạn">
+        </div>
+      </div>
 
-Quản lý dữ liệu và doanh thu thông minh
+      <div class="input-group">
+        <label>Mã xác nhận</label>
+        <div class="input-wrap">
+          <input type="text" id="captchaInput" placeholder="Nhập 4 chữ số">
+        </div>
+        <div class="captcha-row" style="margin-top:8px;">
+          <div class="captcha-code" id="captchaCode"></div>
+          <button class="refresh-btn" id="refreshBtn" onclick="refreshCaptcha()">Tạo mới</button>
+        </div>
+      </div>
 
-</div>
+      <button class="login-btn" id="loginBtn" onclick="login()">Đăng nhập →</button>
 
-</div>
+      <p id="message" class="message"></p>
 
-<div class="stats">
+      <div class="card-links">
+        <a href="forgot-password.html" class="forgot-link">Quên mật khẩu?</a>
+      </div>
 
-<div class="stat">
-<h3>500+</h3>
-<span>tuyến xe</span>
-</div>
+      <div class="divider"><span>CHƯA CÓ TÀI KHOẢN</span></div>
 
-<div class="stat">
-<h3>50K+</h3>
-<span>người dùng</span>
-</div>
+      <div class="register-wrap">
+        <p>Tham gia SmartBusAI ngay hôm nay — miễn phí!</p>
+        <a href="register.html" class="register-btn">Đăng ký ngay ✨</a>
+      </div>
 
-<div class="stat">
-<h3>99.9%</h3>
-<span>uptime</span>
-</div>
+    </div>
+  </div><!-- /card -->
 
-</div>
-
-</div>
-
-<!-- LOGIN -->
-
-<div class="card">
-
-<h2>Đăng nhập</h2>
-
-<div class="input-group">
-<label>Email</label>
-<input type="email" id="email" placeholder="Nhập email">
-</div>
-
-<div class="input-group">
-<label>Mật khẩu</label>
-<input type="password" id="password" placeholder="Nhập mật khẩu">
-</div>
-
-<div class="input-group">
-<label>Nhập mã xác nhận</label>
-<input type="text" id="captchaInput" placeholder="Nhập 4 chữ số">
-
-<div class="captcha-box">
-<span class="captcha-code" id="captchaCode"></span>
-<button class="refresh-btn" id="refreshBtn" onclick="refreshCaptcha()">Tạo mới</button>
-</div>
-
-</div>
-
-<button class="login-btn" id="loginBtn" onclick="login()">Đăng nhập</button>
-
-<p id="message" class="message"></p>
-
-<div style="text-align:center;margin-top:10px;">
-  <a href="forgot-password.html" style="font-size:13px;color:#8bd3ff;text-decoration:none;font-weight:600;transition:color .2s;"
-     onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#8bd3ff'">
-    🔑 Quên mật khẩu?
-  </a>
-</div>
-
-<div class="footer">
-Chưa có tài khoản?<br>
-<a href="register.html">Đăng ký ngay</a>
-</div>
-
-</div>
-
-</div>
+</div><!-- /wrap -->
 
 <script>
+/* ── GALAXY CANVAS ── */
+(()=>{
+  const cv=document.getElementById("gc"),cx=cv.getContext("2d");
+  function mb32(s){s=s>>>0;return()=>{s+=0x6D2B79F5;let t=Math.imul(s^s>>>15,1|s);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;};}
+  function draw(){
+    cv.width=innerWidth;cv.height=innerHeight;
+    const bg=cx.createRadialGradient(cv.width*.5,cv.height*.38,0,cv.width*.5,cv.height*.38,cv.width*.9);
+    bg.addColorStop(0,"#0b1928");bg.addColorStop(.55,"#060d18");bg.addColorStop(1,"#020408");
+    cx.fillStyle=bg;cx.fillRect(0,0,cv.width,cv.height);
+    const mw=cx.createLinearGradient(0,cv.height*.1,cv.width,cv.height*.72);
+    mw.addColorStop(0,"transparent");mw.addColorStop(.42,"rgba(50,90,150,0.07)");mw.addColorStop(.56,"rgba(70,120,200,0.10)");mw.addColorStop(1,"transparent");
+    cx.fillStyle=mw;cx.fillRect(0,0,cv.width,cv.height);
+    const rng=mb32(cv.width*cv.height+5);
+    const n=Math.min(340,Math.floor(cv.width*cv.height/5000));
+    for(let i=0;i<n;i++){
+      const x=rng()*cv.width,y=rng()*cv.height,r=rng()*1.4+.15,a=rng()*.7+.18;
+      const h=rng()<.10?180:rng()<.07?265:0;
+      cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);
+      cx.fillStyle=h===180?`rgba(0,255,224,${a*.45})`:h===265?`rgba(175,150,255,${a*.40})`:`rgba(255,255,255,${a})`;cx.fill();
+    }
+    [{x:.12,y:.22,r:.16,c:"rgba(0,200,255,0.06)"},{x:.76,y:.66,r:.14,c:"rgba(130,80,240,0.07)"},{x:.48,y:.88,r:.11,c:"rgba(0,100,210,0.05)"}].forEach(s=>{
+      const ng=cx.createRadialGradient(s.x*cv.width,s.y*cv.height,0,s.x*cv.width,s.y*cv.height,s.r*cv.width);
+      ng.addColorStop(0,s.c);ng.addColorStop(1,"transparent");cx.fillStyle=ng;cx.fillRect(0,0,cv.width,cv.height);
+    });
+  }
+  draw();let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(draw,200);});
+  const sf=document.getElementById("starField");
+  for(let i=0;i<55;i++){
+    const s=document.createElement("div");s.className="ts";
+    const sz=Math.random()*2+.4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--td:${(Math.random()*4+2).toFixed(1)}s;--dl:${(Math.random()*6).toFixed(1)}s;`;
+    sf.appendChild(s);
+  }
+})();
 
-let currentCaptcha = "";
-let cooldown = false;
+/* ── FEATURE CARDS EXPAND ── */
+function toggleFeat(idx){
+  const card=document.getElementById("fc"+idx);
+  const body=document.getElementById("fb"+idx);
+  const isOpen=card.classList.contains("open");
+  // close all
+  [0,1,2].forEach(i=>{
+    document.getElementById("fc"+i).classList.remove("open");
+    document.getElementById("fb"+i).classList.remove("open");
+  });
+  // open if was closed
+  if(!isOpen){
+    card.classList.add("open");
+    body.classList.add("open");
+    setTimeout(()=>card.scrollIntoView({behavior:"smooth",block:"nearest"}),100);
+  }
+}
+
+/* ── CAPTCHA ── */
+let currentCaptcha="";
+let cooldown=false;
 
 function generateCaptcha(){
-  currentCaptcha = Math.floor(1000 + Math.random() * 9000).toString();
-  document.getElementById("captchaCode").innerText = currentCaptcha;
+  currentCaptcha=Math.floor(1000+Math.random()*9000).toString();
+  const el=document.getElementById("captchaCode");
+  el.textContent=currentCaptcha;
+  el.style.animation="none";
+  requestAnimationFrame(()=>{ el.style.animation="captchaIn .3s ease"; });
 }
 
 function refreshCaptcha(){
-  if(cooldown) return;
+  if(cooldown)return;
   generateCaptcha();
-  cooldown = true;
-  const btn = document.getElementById("refreshBtn");
-  btn.disabled = true;
-  let seconds = 15;
-  btn.innerText = "Chờ " + seconds + "s";
-  const interval = setInterval(() => {
-    seconds--;
-    btn.innerText = "Chờ " + seconds + "s";
-    if(seconds <= 0){
-      clearInterval(interval);
-      btn.disabled = false;
-      btn.innerText = "Tạo mới";
-      cooldown = false;
-    }
-  }, 1000);
+  cooldown=true;
+  const btn=document.getElementById("refreshBtn");
+  btn.disabled=true;
+  let sec=15;
+  btn.textContent="Chờ "+sec+"s";
+  const iv=setInterval(()=>{
+    sec--;btn.textContent="Chờ "+sec+"s";
+    if(sec<=0){clearInterval(iv);btn.disabled=false;btn.textContent="🔄 Tạo mới";cooldown=false;}
+  },1000);
 }
 
 generateCaptcha();
 
+/* ── LOGIN ── */
 async function login(){
-  const email        = document.getElementById("email").value.trim();
-  const password     = document.getElementById("password").value.trim();
-  const captchaInput = document.getElementById("captchaInput").value.trim();
-  const message      = document.getElementById("message");
-  const btn          = document.getElementById("loginBtn");
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value.trim();
+  const captchaInput=document.getElementById("captchaInput").value.trim();
+  const message=document.getElementById("message");
+  const btn=document.getElementById("loginBtn");
 
-  if(!email || !password || !captchaInput){
-    message.className = "message error";
-    message.innerText = "Vui lòng nhập đầy đủ thông tin";
-    return;
+  if(!email||!password||!captchaInput){
+    showMsg("error","Vui lòng nhập đầy đủ thông tin");return;
+  }
+  if(captchaInput!==currentCaptcha){
+    showMsg("error","Mã xác nhận không đúng");generateCaptcha();return;
   }
 
-  if(captchaInput !== currentCaptcha){
-    message.className = "message error";
-    message.innerText = "Mã xác nhận không đúng";
-    generateCaptcha();
-    return;
-  }
+  btn.disabled=true;btn.textContent="Đang đăng nhập...";
+  message.className="message";message.textContent="";
 
-  btn.disabled = true;
-  btn.innerText = "Đang đăng nhập...";
-  message.className = "message";
-  message.innerText = "";
-
-  let loginOk = false;
-
+  let ok=false;
   try{
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({email, password})
+    const res=await fetch("/api/auth/login",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
     });
-
-    const data = await response.json();
-
-    if(response.ok){
-      loginOk = true;
+    const data=await res.json();
+    if(res.ok){
+      ok=true;
       localStorage.clear();
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("user_id", data.user.user_id);
-      message.className = "message success";
-      message.innerText = "Đăng nhập thành công!";
-      setTimeout(() => {
-        const role = data.user.role;
-        if(role === "ADMIN")         window.location.href = "/pages/admin/admin.html";
-        else if(role === "OPERATOR") window.location.href = "/pages/operator/operator.html";
-        else                         window.location.href = "/pages/passenger/index.html";
-      }, 800);
+      localStorage.setItem("user",JSON.stringify(data.user));
+      localStorage.setItem("user_id",data.user.user_id);
+      if(data.accessToken)  localStorage.setItem("accessToken",data.accessToken);
+      if(data.refreshToken) localStorage.setItem("refreshToken",data.refreshToken);
+      // Lưu operator info nếu là OPERATOR
+      if(data.user.operator_id)   localStorage.setItem("operator_id",   data.user.operator_id);
+      if(data.user.operator_name) localStorage.setItem("operator_name", data.user.operator_name);
+      showMsg("success","✅ Đăng nhập thành công!");
+      setTimeout(()=>{
+        const role=data.user.role;
+        if(role==="ADMIN")         window.location.href="/pages/admin/admin.html";
+        else if(role==="OPERATOR") window.location.href="/pages/operator/operator.html";
+        else                       window.location.href="/pages/passenger/index.html";
+      },800);
+    } else if(res.status===503 && data.message==="maintenance"){
+      showMsg("error","🛑 Hệ thống đang bảo trì — vui lòng thử lại sau");
+      generateCaptcha();
     } else {
-      message.className = "message error";
-      message.innerText = data.message || "Sai email hoặc mật khẩu";
+      showMsg("error",data.message||"Sai email hoặc mật khẩu");
       generateCaptcha();
     }
-
-  } catch(error){
-    console.error("Login error:", error);
-    message.className = "message error";
-    message.innerText = "Không kết nối được server";
+  }catch{
+    showMsg("error","Không kết nối được server");
   }
-
-  if(!loginOk){
-    btn.disabled = false;
-    btn.innerText = "Đăng nhập";
-  }
+  if(!ok){btn.disabled=false;btn.textContent="Đăng nhập →";}
 }
 
-document.addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
-});
+function showMsg(type,text){
+  const m=document.getElementById("message");
+  m.className="message "+type;m.textContent=text;
+}
 
+document.addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
 </script>
-
 </body>
 </html>

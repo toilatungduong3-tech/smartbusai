@@ -5,8 +5,14 @@ const tripController = require("../controllers/tripController");
 /* GET all trips  — /api/trips?bus_id=X */
 router.get("/",               tripController.getTrips);
 
+/* GET running    — /api/trips/running  (phải trước /:id) */
+router.get("/running",        tripController.getRunningTrips);
+
 /* GET search     — /api/trips/search?origin=...&destination=...&date=... */
 router.get("/search",         tripController.searchTrips);
+
+/* GET dynamic price — /api/trips/dynamic-price/:id */
+router.get("/dynamic-price/:id", tripController.getDynamicPriceForTrip);
 
 /* POST create    — /api/trips */
 router.post("/",              tripController.createTrip);

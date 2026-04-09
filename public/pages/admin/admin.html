@@ -11,7 +11,9 @@
   --amber:#f39c12;--green:#2ecc71;--red:#e74c3c;--pink:#fd79a8;
   --glass:rgba(255,255,255,0.055);--glass2:rgba(255,255,255,0.10);
   --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);
-  --hh:62px;
+  --card:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  --card-hover:linear-gradient(145deg,rgba(12,24,56,.95),rgba(6,16,38,.92));
+  --hh:64px;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
 html{background:linear-gradient(160deg,#020508 0%,#05101e 38%,#071420 68%,#020508 100%);background-attachment:fixed;min-height:100vh;}
@@ -49,11 +51,11 @@ body.leaving{opacity:0;transition:opacity .22s;}
 /* ── HEADER ── */
 .hdr{
   position:sticky;top:0;z-index:3000;height:var(--hh);
-  display:flex;align-items:center;padding:0 30px;gap:16px;
-  background:rgba(2,5,10,0.80);
-  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 24px rgba(0,0,0,.50);
+  display:flex;align-items:center;padding:0 32px;gap:16px;
+  background:rgba(2,5,12,0.88);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(0,255,224,.12);
+  box-shadow:0 4px 28px rgba(0,0,0,.55),0 1px 0 rgba(0,255,224,.06);
 }
 .hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
 .hdr-logo-icon{
@@ -66,20 +68,26 @@ body.leaving{opacity:0;transition:opacity .22s;}
   background:linear-gradient(90deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
 .hdr-logo-badge{
-  font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;
-  background:rgba(0,255,224,.12);border:1px solid rgba(0,255,224,.28);
-  color:#00ffe0;letter-spacing:.5px;}
+  font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;
+  background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.16));
+  border:1px solid rgba(0,255,224,.38);
+  color:#00ffe0;letter-spacing:.8px;
+  box-shadow:0 0 10px rgba(0,255,224,.20);
+  text-transform:uppercase;
+}
 .hdr-sep{width:1px;height:26px;background:var(--border);flex-shrink:0;}
 .hdr-space{flex:1;}
 
 /* 4 nav links */
 .hdr-nav{display:flex;align-items:center;gap:4px;}
 .hdr-nav a{
-  display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;
-  font-size:12.5px;font-weight:600;color:rgba(255,255,255,.48);
-  text-decoration:none;border:1px solid transparent;transition:all .22s;white-space:nowrap;}
-.hdr-nav a:hover{background:var(--glass2);color:#fff;border-color:var(--border);}
-.hdr-nav a.act{background:rgba(0,255,224,.09);border-color:rgba(0,255,224,.24);color:#00ffe0;}
+  display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;
+  font-size:12.5px;font-weight:700;color:rgba(255,255,255,.50);
+  text-decoration:none;border:1px solid transparent;transition:all .22s;white-space:nowrap;
+  letter-spacing:.1px;
+}
+.hdr-nav a:hover{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.12);}
+.hdr-nav a.active{background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.28);color:#00ffe0;box-shadow:0 0 12px rgba(0,255,224,.10);}
 .nav-icon{font-size:13px;}
 .nbadge{
   display:inline-flex;align-items:center;justify-content:center;
@@ -98,20 +106,28 @@ body.leaving{opacity:0;transition:opacity .22s;}
 .notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;
   border-radius:50%;background:#e74c3c;border:2px solid #020508;}
 .btn-export{
-  display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:10px;
-  border:none;cursor:pointer;font-size:12px;font-weight:700;
-  font-family:"Segoe UI",Arial,sans-serif;
+  display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:11px;
+  border:none;cursor:pointer;font-size:12px;font-weight:800;
+  font-family:"Segoe UI",Arial,sans-serif;letter-spacing:.2px;
   background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#030d18;
-  box-shadow:0 0 14px rgba(0,255,224,.30);transition:all .22s;}
-.btn-export:hover{transform:translateY(-2px);box-shadow:0 4px 22px rgba(0,255,224,.50);}
+  box-shadow:0 0 16px rgba(0,255,224,.32),0 4px 14px rgba(0,0,0,.25);
+  transition:all .22s;
+}
+.btn-export:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(0,255,224,.55),0 6px 20px rgba(0,0,0,.30);}
 .admin-chip{
-  display:flex;align-items:center;gap:8px;padding:5px 10px;
-  border-radius:10px;background:var(--glass);border:1px solid var(--border);}
+  display:flex;align-items:center;gap:8px;padding:6px 12px;
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 2px 10px rgba(0,0,0,.20);
+}
 .admin-avt{
-  width:26px;height:26px;border-radius:50%;
+  width:28px;height:28px;border-radius:50%;
   background:linear-gradient(135deg,#00ffe0,#7c5ce7);
-  display:flex;align-items:center;justify-content:center;font-size:12px;}
-.admin-label{font-size:11.5px;font-weight:700;color:#b8d8e8;}
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  box-shadow:0 0 10px rgba(0,255,224,.35);
+}
+.admin-label{font-size:12px;font-weight:800;color:#c8e4f0;letter-spacing:.1px;}
 .btn-logout{
   display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;
   border:1px solid rgba(231,76,60,.28);cursor:pointer;font-size:12px;
@@ -120,64 +136,113 @@ body.leaving{opacity:0;transition:opacity .22s;}
 .btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
 
 /* ── CONTENT ── */
-.content{padding:24px 30px;max-width:1640px;margin:0 auto;}
+.content{padding:28px 32px;max-width:1640px;margin:0 auto;}
 
 /* Glass card */
 .gc{
-  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid var(--border);border-radius:18px;
-  box-shadow:0 8px 30px rgba(0,0,0,.28);transition:border-color .25s;}
-.gc:hover{border-color:rgba(255,255,255,.14);}
-.gc-pad{padding:22px 24px;}
+  background:var(--card);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.09);
+  border-top:1px solid rgba(255,255,255,.11);
+  border-radius:20px;
+  box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.03),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:border-color .25s,box-shadow .25s;
+}
+.gc:hover{
+  border-color:rgba(255,255,255,.14);
+  box-shadow:0 14px 48px rgba(0,0,0,.52),0 0 0 1px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.gc-pad{padding:24px 26px;}
 
 /* Section head */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-.sec-title{font-size:14.5px;font-weight:800;color:#fff;}
-.sec-sub{font-size:10.5px;color:#5a8498;margin-top:2px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.sec-title{
+  font-size:14.5px;font-weight:900;color:#fff;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-title::before{
+  content:"";display:inline-block;width:3px;height:16px;
+  background:linear-gradient(180deg,#00ffe0,#00a8ff);
+  border-radius:2px;flex-shrink:0;
+}
+.sec-sub{font-size:10.5px;color:rgba(255,255,255,.35);margin-top:3px;}
 
 /* Tab bar */
-.tab-bar{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.tab-bar{
+  display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap;
+  background:linear-gradient(145deg,rgba(6,14,32,.88),rgba(3,9,22,.84));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:8px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 4px 20px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.05);
+}
 .tb{
-  padding:8px 18px;border-radius:11px;border:1px solid var(--border);
-  background:var(--glass);color:#6a94a8;font-weight:600;font-size:12.5px;
-  cursor:pointer;transition:all .22s;display:flex;align-items:center;gap:6px;
-  font-family:"Segoe UI",Arial,sans-serif;}
-.tb:hover{background:var(--glass2);color:#c8e4f0;}
-.tb.on{background:rgba(0,255,224,.09);border-color:rgba(0,255,224,.30);color:#00ffe0;box-shadow:0 0 14px rgba(0,255,224,.09);}
-.tb-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;}
-.tb.on .tb-dot{opacity:1;}
+  padding:9px 20px;border-radius:11px;border:1px solid transparent;
+  background:transparent;color:rgba(255,255,255,.42);font-weight:700;font-size:12.5px;
+  cursor:pointer;transition:all .22s;display:flex;align-items:center;gap:7px;
+  font-family:"Segoe UI",Arial,sans-serif;letter-spacing:.1px;
+}
+.tb:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.80);border-color:rgba(255,255,255,.10);}
+.tb.on{
+  background:linear-gradient(135deg,rgba(0,255,224,.16),rgba(0,168,255,.10));
+  border-color:rgba(0,255,224,.32);color:#00ffe0;
+  box-shadow:0 4px 16px rgba(0,255,224,.14),0 0 0 1px rgba(0,255,224,.08);
+  font-weight:800;
+}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55;flex-shrink:0;}
+.tb.on .tb-dot{opacity:1;box-shadow:0 0 6px currentColor;}
 .panel{display:none;}.panel.on{display:block;}
 
 /* KPI grids */
-.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;}
 .kpi{
-  padding:18px 20px;border-radius:16px;position:relative;overflow:hidden;
+  padding:22px 22px 18px;border-radius:20px;position:relative;overflow:hidden;
   border:1px solid var(--k-bdr,rgba(0,255,224,.16));
-  background:var(--k-bg,rgba(0,255,224,.05));
-  transition:transform .22s,box-shadow .22s;}
-.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.26);}
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  cursor:default;
+}
+.kpi::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--k-line,#00ffe0),transparent);
+  border-radius:20px 20px 0 0;
+}
+.kpi:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.40),0 0 30px var(--k-glow,rgba(0,255,224,.08));
+  border-color:var(--k-bdr-h,rgba(0,255,224,.28));
+}
 .kpi-glow{
-  position:absolute;top:-22px;right:-22px;width:80px;height:80px;
+  position:absolute;top:-20px;right:-20px;width:90px;height:90px;
   border-radius:50%;background:var(--k-glow,rgba(0,255,224,.09));
-  filter:blur(20px);pointer-events:none;}
+  filter:blur(24px);pointer-events:none;opacity:.8;
+}
 .kpi-ico{
-  width:38px;height:38px;border-radius:10px;font-size:17px;
+  width:42px;height:42px;border-radius:12px;font-size:19px;
   background:var(--k-ico,rgba(0,255,224,.14));
-  display:flex;align-items:center;justify-content:center;margin-bottom:12px;position:relative;}
-.kpi-lbl{font-size:10px;font-weight:700;color:#5a8498;text-transform:uppercase;letter-spacing:.6px;position:relative;}
-.kpi-val{font-size:24px;font-weight:800;line-height:1.1;margin:5px 0 6px;position:relative;}
-.kpi-val.sm{font-size:18px;}
-.kpi-trend{font-size:10.5px;font-weight:600;position:relative;display:flex;align-items:center;gap:3px;}
-.up{color:#2ecc71;}.dn{color:#e74c3c;}.nt{color:#5a8498;}
+  border:1px solid var(--k-bdr,rgba(0,255,224,.20));
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;position:relative;
+  box-shadow:0 0 16px var(--k-glow,rgba(0,255,224,.12));
+}
+.kpi-lbl{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.8px;position:relative;}
+.kpi-val{
+  font-size:26px;font-weight:900;line-height:1.1;margin:6px 0 7px;position:relative;
+  background:linear-gradient(135deg,#fff 0%,var(--k-color,#00ffe0) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.kpi-val.sm{font-size:19px;}
+.kpi-trend{font-size:10.5px;font-weight:700;position:relative;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.35);}
+.up{color:#2ecc71;}.dn{color:#e74c3c;}.nt{color:rgba(255,255,255,.35);}
 
-.k-c{--k-bg:rgba(0,255,224,.05);--k-ico:rgba(0,255,224,.14);--k-bdr:rgba(0,255,224,.16);--k-glow:rgba(0,255,224,.10);}
-.k-b{--k-bg:rgba(0,168,255,.05);--k-ico:rgba(0,168,255,.14);--k-bdr:rgba(0,168,255,.16);--k-glow:rgba(0,168,255,.10);}
-.k-p{--k-bg:rgba(124,92,231,.05);--k-ico:rgba(124,92,231,.14);--k-bdr:rgba(124,92,231,.16);--k-glow:rgba(124,92,231,.10);}
-.k-a{--k-bg:rgba(243,156,18,.05);--k-ico:rgba(243,156,18,.14);--k-bdr:rgba(243,156,18,.16);--k-glow:rgba(243,156,18,.10);}
-.k-g{--k-bg:rgba(46,204,113,.05);--k-ico:rgba(46,204,113,.14);--k-bdr:rgba(46,204,113,.16);--k-glow:rgba(46,204,113,.10);}
-.k-r{--k-bg:rgba(231,76,60,.05);--k-ico:rgba(231,76,60,.14);--k-bdr:rgba(231,76,60,.16);--k-glow:rgba(231,76,60,.10);}
-.k-pk{--k-bg:rgba(253,121,168,.05);--k-ico:rgba(253,121,168,.14);--k-bdr:rgba(253,121,168,.16);--k-glow:rgba(253,121,168,.10);}
-.k-t{--k-bg:rgba(0,206,201,.05);--k-ico:rgba(0,206,201,.14);--k-bdr:rgba(0,206,201,.16);--k-glow:rgba(0,206,201,.10);}
+.k-c{--k-bg:rgba(0,255,224,.05);--k-ico:rgba(0,255,224,.12);--k-bdr:rgba(0,255,224,.14);--k-bdr-h:rgba(0,255,224,.30);--k-glow:rgba(0,255,224,.09);--k-line:#00ffe0;--k-color:#00ffe0;}
+.k-b{--k-bg:rgba(0,168,255,.05);--k-ico:rgba(0,168,255,.12);--k-bdr:rgba(0,168,255,.14);--k-bdr-h:rgba(0,168,255,.30);--k-glow:rgba(0,168,255,.09);--k-line:#00a8ff;--k-color:#00a8ff;}
+.k-p{--k-bg:rgba(124,92,231,.05);--k-ico:rgba(124,92,231,.12);--k-bdr:rgba(124,92,231,.14);--k-bdr-h:rgba(124,92,231,.30);--k-glow:rgba(124,92,231,.09);--k-line:#a78bfa;--k-color:#a78bfa;}
+.k-a{--k-bg:rgba(243,156,18,.05);--k-ico:rgba(243,156,18,.12);--k-bdr:rgba(243,156,18,.14);--k-bdr-h:rgba(243,156,18,.30);--k-glow:rgba(243,156,18,.09);--k-line:#f39c12;--k-color:#f39c12;}
+.k-g{--k-bg:rgba(46,204,113,.05);--k-ico:rgba(46,204,113,.12);--k-bdr:rgba(46,204,113,.14);--k-bdr-h:rgba(46,204,113,.30);--k-glow:rgba(46,204,113,.09);--k-line:#2ecc71;--k-color:#2ecc71;}
+.k-r{--k-bg:rgba(231,76,60,.05);--k-ico:rgba(231,76,60,.12);--k-bdr:rgba(231,76,60,.14);--k-bdr-h:rgba(231,76,60,.30);--k-glow:rgba(231,76,60,.09);--k-line:#e74c3c;--k-color:#e74c3c;}
+.k-pk{--k-bg:rgba(253,121,168,.05);--k-ico:rgba(253,121,168,.12);--k-bdr:rgba(253,121,168,.14);--k-bdr-h:rgba(253,121,168,.30);--k-glow:rgba(253,121,168,.09);--k-line:#fd79a8;--k-color:#fd79a8;}
+.k-t{--k-bg:rgba(0,206,201,.05);--k-ico:rgba(0,206,201,.12);--k-bdr:rgba(0,206,201,.14);--k-bdr-h:rgba(0,206,201,.30);--k-glow:rgba(0,206,201,.09);--k-line:#00cec9;--k-color:#00cec9;}
 
 /* Chart grids */
 .cg2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;}
@@ -185,11 +250,11 @@ body.leaving{opacity:0;transition:opacity .22s;}
 .cg13{display:grid;grid-template-columns:1fr 2fr;gap:18px;margin-bottom:20px;}
 .cg31{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:20px;}
 
-.cc{padding:20px 22px;}
-.cc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
-.cc-title{font-size:13.5px;font-weight:700;color:#fff;}
-.cc-sub{font-size:10.5px;color:#5a8498;margin-top:2px;}
-.cc-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0;}
+.cc{padding:22px 24px;}
+.cc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.cc-title{font-size:14px;font-weight:800;color:#fff;letter-spacing:.1px;}
+.cc-sub{font-size:10.5px;color:rgba(255,255,255,.35);margin-top:3px;}
+.cc-badge{font-size:9.5px;font-weight:800;padding:4px 11px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0;letter-spacing:.3px;}
 .cb-c{background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.28);color:#00ffe0;}
 .cb-g{background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.28);color:#2ecc71;}
 .cb-a{background:rgba(243,156,18,.08);border-color:rgba(243,156,18,.28);color:#f39c12;}
@@ -199,62 +264,131 @@ body.leaving{opacity:0;transition:opacity .22s;}
 .cc canvas{max-height:230px;}.cc.tall canvas{max-height:280px;}.cc.sh canvas{max-height:165px;}
 
 /* Tables */
-.tw{overflow-x:auto;}
+.tw{overflow-x:auto;border-radius:14px;overflow:hidden;}
 table{width:100%;border-collapse:collapse;font-size:12.5px;}
 thead th{
-  padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:#5a8498;
-  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);
-  white-space:nowrap;background:rgba(0,0,0,.12);}
-tbody td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);color:#b8d8e8;vertical-align:middle;}
+  padding:12px 16px;text-align:left;font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);
+  text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid rgba(255,255,255,.07);
+  white-space:nowrap;background:rgba(0,0,0,.18);
+}
+tbody td{
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);
+  color:rgba(200,228,245,.88);vertical-align:middle;
+}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr{transition:background .18s;}
-tbody tr:hover{background:rgba(255,255,255,.025);}
+tbody tr:hover{background:rgba(0,255,224,.03);}
 
 /* Badges */
-.b{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;border:1px solid;}
-.b-paid{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.34);color:#2ecc71;}
-.b-pending{background:rgba(243,156,18,.12);border-color:rgba(243,156,18,.34);color:#f39c12;}
-.b-canceled{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.34);color:#e74c3c;}
-.b-active{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.34);color:#2ecc71;}
-.b-blocked{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.34);color:#e74c3c;}
-.b-open{background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.28);color:#00ffe0;}
-.b-full{background:rgba(243,156,18,.12);border-color:rgba(243,156,18,.34);color:#f39c12;}
-.b-passenger{background:rgba(0,168,255,.10);border-color:rgba(0,168,255,.28);color:#00a8ff;}
-.b-operator{background:rgba(124,92,231,.10);border-color:rgba(124,92,231,.28);color:#a78bfa;}
-.b-admin{background:rgba(243,156,18,.10);border-color:rgba(243,156,18,.28);color:#f39c12;}
+.b{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap;border:1px solid;letter-spacing:.2px;}
+.b-paid{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.32);color:#2ecc71;box-shadow:0 0 8px rgba(46,204,113,.10);}
+.b-pending{background:rgba(243,156,18,.12);border-color:rgba(243,156,18,.32);color:#f39c12;}
+.b-canceled{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.32);color:#e74c3c;}
+.b-active{background:rgba(46,204,113,.12);border-color:rgba(46,204,113,.32);color:#2ecc71;box-shadow:0 0 8px rgba(46,204,113,.10);}
+.b-blocked{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.32);color:#e74c3c;}
+.b-open{background:rgba(0,255,224,.09);border-color:rgba(0,255,224,.26);color:#00ffe0;box-shadow:0 0 8px rgba(0,255,224,.08);}
+.b-full{background:rgba(243,156,18,.12);border-color:rgba(243,156,18,.32);color:#f39c12;}
+.b-passenger{background:rgba(0,168,255,.10);border-color:rgba(0,168,255,.26);color:#00a8ff;}
+.b-operator{background:rgba(124,92,231,.10);border-color:rgba(124,92,231,.26);color:#a78bfa;}
+.b-admin{background:rgba(243,156,18,.10);border-color:rgba(243,156,18,.26);color:#f39c12;}
 
 /* Reviews */
-.rev-card{padding:13px 15px;border-radius:13px;margin-bottom:10px;background:rgba(255,255,255,.038);border:1px solid var(--border);transition:background .2s;}
-.rev-card:hover{background:rgba(255,255,255,.065);}
-.rev-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-.rev-name{font-size:12.5px;font-weight:700;color:#fff;}
-.rev-stars{color:#f39c12;font-size:12px;letter-spacing:1px;}
-.rev-route{font-size:10.5px;color:#5a8498;margin-bottom:5px;}
-.rev-comment{font-size:12px;color:#8ab0c0;line-height:1.55;}
-.rev-date{font-size:10px;color:#3a5a68;margin-top:5px;}
+.rev-card{
+  padding:15px 17px;border-radius:15px;margin-bottom:10px;
+  background:linear-gradient(145deg,rgba(8,18,44,.80),rgba(4,12,30,.75));
+  border:1px solid rgba(255,255,255,.08);
+  border-left:3px solid rgba(243,156,18,.45);
+  transition:all .22s;
+}
+.rev-card:hover{
+  background:linear-gradient(145deg,rgba(12,24,56,.88),rgba(6,16,38,.82));
+  border-color:rgba(255,255,255,.14);
+  border-left-color:rgba(243,156,18,.70);
+  transform:translateX(3px);
+}
+.rev-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.rev-name{font-size:13px;font-weight:800;color:#fff;}
+.rev-stars{color:#f39c12;font-size:12.5px;letter-spacing:1.5px;text-shadow:0 0 10px rgba(243,156,18,.40);}
+.rev-route{font-size:10.5px;color:rgba(255,255,255,.35);margin-bottom:6px;}
+.rev-comment{font-size:12.5px;color:rgba(180,215,235,.80);line-height:1.6;}
+.rev-date{font-size:10px;color:rgba(255,255,255,.22);margin-top:6px;}
 
 /* Progress bars */
-.prog-wrap{margin-bottom:11px;}
-.prog-label{display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;margin-bottom:4px;color:#b0ccd8;}
-.prog-track{height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
-.prog-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1);}
+.prog-wrap{margin-bottom:13px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;margin-bottom:5px;color:rgba(200,220,235,.80);}
+.prog-track{height:8px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.20);}
+.prog-fill{height:100%;border-radius:6px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1);}
 
 /* AI rows */
-.ai-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.045);}
-.ai-row:last-child{border-bottom:none;}
-.ai-rank{width:22px;height:22px;border-radius:7px;flex-shrink:0;background:rgba(0,255,224,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#00ffe0;}
-.ai-route{font-size:12.5px;font-weight:600;flex:1;color:#c8e4f0;}
-.ai-bar{width:70px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;}
-.ai-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#f39c12,#e74c3c);}
-.ai-cnt{font-size:11px;font-weight:700;color:#f39c12;}
+.ai-row{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border-radius:12px;border:1px solid transparent;
+  transition:all .2s;cursor:default;
+}
+.ai-row:hover{background:rgba(0,255,224,.04);border-color:rgba(0,255,224,.10);}
+.ai-row+.ai-row{margin-top:4px;}
+.ai-rank{
+  width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(0,255,224,.16),rgba(0,168,255,.12));
+  border:1px solid rgba(0,255,224,.24);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#00ffe0;
+}
+.ai-route{font-size:12.5px;font-weight:700;flex:1;color:rgba(200,228,245,.88);}
+.ai-bar{width:70px;height:6px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden;}
+.ai-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#f39c12,#e74c3c);}
+.ai-cnt{font-size:11.5px;font-weight:800;color:#f39c12;min-width:32px;text-align:right;}
 
-.empty{text-align:center;padding:40px 20px;color:#3a5a6a;}
-.empty-ico{font-size:40px;margin-bottom:8px;}
+.empty{text-align:center;padding:44px 20px;color:rgba(255,255,255,.28);}
+.empty-ico{font-size:46px;margin-bottom:10px;filter:opacity(.50);}
+.empty p{font-size:13px;font-weight:600;}
 
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.22);}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.15);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.28);}
+
+/* ── Premium UI upgrades ── */
+/* Shimmer animation for KPI values */
+@keyframes shimIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.kpi-val{animation:shimIn .45s ease both;}
+
+/* Tab bar glow on hover */
+.tb:hover{text-shadow:0 0 12px rgba(0,255,224,.25);}
+.tb.on{text-shadow:0 0 14px rgba(0,255,224,.40);}
+
+/* Welcome banner shimmer */
+@keyframes wbShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+#dateLabel{background:linear-gradient(90deg,rgba(255,255,255,.35) 0%,rgba(0,255,224,.55) 50%,rgba(255,255,255,.35) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:wbShimmer 4s linear infinite;}
+
+/* KPI card shimmer top line */
+.kpi::after{content:"";position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);transform:skewX(-20deg);pointer-events:none;animation:kpiShimmer 3.5s ease-in-out infinite;}
+@keyframes kpiShimmer{0%{left:-100%}60%,100%{left:160%}}
+
+/* Table row highlight on booking */
+tbody tr:hover td{background:rgba(0,255,224,.025);}
+
+/* Header glow pulse */
+.hdr{box-shadow:0 4px 28px rgba(0,0,0,.55),0 1px 0 rgba(0,255,224,.06),0 0 60px rgba(0,255,224,.02);}
+
+/* Notification bell active glow */
+.notif-btn:has(.notif-count:not([style*="display:none"])){
+  box-shadow:0 0 14px rgba(231,76,60,.30);
+  border-color:rgba(231,76,60,.28);
+}
+
+/* Nav link active dot */
+.hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#00ffe0;margin-left:4px;box-shadow:0 0 5px #00ffe0;}
+
+/* Chart container enhancement */
+.cc canvas{border-radius:8px;}
+
+/* Loading skeleton for tables */
+@keyframes skLoad{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-row td{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:skLoad 1.4s infinite;}
+
+/* Modal animation */
+@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -275,20 +409,22 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
     <div class="hdr-logo-badge">ADMIN</div>
   </a>
   <div class="hdr-sep"></div>
-  <span style="font-size:12.5px;color:rgba(255,255,255,.30);font-weight:600;">Dashboard</span>
-  <div class="hdr-space"></div>
   <nav class="hdr-nav">
-    <a href="users.html"><span class="nav-icon">👥</span> Người dùng <span class="nbadge" id="pendingBadge">0</span></a>
-    <a href="operators.html"><span class="nav-icon">🏢</span> Nhà xe</a>
-    <a href="settings.html"><span class="nav-icon">⚙️</span> Cấu hình</a>
-    <a href="support.html"><span class="nav-icon">🛟</span> Hỗ trợ</a>
+    <a href="admin.html" class="active">📊 Dashboard</a>
+    <a href="users.html">👥 Người dùng</a>
+    <a href="operators.html">🚌 Nhà xe</a>
+    <a href="support.html">🆘 Hỗ trợ</a>
+    <a href="settings.html">⚙️ Cài đặt</a>
   </nav>
   <div class="hdr-right">
-    <div class="notif-btn" title="Thông báo">🔔<div class="notif-dot"></div></div>
-    <button class="btn-export">📤 Xuất báo cáo</button>
+    <div class="notif-btn" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo" style="position:relative;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,.65)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <div class="notif-dot" id="notifDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#e74c3c;border:2px solid #020508;"></div>
+      <span id="notifBadge" class="notif-count" style="display:none;"></span>
+    </div>
     <div class="admin-chip">
       <div class="admin-avt">👑</div>
-      <div class="admin-label">Admin</div>
+      <div class="admin-label" id="adminNameLabel">Admin</div>
     </div>
     <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
   </div>
@@ -297,13 +433,34 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
 <!-- ═══ CONTENT ═══ -->
 <div class="content">
 
+  <!-- Welcome banner -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;">
+    <div>
+      <div style="font-size:22px;font-weight:900;background:linear-gradient(90deg,#fff 0%,#7eb8ff 50%,#00ffe0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;">Admin Dashboard</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.38);margin-top:4px;font-weight:600;" id="dateLabel"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,rgba(8,18,44,.90),rgba(4,12,30,.86));border:1px solid rgba(0,255,224,.14);font-size:12px;font-weight:700;color:#00ffe0;display:flex;align-items:center;gap:7px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71;flex-shrink:0;animation:livePulse 2s ease-in-out infinite;"></span>
+        Hệ thống đang hoạt động
+      </div>
+      <div style="padding:10px 18px;border-radius:14px;background:linear-gradient(145deg,rgba(8,18,44,.90),rgba(4,12,30,.86));border:1px solid rgba(255,255,255,.09);font-size:12px;font-weight:700;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:7px;">
+        🛡️ SmartBusAI Admin
+      </div>
+    </div>
+  </div>
+  <style>@keyframes livePulse{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}</style>
+
   <div class="tab-bar">
-    <div class="tb on" onclick="switchTab('overview',this)"><div class="tb-dot"></div>📊 Tổng quan</div>
-    <div class="tb" onclick="switchTab('revenue',this)"><div class="tb-dot"></div>💰 Doanh thu</div>
-    <div class="tb" onclick="switchTab('trips',this)"><div class="tb-dot"></div>🚍 Chuyến xe</div>
-    <div class="tb" onclick="switchTab('users',this)"><div class="tb-dot"></div>👥 Người dùng</div>
-    <div class="tb" onclick="switchTab('ai',this)"><div class="tb-dot"></div>🤖 AI & Hành vi</div>
-    <div class="tb" onclick="switchTab('reviews',this)"><div class="tb-dot"></div>⭐ Đánh giá</div>
+    <div class="tb on" onclick="switchTab('overview',this)"><div class="tb-dot"></div>Tổng quan</div>
+    <div class="tb" onclick="switchTab('revenue',this)"><div class="tb-dot"></div>Doanh thu</div>
+    <div class="tb" onclick="switchTab('trips',this)"><div class="tb-dot"></div>Chuyến xe</div>
+    <div class="tb" onclick="switchTab('users',this)"><div class="tb-dot"></div>Người dùng</div>
+    <div class="tb" onclick="switchTab('bookings',this)"><div class="tb-dot"></div>📋 Đặt vé</div>
+    <div class="tb" onclick="switchTab('routes',this)"><div class="tb-dot"></div>🗺️ Tuyến đường</div>
+    <div class="tb" onclick="switchTab('ai',this)"><div class="tb-dot"></div>AI & Hành vi</div>
+    <div class="tb" onclick="switchTab('reviews',this)"><div class="tb-dot"></div>Đánh giá</div>
+    <div class="tb" onclick="switchTab('aiengine',this)"><div class="tb-dot"></div>🤖 AI Engine</div>
   </div>
 
   <!-- ▌ PANEL OVERVIEW ▌ -->
@@ -312,13 +469,13 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
       <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">💰</div><div class="kpi-lbl">Tổng doanh thu</div><div class="kpi-val sm" id="kRevenue">—</div><div class="kpi-trend nt">Tất cả thời gian</div></div>
       <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🎫</div><div class="kpi-lbl">Tổng đặt vé</div><div class="kpi-val" id="kBookings">—</div><div class="kpi-trend nt" id="kBkTrend">—</div></div>
       <div class="kpi k-b"><div class="kpi-glow"></div><div class="kpi-ico">👥</div><div class="kpi-lbl">Người dùng</div><div class="kpi-val" id="kUsers">—</div><div class="kpi-trend nt">Đã đăng ký</div></div>
-      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">🏢</div><div class="kpi-lbl">Nhà xe hoạt động</div><div class="kpi-val" id="kOperators">—</div><div class="kpi-trend nt">Đang phục vụ</div></div>
+      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">🚌</div><div class="kpi-lbl">Nhà xe hoạt động</div><div class="kpi-val" id="kOperators">—</div><div class="kpi-trend nt">Đang phục vụ</div></div>
     </div>
     <div class="kpi4" style="margin-bottom:22px;">
-      <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">🚍</div><div class="kpi-lbl">Chuyến đang mở</div><div class="kpi-val" id="kTripsOpen">—</div><div class="kpi-trend up">OPEN / FULL</div></div>
+      <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">🟢</div><div class="kpi-lbl">Chuyến đang mở</div><div class="kpi-val" id="kTripsOpen">—</div><div class="kpi-trend up">OPEN / FULL</div></div>
       <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">❌</div><div class="kpi-lbl">Vé bị huỷ</div><div class="kpi-val" id="kCanceled">—</div><div class="kpi-trend dn" id="kCancelRate">—</div></div>
       <div class="kpi k-pk"><div class="kpi-glow"></div><div class="kpi-ico">⭐</div><div class="kpi-lbl">Đánh giá TB</div><div class="kpi-val" id="kRating">—</div><div class="kpi-trend nt">/ 5 sao</div></div>
-      <div class="kpi k-t"><div class="kpi-glow"></div><div class="kpi-ico">💳</div><div class="kpi-lbl">Thanh toán OK</div><div class="kpi-val" id="kPayOK">—</div><div class="kpi-trend nt" id="kPayRate">—</div></div>
+      <div class="kpi k-t"><div class="kpi-glow"></div><div class="kpi-ico">✅</div><div class="kpi-lbl">Thanh toán OK</div><div class="kpi-val" id="kPayOK">—</div><div class="kpi-trend nt" id="kPayRate">—</div></div>
     </div>
     <div class="cg31" style="margin-bottom:20px;">
       <div class="gc cc tall"><div class="cc-head"><div><div class="cc-title">Doanh thu 6 tháng</div><div class="cc-sub">Biểu đồ theo tháng (VNĐ)</div></div><span class="cc-badge cb-g">Line chart</span></div><canvas id="revenueChart"></canvas></div>
@@ -340,7 +497,7 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
       <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">💰</div><div class="kpi-lbl">Tổng doanh thu</div><div class="kpi-val sm" id="rRevTotal">—</div><div class="kpi-trend nt">Tất cả thời gian</div></div>
       <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">✅</div><div class="kpi-lbl">Đã thu (PAID)</div><div class="kpi-val sm" id="rRevPaid">—</div><div class="kpi-trend up">Thực thu</div></div>
       <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">📅</div><div class="kpi-lbl">Tháng này</div><div class="kpi-val sm" id="rRevMonth">—</div><div class="kpi-trend nt">—</div></div>
-      <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">💸</div><div class="kpi-lbl">Mất doanh thu</div><div class="kpi-val sm" id="rRevLost">—</div><div class="kpi-trend dn">Từ vé huỷ</div></div>
+      <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">📉</div><div class="kpi-lbl">Mất doanh thu</div><div class="kpi-val sm" id="rRevLost">—</div><div class="kpi-trend dn">Từ vé huỷ</div></div>
     </div>
     <div class="cg2" style="margin-bottom:20px;">
       <div class="gc cc tall"><div class="cc-head"><div><div class="cc-title">Doanh thu 12 tháng</div><div class="cc-sub">Biểu đồ đường</div></div><span class="cc-badge cb-a">Line</span></div><canvas id="rev12Chart"></canvas></div>
@@ -398,8 +555,8 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
   <div class="panel" id="panel-ai">
     <div class="kpi4" style="margin-bottom:22px;">
       <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🤖</div><div class="kpi-lbl">Tổng AI đề xuất</div><div class="kpi-val" id="aiTotal">—</div><div class="kpi-trend nt">AI_RECOMMENDATION</div></div>
-      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">📈</div><div class="kpi-lbl">Điểm đề xuất TB</div><div class="kpi-val" id="aiAvgScore">—</div><div class="kpi-trend nt">Score avg</div></div>
-      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">👁</div><div class="kpi-lbl">Log hành vi</div><div class="kpi-val" id="aiBehavior">—</div><div class="kpi-trend nt">USER_BEHAVIOR</div></div>
+      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">📊</div><div class="kpi-lbl">Điểm đề xuất TB</div><div class="kpi-val" id="aiAvgScore">—</div><div class="kpi-trend nt">Score avg</div></div>
+      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">📋</div><div class="kpi-lbl">Log hành vi</div><div class="kpi-val" id="aiBehavior">—</div><div class="kpi-trend nt">USER_BEHAVIOR</div></div>
       <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">🎯</div><div class="kpi-lbl">Tỉ lệ chuyển đổi</div><div class="kpi-val" id="aiConvert">—</div><div class="kpi-trend up">AI → Đặt vé</div></div>
     </div>
     <div class="cg2" style="margin-bottom:20px;">
@@ -419,7 +576,7 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
   <div class="panel" id="panel-reviews">
     <div class="kpi4" style="margin-bottom:22px;">
       <div class="kpi k-pk"><div class="kpi-glow"></div><div class="kpi-ico">⭐</div><div class="kpi-lbl">Điểm TB hệ thống</div><div class="kpi-val" id="rvAvg">—</div><div class="kpi-trend nt">/ 5 sao</div></div>
-      <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">💬</div><div class="kpi-lbl">Tổng đánh giá</div><div class="kpi-val" id="rvTotal">—</div><div class="kpi-trend nt">Tất cả</div></div>
+      <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">📊</div><div class="kpi-lbl">Tổng đánh giá</div><div class="kpi-val" id="rvTotal">—</div><div class="kpi-trend nt">Tất cả</div></div>
       <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">😊</div><div class="kpi-lbl">Tích cực (4-5★)</div><div class="kpi-val" id="rvPositive">—</div><div class="kpi-trend up">Hài lòng</div></div>
       <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">😞</div><div class="kpi-lbl">Tiêu cực (1-2★)</div><div class="kpi-val" id="rvNegative">—</div><div class="kpi-trend dn">Cần cải thiện</div></div>
     </div>
@@ -442,7 +599,182 @@ tbody tr:hover{background:rgba(255,255,255,.025);}
     </div>
   </div>
 
+  <!-- ▌ PANEL BOOKINGS ▌ -->
+  <div class="panel" id="panel-bookings">
+    <div class="kpi4" style="margin-bottom:22px;">
+      <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🎫</div><div class="kpi-lbl">Tổng đặt vé</div><div class="kpi-val" id="bkTotal">—</div><div class="kpi-trend nt">Toàn hệ thống</div></div>
+      <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">✅</div><div class="kpi-lbl">Đã thanh toán</div><div class="kpi-val" id="bkPaid">—</div><div class="kpi-trend up">PAID</div></div>
+      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">⏳</div><div class="kpi-lbl">Chờ thanh toán</div><div class="kpi-val" id="bkPending">—</div><div class="kpi-trend nt">PENDING</div></div>
+      <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">❌</div><div class="kpi-lbl">Đã huỷ</div><div class="kpi-val" id="bkCanceled">—</div><div class="kpi-trend dn">CANCELED</div></div>
+    </div>
+
+    <!-- Booking toolbar -->
+    <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;background:linear-gradient(145deg,rgba(6,14,32,.88),rgba(3,9,22,.84));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 20px;backdrop-filter:blur(14px);">
+      <div style="position:relative;flex:1;min-width:220px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:rgba(255,255,255,.30);pointer-events:none;">🔍</span>
+        <input id="bkSearch" placeholder="Tìm tên, email, tuyến đường..." oninput="filterBk()"
+          style="width:100%;padding:10px 14px 10px 36px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#e8f4f8;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none;transition:border .2s,box-shadow .2s;"
+          onfocus="this.style.borderColor='rgba(0,255,224,.4)';this.style.boxShadow='0 0 0 3px rgba(0,255,224,.08)'"
+          onblur="this.style.borderColor='rgba(255,255,255,.16)';this.style.boxShadow=''">
+      </div>
+      <select id="bkStatusFilter" onchange="filterBk()"
+        style="padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#e8f4f8;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none;cursor:pointer;">
+        <option value="">Tất cả trạng thái</option>
+        <option value="PAID">✅ PAID</option>
+        <option value="PENDING">⏳ PENDING</option>
+        <option value="CANCELED">❌ CANCELED</option>
+      </select>
+      <button onclick="loadBkPage(bkPage)" style="padding:10px 16px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:rgba(255,255,255,.70);font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;" onmouseover="this.style.color='#00ffe0';this.style.borderColor='rgba(0,255,224,.28)'" onmouseout="this.style.color='rgba(255,255,255,.70)';this.style.borderColor='rgba(255,255,255,.12)'">🔄 Làm mới</button>
+    </div>
+
+    <div class="gc gc-pad">
+      <div class="sec-head">
+        <div><div class="sec-title">Danh sách đặt vé</div><div class="sec-sub" id="bkPageInfo">Đang tải…</div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="cc-badge cb-c" id="bkCountBadge">—</span>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>#ID</th><th>Người dùng</th><th>Tuyến đường</th><th>Khởi hành</th><th>Tổng tiền</th><th>Ngày đặt</th><th>Trạng thái</th><th style="text-align:center;">Thao tác</th></tr></thead>
+        <tbody id="bkTable"><tr><td colspan="8"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></td></tr></tbody>
+      </table></div>
+      <!-- Pagination -->
+      <div id="bkPagination" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:18px 0;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- ▌ PANEL ROUTES ▌ -->
+  <div class="panel" id="panel-routes">
+    <div class="kpi4" style="margin-bottom:22px;">
+      <div class="kpi k-b"><div class="kpi-glow"></div><div class="kpi-ico">🗺️</div><div class="kpi-lbl">Tổng tuyến đường</div><div class="kpi-val" id="rtTotal">—</div><div class="kpi-trend nt">Toàn mạng lưới</div></div>
+      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">🚍</div><div class="kpi-lbl">Tổng chuyến xe</div><div class="kpi-val" id="rtTrips">—</div><div class="kpi-trend nt">Toàn bộ</div></div>
+      <div class="kpi k-g"><div class="kpi-glow"></div><div class="kpi-ico">🎫</div><div class="kpi-lbl">Tổng lượt đặt</div><div class="kpi-val" id="rtBookings">—</div><div class="kpi-trend up">Tất cả tuyến</div></div>
+      <div class="kpi k-pk"><div class="kpi-glow"></div><div class="kpi-ico">💰</div><div class="kpi-lbl">Tổng doanh thu</div><div class="kpi-val sm" id="rtRevenue">—</div><div class="kpi-trend up">Từ tất cả tuyến</div></div>
+    </div>
+    <div class="cg31" style="margin-bottom:20px;">
+      <div class="gc gc-pad">
+        <div class="sec-head"><div><div class="sec-title">Tất cả tuyến đường</div><div class="sec-sub" id="rtInfo">Đang tải…</div></div><span class="cc-badge cb-b" id="rtCountBadge">—</span></div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th>Tuyến đường</th><th>Km</th><th>Chuyến xe</th><th>Lượt đặt</th><th>Doanh thu</th><th>Nhà xe</th></tr></thead>
+          <tbody id="routesTable"><tr><td colspan="7"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="gc cc tall">
+        <div class="cc-head"><div><div class="cc-title">Top tuyến theo lượt đặt</div><div class="cc-sub">Doanh thu (VNĐ)</div></div><span class="cc-badge cb-pk">Bar</span></div>
+        <canvas id="routeBarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ▌ PANEL AI ENGINE ▌ -->
+  <div class="panel" id="panel-aiengine">
+
+    <!-- KPI row -->
+    <div class="kpi4" style="margin-bottom:22px;">
+      <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🧠</div><div class="kpi-lbl">Dự báo DT hôm mai</div><div class="kpi-val sm" id="ae-next-rev">—</div><div class="kpi-trend nt">Linear Regression</div></div>
+      <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">🚨</div><div class="kpi-lbl">Cảnh báo bất thường</div><div class="kpi-val" id="ae-anomaly-cnt">—</div><div class="kpi-trend dn" id="ae-anomaly-label">Anomaly Detection</div></div>
+      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">📈</div><div class="kpi-lbl">DT dự báo 30 ngày</div><div class="kpi-val sm" id="ae-forecast-total">—</div><div class="kpi-trend up">AI Forecast</div></div>
+      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">🎯</div><div class="kpi-lbl">Top Collaborative Route</div><div class="kpi-val sm" id="ae-top-route">—</div><div class="kpi-trend nt">CF Algorithm</div></div>
+    </div>
+
+    <!-- Anomaly Alerts -->
+    <div class="gc gc-pad" style="margin-bottom:20px;" id="ae-anomaly-section">
+      <div class="sec-head" style="margin-bottom:14px;">
+        <div><div class="sec-title">🚨 Phát hiện bất thường</div><div class="sec-sub">Anomaly Detection — so sánh với trung bình 7 ngày</div></div>
+        <span class="cc-badge cb-r" id="ae-anomaly-badge">Đang kiểm tra…</span>
+      </div>
+      <div id="ae-anomaly-list"><div class="empty"><div class="empty-ico">⏳</div>Đang phân tích…</div></div>
+    </div>
+
+    <!-- Revenue Forecast Chart -->
+    <div class="gc cc tall" style="margin-bottom:20px;">
+      <div class="cc-head">
+        <div><div class="cc-title">📈 Dự báo doanh thu 30 ngày</div><div class="cc-sub">Linear Regression + Seasonality — khoảng tin cậy 90%</div></div>
+        <span class="cc-badge cb-g">AI Forecast</span>
+      </div>
+      <canvas id="ae-forecast-chart" style="max-height:280px;"></canvas>
+    </div>
+
+    <div class="cg2" style="margin-bottom:20px;">
+
+      <!-- Booking Heatmap -->
+      <div class="gc gc-pad">
+        <div class="sec-head" style="margin-bottom:14px;">
+          <div><div class="sec-title">🔥 Heatmap giờ đặt vé</div><div class="sec-sub">7 ngày × 24 giờ — 90 ngày gần nhất</div></div>
+          <span class="cc-badge cb-a">Heatmap</span>
+        </div>
+        <div id="ae-heatmap-wrap" style="overflow-x:auto;">
+          <div id="ae-heatmap"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></div>
+        </div>
+      </div>
+
+      <!-- Top Recommended Routes (Collaborative Filtering) -->
+      <div class="gc gc-pad">
+        <div class="sec-head" style="margin-bottom:14px;">
+          <div><div class="sec-title">🤝 Collaborative Filtering</div><div class="sec-sub">Tuyến đường được đề xuất nhiều nhất</div></div>
+          <span class="cc-badge cb-p">CF Score</span>
+        </div>
+        <div id="ae-cf-list"><div class="empty"><div class="empty-ico">🤖</div>Đang tính toán…</div></div>
+      </div>
+
+    </div>
+
+    <!-- Price Prediction Tool -->
+    <div class="gc gc-pad" style="margin-bottom:20px;">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-title">💡 Dự đoán giá vé tối ưu</div><div class="sec-sub">Linear Regression theo lịch sử đặt vé + DOW + Seasonality</div></div>
+        <span class="cc-badge cb-b">Price AI</span>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:180px;">
+          <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.40);text-transform:uppercase;letter-spacing:.5px;">Route ID</label>
+          <input id="ae-price-route" type="number" placeholder="Nhập route_id..." min="1"
+            style="padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#e8f4f8;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none;transition:border .2s;"
+            onfocus="this.style.borderColor='rgba(0,255,224,.4)'" onblur="this.style.borderColor='rgba(255,255,255,.16)'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:180px;">
+          <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.40);text-transform:uppercase;letter-spacing:.5px;">Ngày khởi hành</label>
+          <input id="ae-price-date" type="date"
+            style="padding:10px 14px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#e8f4f8;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none;transition:border .2s;"
+            onfocus="this.style.borderColor='rgba(0,255,224,.4)'" onblur="this.style.borderColor='rgba(255,255,255,.16)'">
+        </div>
+        <button onclick="runPricePrediction()"
+          style="padding:10px 22px;border-radius:11px;border:none;background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#030d18;font-size:13px;font-weight:800;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 0 14px rgba(0,255,224,.28);transition:all .22s;"
+          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          🔮 Dự đoán
+        </button>
+      </div>
+      <div id="ae-price-result" style="display:none;"></div>
+    </div>
+
+  </div><!-- /panel-aiengine -->
+
 </div><!-- /content -->
+
+<!-- ▌ MODAL: Cập nhật booking status ▌ -->
+<div id="bkStatusModal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="width:400px;max-width:95vw;background:linear-gradient(160deg,#0d1827,#080f1c);border:1px solid rgba(255,255,255,.16);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(0,255,224,.06);overflow:hidden;animation:modalIn .25s cubic-bezier(.22,.61,.36,1);">
+    <div style="padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,.09);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:16px;font-weight:800;color:#fff;display:flex;align-items:center;gap:9px;">🎫 Cập nhật trạng thái</div>
+      <button onclick="closeBkModal()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;transition:all .2s;" onmouseover="this.style.background='rgba(231,76,60,.2)';this.style.color='#e74c3c'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.55)'">✕</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <div style="font-size:13px;color:rgba(255,255,255,.50);margin-bottom:16px;" id="bkModalInfo">—</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+        <label style="font-size:11px;font-weight:700;color:rgba(255,255,255,.40);text-transform:uppercase;letter-spacing:.5px;">Trạng thái mới</label>
+        <select id="bkNewStatus" style="padding:11px 14px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#e8f4f8;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none;cursor:pointer;">
+          <option value="PAID">✅ PAID — Đã thanh toán</option>
+          <option value="PENDING">⏳ PENDING — Chờ thanh toán</option>
+          <option value="CANCELED">❌ CANCELED — Đã huỷ</option>
+        </select>
+      </div>
+    </div>
+    <div style="padding:14px 24px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:flex-end;gap:10px;">
+      <button onclick="closeBkModal()" style="padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;">Hủy</button>
+      <button onclick="submitBkStatus()" style="padding:10px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#04080f;font-size:13px;font-weight:800;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 0 16px rgba(0,255,224,.3);transition:all .2s;">💾 Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* GALAXY */
@@ -511,7 +843,7 @@ function fmt(v){return Number(v||0).toLocaleString("vi-VN")+"đ";}
 function fmtD(s){const d=new Date(s);return isNaN(d)?"—":d.toLocaleDateString("vi-VN");}
 function fmtDT(s){const d=new Date(s);return isNaN(d)?"—":d.toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
 function set(id,v){const e=$(id);if(e)e.textContent=v;}
-async function api(p){try{const r=await fetch("/api/"+p);return r.ok?r.json():null;}catch{return null;}}
+async function req(p){try{const r=await fetch("/api/"+p);return r.ok?r.json():null;}catch{return null;}}
 function mkg(ctx,c1,c2,h=260){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 
 function bBadge(s){return s==="PAID"?`<span class="b b-paid">✅ PAID</span>`:s==="PENDING"?`<span class="b b-pending">⏳ PENDING</span>`:`<span class="b b-canceled">❌ CANCELED</span>`;}
@@ -531,13 +863,15 @@ function loadTab(n){
   if(n==="overview")return loadOverview();if(n==="revenue")return loadRevenue();
   if(n==="trips")return loadTrips();if(n==="users")return loadUsers();
   if(n==="ai")return loadAI();if(n==="reviews")return loadReviews();
+  if(n==="bookings")return initBookings();if(n==="routes")return loadRoutes();
+  if(n==="aiengine")return loadAIEngine();
 }
 
 /* OVERVIEW */
 async function loadOverview(){
   const[stats,rev6,bpd,routes,bstat,paym,peak]=await Promise.all([
-    api("admin/stats"),api("admin/revenue-6months"),api("admin/bookings-per-day"),
-    api("admin/top-routes"),api("admin/booking-status"),api("admin/payment-methods"),api("admin/peak-hours")
+    req("admin/stats"),req("admin/revenue-6months"),req("admin/bookings-per-day"),
+    req("admin/top-routes"),req("admin/booking-status"),req("admin/payment-methods"),req("admin/peak-hours")
   ]);
   if(stats){
     set("kRevenue",fmt(stats.totalRevenue));set("kBookings",(stats.totalBookings||0).toLocaleString());
@@ -567,7 +901,7 @@ async function loadOverview(){
 
 /* REVENUE */
 async function loadRevenue(){
-  const[stats,rev12,revOp,revBT]=await Promise.all([api("admin/stats"),api("admin/revenue-12months"),api("admin/revenue-by-operator"),api("admin/revenue-by-bustype")]);
+  const[stats,rev12,revOp,revBT]=await Promise.all([req("admin/stats"),req("admin/revenue-12months"),req("admin/revenue-by-operator"),req("admin/revenue-by-bustype")]);
   if(stats){set("rRevTotal",fmt(stats.totalRevenue));set("rRevPaid",fmt(stats.revenuePaid));set("rRevMonth",fmt(stats.revenueThisMonth));set("rRevLost",fmt(stats.revenueCanceled));}
   if(rev12?.length){
     const c=$("rev12Chart").getContext("2d");
@@ -584,7 +918,7 @@ async function loadRevenue(){
 
 /* TRIPS */
 async function loadTrips(){
-  const[tstat,occ,recent]=await Promise.all([api("admin/trip-status"),api("admin/bus-occupancy"),api("admin/recent-trips")]);
+  const[tstat,occ,recent]=await Promise.all([req("admin/trip-status"),req("admin/bus-occupancy"),req("admin/recent-trips")]);
   if(tstat?.length){
     const open=tstat.find(d=>d.status==="OPEN")?.count||0,full=tstat.find(d=>d.status==="FULL")?.count||0,canc=tstat.find(d=>d.status==="CANCELED")?.count||0;
     set("tTotal",(open+full+canc).toLocaleString());set("tOpen",open.toLocaleString());set("tFull",full.toLocaleString());set("tCanceled",canc.toLocaleString());
@@ -606,7 +940,7 @@ async function loadTrips(){
 
 /* USERS */
 async function loadUsers(){
-  const[grow,top,recent,stats]=await Promise.all([api("admin/growth-rate"),api("admin/top-users"),api("admin/recent-users"),api("admin/user-stats")]);
+  const[grow,top,recent,stats]=await Promise.all([req("admin/growth-rate"),req("admin/top-users"),req("admin/recent-users"),req("admin/user-stats")]);
   if(stats){set("uTotal",(stats.total||0).toLocaleString());set("uActive",(stats.active||0).toLocaleString());set("uBlocked",(stats.blocked||0).toLocaleString());set("uOperator",(stats.operators||0).toLocaleString());}
   if(grow?.length){
     const c=$("growthChart").getContext("2d");
@@ -627,7 +961,7 @@ async function loadUsers(){
 
 /* AI */
 async function loadAI(){
-  const[aiR,beh,aiS]=await Promise.all([api("admin/ai-top-routes"),api("admin/user-behavior"),api("admin/ai-stats")]);
+  const[aiR,beh,aiS,behH]=await Promise.all([req("admin/ai-top-routes"),req("admin/user-behavior"),req("admin/ai-stats"),req("admin/user-behavior-hours")]);
   if(aiS){set("aiTotal",(aiS.totalRecommendations||0).toLocaleString());set("aiAvgScore",aiS.avgScore?(+aiS.avgScore).toFixed(2):"—");set("aiBehavior",(aiS.totalBehaviors||0).toLocaleString());set("aiConvert",aiS.conversionRate?(+aiS.conversionRate).toFixed(1)+"%":"—");}
   if(aiR?.length){
     const c=$("aiRouteChart").getContext("2d");
@@ -638,16 +972,16 @@ async function loadAI(){
   }
   if(beh?.length){
     new Chart($("behaviorChart"),{type:"doughnut",data:{labels:beh.map(d=>d.action),datasets:[{data:beh.map(d=>d.count),backgroundColor:PAL,borderWidth:0}]},options:dnutOpts()});
-    const bh=beh.reduce((a,d)=>{if(d.hour!=null)a[d.hour]=(a[d.hour]||0)+d.count;return a;},{});
-    const hrs=Array.from({length:24},(_,i)=>i);
-    const c=$("behaviorHourChart").getContext("2d");
-    new Chart($("behaviorHourChart"),{type:"line",data:{labels:hrs.map(h=>h+":00"),datasets:[{data:hrs.map(h=>bh[h]||0),borderColor:"#fd79a8",backgroundColor:mkg(c,"rgba(253,121,168,0.26)","rgba(253,121,168,0.02)"),borderWidth:2,tension:.4,pointRadius:2,fill:true}]},options:{...lineOpts(),plugins:{legend:{display:false}}}});
   }
+  const hrs=Array.from({length:24},(_,i)=>i);
+  const bh=(behH||[]).reduce((a,d)=>{a[d.hour]=(a[d.hour]||0)+d.count;return a;},{});
+  const c=$("behaviorHourChart").getContext("2d");
+  new Chart($("behaviorHourChart"),{type:"line",data:{labels:hrs.map(h=>h+":00"),datasets:[{data:hrs.map(h=>bh[h]||0),borderColor:"#fd79a8",backgroundColor:mkg(c,"rgba(253,121,168,0.26)","rgba(253,121,168,0.02)"),borderWidth:2,tension:.4,pointRadius:2,fill:true}]},options:{...lineOpts(),plugins:{legend:{display:false}}}});
 }
 
 /* REVIEWS */
 async function loadReviews(){
-  const data=await api("admin/reviews");
+  const data=await req("admin/reviews");
   if(!data?.length){$("reviewsList").innerHTML=`<div class="empty"><div class="empty-ico">⭐</div><p>Chưa có đánh giá</p></div>`;return;}
   const total=data.length,avg=(data.reduce((s,r)=>s+(r.rating||0),0)/total).toFixed(1);
   const pos=data.filter(r=>r.rating>=4).length,neg=data.filter(r=>r.rating<=2).length;
@@ -659,9 +993,366 @@ async function loadReviews(){
   [5,4,3,2,1].forEach(s=>{const pct=Math.round(dist[s-1]/tot*100);set("p"+s,pct+"%");const pb=$("pb"+s);if(pb)setTimeout(()=>{pb.style.width=pct+"%";},300);});
 }
 
+/* ════════════════════════════════════════════
+   BOOKINGS MANAGEMENT
+════════════════════════════════════════════ */
+let bkPage=1, bkLimit=20, bkTotalPages=1, bkSearchQ="", bkStatusQ="", _bkEditId=null;
+
+async function initBookings(){
+  const stats=await req("admin/stats");
+  if(stats){
+    set("bkTotal",(stats.totalBookings||0).toLocaleString());
+    set("bkPaid",(stats.paySuccess||0).toLocaleString());
+    set("bkPending",(stats.pendingBookings||0).toLocaleString());
+    set("bkCanceled",(stats.canceledBookings||0).toLocaleString());
+  }
+  loadBkPage(1);
+}
+
+function filterBk(){
+  bkSearchQ=document.getElementById("bkSearch").value.trim();
+  bkStatusQ=document.getElementById("bkStatusFilter").value;
+  loadBkPage(1);
+}
+
+async function loadBkPage(pg){
+  bkPage=pg;
+  const params=new URLSearchParams({page:pg,limit:bkLimit});
+  if(bkSearchQ) params.set("search",bkSearchQ);
+  if(bkStatusQ) params.set("status",bkStatusQ);
+  const data=await req("admin/all-bookings?"+params.toString());
+  if(!data){$("bkTable").innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-ico">❌</div>Lỗi tải dữ liệu</div></td></tr>`;return;}
+  bkTotalPages=Math.ceil((data.total||0)/bkLimit)||1;
+  set("bkPageInfo",`Trang ${pg}/${bkTotalPages} — Tổng: ${data.total} vé`);
+  set("bkCountBadge",data.total+" vé");
+  if(!data.data?.length){
+    $("bkTable").innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-ico">🎫</div>Không có đặt vé nào</div></td></tr>`;
+  } else {
+    $("bkTable").innerHTML=data.data.map(b=>`<tr>
+      <td><b style="color:#00ffe0;font-size:12px;">#${b.booking_id}</b></td>
+      <td><div style="display:flex;flex-direction:column;gap:2px;"><b style="font-size:13px;">${b.full_name||"—"}</b><span style="font-size:11px;color:rgba(255,255,255,.35);">${b.email||""}</span></div></td>
+      <td><b>${b.origin||"—"}</b><span style="color:rgba(255,255,255,.35);"> → </span><b>${b.destination||"—"}</b></td>
+      <td style="color:#8ab0c0;font-size:12px;">${fmtDT(b.departure_time)}</td>
+      <td style="color:#f39c12;font-weight:700;">${fmt(b.total_amount)}</td>
+      <td style="color:#5a8498;font-size:12px;">${fmtDT(b.booking_time)}</td>
+      <td>${bBadge(b.status)}</td>
+      <td style="text-align:center;"><button onclick="openBkModal(${b.booking_id},'${b.status}','${(b.full_name||"").replace(/'/g,"")}')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(0,255,224,.22);background:rgba(0,255,224,.08);color:#00ffe0;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Segoe UI',Arial,sans-serif;" onmouseover="this.style.background='rgba(0,255,224,.18)'" onmouseout="this.style.background='rgba(0,255,224,.08)'">✏️ Sửa</button></td>
+    </tr>`).join("");
+  }
+  renderBkPag(data.total);
+}
+
+function renderBkPag(total){
+  const wrap=$("bkPagination");
+  if(!wrap)return;
+  const pages=Math.ceil(total/bkLimit)||1;
+  let h="";
+  const pgStyle=(active)=>`padding:0;width:34px;height:34px;border-radius:9px;border:1px solid ${active?"rgba(0,255,224,.35)":"rgba(255,255,255,.09)"};background:${active?"rgba(0,255,224,.14)":"rgba(255,255,255,.06)"};color:${active?"#00ffe0":"rgba(255,255,255,.50)"};font-size:12.5px;font-weight:${active?800:600};cursor:pointer;transition:all .2s;font-family:'Segoe UI',Arial,sans-serif;`;
+  if(bkPage>1)h+=`<button onclick="loadBkPage(${bkPage-1})" style="${pgStyle(false)}">‹</button>`;
+  const start=Math.max(1,bkPage-2),end=Math.min(pages,bkPage+2);
+  if(start>1)h+=`<button onclick="loadBkPage(1)" style="${pgStyle(false)}">1</button>${start>2?`<span style="color:rgba(255,255,255,.28);padding:0 4px;">…</span>`:""}`;
+  for(let i=start;i<=end;i++)h+=`<button onclick="loadBkPage(${i})" style="${pgStyle(i===bkPage)}">${i}</button>`;
+  if(end<pages)h+=`${end<pages-1?`<span style="color:rgba(255,255,255,.28);padding:0 4px;">…</span>`:""}
+    <button onclick="loadBkPage(${pages})" style="${pgStyle(false)}">${pages}</button>`;
+  if(bkPage<pages)h+=`<button onclick="loadBkPage(${bkPage+1})" style="${pgStyle(false)}">›</button>`;
+  wrap.innerHTML=h;
+}
+
+function openBkModal(id,status,name){
+  _bkEditId=id;
+  $("bkModalInfo").textContent=`Booking #${id} — ${name}`;
+  $("bkNewStatus").value=status;
+  const m=$("bkStatusModal");m.style.display="flex";
+}
+function closeBkModal(){$("bkStatusModal").style.display="none";_bkEditId=null;}
+$("bkStatusModal").addEventListener("click",e=>{if(e.target===$("bkStatusModal"))closeBkModal();});
+
+async function submitBkStatus(){
+  if(!_bkEditId)return;
+  const status=$("bkNewStatus").value;
+  try{
+    const r=await fetch(`/api/admin/bookings/${_bkEditId}/status`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
+    const d=await r.json();
+    if(d.success){
+      closeBkModal();
+      loadBkPage(bkPage);
+      // Update KPI
+      const stats=await req("admin/stats");
+      if(stats){set("bkPaid",(stats.paySuccess||0).toLocaleString());set("bkPending",(stats.pendingBookings||0).toLocaleString());set("bkCanceled",(stats.canceledBookings||0).toLocaleString());}
+    }
+  }catch(e){console.error(e);}
+}
+
+/* ════════════════════════════════════════════
+   ROUTES MANAGEMENT
+════════════════════════════════════════════ */
+let _routeChart=null;
+
+async function loadRoutes(){
+  const data=await req("admin/all-routes");
+  if(!data?.length){
+    $("routesTable").innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-ico">🗺️</div>Chưa có tuyến đường</div></td></tr>`;return;
+  }
+  const totalTrips=data.reduce((s,r)=>s+(+r.total_trips||0),0);
+  const totalBk=data.reduce((s,r)=>s+(+r.total_bookings||0),0);
+  const totalRev=data.reduce((s,r)=>s+(+r.total_revenue||0),0);
+  set("rtTotal",data.length.toLocaleString());
+  set("rtTrips",totalTrips.toLocaleString());
+  set("rtBookings",totalBk.toLocaleString());
+  set("rtRevenue",fmt(totalRev));
+  set("rtInfo",`${data.length} tuyến — ${totalBk} lượt đặt`);
+  set("rtCountBadge",data.length+" tuyến");
+
+  $("routesTable").innerHTML=data.map((r,i)=>`<tr>
+    <td><b style="color:#00ffe0;font-size:12px;">#${r.route_id}</b></td>
+    <td><b>${r.origin||"—"}</b><span style="color:rgba(255,255,255,.35);"> → </span><b>${r.destination||"—"}</b></td>
+    <td style="color:#8ab0c0;">${r.distance_km?r.distance_km+" km":"—"}</td>
+    <td style="color:#a78bfa;font-weight:700;">${(+r.total_trips||0).toLocaleString()}</td>
+    <td style="color:#00ffe0;font-weight:700;">${(+r.total_bookings||0).toLocaleString()}</td>
+    <td style="color:#f39c12;font-weight:700;">${fmt(r.total_revenue)}</td>
+    <td style="color:#5a8498;">${r.operator_count||0} nhà xe</td>
+  </tr>`).join("");
+
+  // Chart
+  const top=data.slice(0,8);
+  if(_routeChart){_routeChart.destroy();_routeChart=null;}
+  const c=$("routeBarChart").getContext("2d");
+  _routeChart=new Chart($("routeBarChart"),{type:"bar",
+    data:{labels:top.map(r=>r.origin+" → "+r.destination),
+    datasets:[
+      {label:"Lượt đặt",data:top.map(r=>+r.total_bookings||0),backgroundColor:"rgba(0,255,224,.70)",borderRadius:6,barThickness:18,yAxisID:"y1"},
+      {label:"Chuyến xe",data:top.map(r=>+r.total_trips||0),backgroundColor:"rgba(124,92,231,.60)",borderRadius:6,barThickness:18,yAxisID:"y1"}
+    ]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,position:"bottom",labels:{boxWidth:11,padding:12,color:"rgba(255,255,255,.55)"}},tooltip:{...TTP}},
+      scales:{
+        x:{grid:{color:GC},ticks:{callback:v=>v.toLocaleString()}},
+        y:{grid:{display:false},ticks:{color:"rgba(255,255,255,.55)"}},
+        y1:{display:false}
+      }}});
+}
+
+/* ════════════════════════════════════════════
+   AI ENGINE
+════════════════════════════════════════════ */
+let _aeForecastChart = null;
+
+async function loadAIEngine() {
+  const [forecast, anomalies, heatmap, cfRoutes] = await Promise.all([
+    req("admin/ai/revenue-forecast?days=30"),
+    req("admin/ai/anomalies"),
+    req("admin/ai/heatmap"),
+    req("admin/ai/recommendations")
+  ]);
+
+  /* ── Anomalies ── */
+  const aCount = (anomalies || []).length;
+  set("ae-anomaly-cnt", aCount);
+  set("ae-anomaly-badge", aCount === 0 ? "✅ Bình thường" : aCount + " cảnh báo");
+  if (!aCount) {
+    $("ae-anomaly-list").innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.18);color:#2ecc71;font-size:13px;font-weight:700;">✅ Không phát hiện bất thường — hệ thống hoạt động bình thường</div>`;
+    set("ae-anomaly-label", "Không có cảnh báo");
+  } else {
+    $("ae-anomaly-list").innerHTML = (anomalies||[]).map(a => {
+      const clr = a.severity === 'HIGH' ? '#e74c3c' : '#f39c12';
+      const bg  = a.severity === 'HIGH' ? 'rgba(231,76,60,.09)' : 'rgba(243,156,18,.09)';
+      const br  = a.severity === 'HIGH' ? 'rgba(231,76,60,.22)' : 'rgba(243,156,18,.22)';
+      return `<div style="padding:16px 18px;border-radius:14px;background:${bg};border:1px solid ${br};margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:13.5px;font-weight:800;color:${clr};">⚠ ${a.description}</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:${bg};border:1px solid ${br};color:${clr};">${a.severity}</span>
+        </div>
+        <div style="display:flex;gap:20px;font-size:12px;color:rgba(255,255,255,.55);margin-bottom:8px;">
+          <span>Hôm nay: <b style="color:${clr};">${a.metric_today}</b></span>
+          <span>TB 7 ngày: <b style="color:rgba(255,255,255,.70);">${a.metric_avg}</b></span>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);font-style:italic;">💡 ${a.recommendation}</div>
+      </div>`;
+    }).join('');
+    set("ae-anomaly-label", aCount + " cần xem xét");
+  }
+
+  /* ── Revenue Forecast Chart ── */
+  if (forecast && forecast.length) {
+    const totalForecast = (forecast||[]).reduce((s,d)=>s+(d.predicted||0),0);
+    set("ae-forecast-total", fmt(totalForecast));
+    set("ae-next-rev", fmt(forecast[0]?.predicted||0));
+
+    if (_aeForecastChart) { _aeForecastChart.destroy(); _aeForecastChart = null; }
+    const ctx = $("ae-forecast-chart").getContext("2d");
+
+    // Build confidence band as separate datasets
+    const labels = forecast.map(d => {
+      const dt = new Date(d.date);
+      return (dt.getDate()) + "/" + (dt.getMonth()+1);
+    });
+    const predicted = forecast.map(d => d.predicted);
+    const upper = forecast.map(d => d.upper_bound);
+    const lower = forecast.map(d => d.lower_bound);
+
+    _aeForecastChart = new Chart($("ae-forecast-chart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Upper bound",
+            data: upper,
+            borderColor: "transparent",
+            backgroundColor: "rgba(46,204,113,0.10)",
+            pointRadius: 0,
+            fill: "+1",
+            tension: 0.4
+          },
+          {
+            label: "Dự báo doanh thu",
+            data: predicted,
+            borderColor: "#2ecc71",
+            backgroundColor: mkg(ctx,"rgba(46,204,113,0.28)","rgba(46,204,113,0.02)"),
+            borderWidth: 2.5,
+            tension: 0.4,
+            pointRadius: 2,
+            pointBackgroundColor: "#2ecc71",
+            fill: false
+          },
+          {
+            label: "Lower bound",
+            data: lower,
+            borderColor: "transparent",
+            backgroundColor: "rgba(46,204,113,0.10)",
+            pointRadius: 0,
+            fill: "-1",
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true, position: "bottom", labels: { boxWidth: 11, padding: 12, color: "rgba(255,255,255,.55)" } },
+          tooltip: {
+            ...TTP,
+            callbacks: {
+              label: c => {
+                if (c.dataset.label === "Dự báo doanh thu") return " " + fmt(c.raw);
+                if (c.dataset.label === "Upper bound") return " Upper: " + fmt(c.raw);
+                return " Lower: " + fmt(c.raw);
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: GC }, ticks: { maxRotation: 40, color: "rgba(255,255,255,.40)" } },
+          y: { grid: { color: GC }, ticks: { callback: v => (v/1000000).toFixed(1)+"M", color: "rgba(255,255,255,.40)" } }
+        }
+      }
+    });
+  }
+
+  /* ── Booking Heatmap ── */
+  if (heatmap && heatmap.matrix && heatmap.matrix.length) {
+    const days = heatmap.days || ['CN','T2','T3','T4','T5','T6','T7'];
+    const hours = Array.from({length:24},(_,i)=>i);
+    let html = `<div style="font-size:10px;color:rgba(255,255,255,.35);margin-bottom:8px;">Cường độ: thấp → cao</div>`;
+    // Hour axis
+    html += `<div style="display:grid;grid-template-columns:52px repeat(24,1fr);gap:2px;min-width:520px;">`;
+    html += `<div></div>`;
+    hours.forEach(h => {
+      html += `<div style="font-size:9px;color:rgba(255,255,255,.30);text-align:center;padding-bottom:4px;">${h}</div>`;
+    });
+    heatmap.matrix.forEach((row, di) => {
+      html += `<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.50);padding-right:6px;display:flex;align-items:center;white-space:nowrap;">${days[di]||''}</div>`;
+      row.forEach(val => {
+        const intensity = Math.round(val * 255);
+        const r = Math.round(0 + (231-0)*val);
+        const g = Math.round(255 + (76-255)*val);
+        const b = Math.round(224 + (60-224)*val);
+        const alpha = 0.12 + val * 0.82;
+        html += `<div title="${Math.round(val*100)}%" style="height:20px;border-radius:3px;background:rgba(${r},${g},${b},${alpha.toFixed(2)});transition:transform .15s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform=''"></div>`;
+      });
+    });
+    html += `</div>`;
+    $("ae-heatmap").innerHTML = html;
+  } else {
+    $("ae-heatmap").innerHTML = `<div class="empty"><div class="empty-ico">📊</div>Chưa đủ dữ liệu heatmap</div>`;
+  }
+
+  /* ── Collaborative Filtering Routes ── */
+  if (cfRoutes && cfRoutes.length) {
+    set("ae-top-route", cfRoutes[0].route || "—");
+    const maxScore = Math.max(...cfRoutes.map(r => r.score), 1);
+    $("ae-cf-list").innerHTML = cfRoutes.map((r, i) => `
+      <div class="ai-row">
+        <div class="ai-rank">${i+1}</div>
+        <div style="flex:1;">
+          <div class="ai-route">${r.route}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.30);margin-top:2px;">${r.reason||'Collaborative Filtering'}</div>
+        </div>
+        <div class="ai-bar"><div class="ai-bar-fill" style="width:${Math.round(r.score/maxScore*100)}%;background:linear-gradient(90deg,#a78bfa,#7c5ce7);"></div></div>
+        <div class="ai-cnt" style="color:#a78bfa;">${r.score}</div>
+      </div>`).join('');
+  } else {
+    $("ae-cf-list").innerHTML = `<div class="empty"><div class="empty-ico">🤝</div>Cần thêm dữ liệu đặt vé để tính CF</div>`;
+  }
+}
+
+async function runPricePrediction() {
+  const routeId = $("ae-price-route").value.trim();
+  const date    = $("ae-price-date").value;
+  if (!routeId) { alert("Vui lòng nhập Route ID"); return; }
+  const res2 = $("ae-price-result");
+  res2.style.display = "block";
+  res2.innerHTML = `<div style="color:rgba(255,255,255,.45);font-size:13px;">⏳ Đang tính toán…</div>`;
+  const params = "routeId=" + encodeURIComponent(routeId) + (date ? "&date=" + encodeURIComponent(date) : "");
+  const data = await req("admin/ai/price-prediction?" + params);
+  if (!data || data.basePrice === null) {
+    res2.innerHTML = `<div style="color:#e74c3c;font-size:13px;">⚠ Không đủ dữ liệu lịch sử cho tuyến này (cần ít nhất vài booking đã PAID)</div>`;
+    return;
+  }
+  const lvlColor = data.demandLevel === 'HIGH' ? '#e74c3c' : data.demandLevel === 'MEDIUM' ? '#f39c12' : '#2ecc71';
+  res2.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:16px;">
+      <div style="padding:16px;border-radius:14px;background:rgba(0,255,224,.06);border:1px solid rgba(0,255,224,.16);">
+        <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Giá cơ bản</div>
+        <div style="font-size:20px;font-weight:900;color:#00ffe0;">${fmt(data.basePrice)}</div>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.16);">
+        <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Đề xuất tối thiểu</div>
+        <div style="font-size:20px;font-weight:900;color:#2ecc71;">${fmt(data.suggestedMin)}</div>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:rgba(243,156,18,.06);border:1px solid rgba(243,156,18,.16);">
+        <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Đề xuất tối đa</div>
+        <div style="font-size:20px;font-weight:900;color:#f39c12;">${fmt(data.suggestedMax)}</div>
+      </div>
+      <div style="padding:16px;border-radius:14px;background:rgba(124,92,231,.06);border:1px solid rgba(124,92,231,.16);">
+        <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Hệ số cầu</div>
+        <div style="font-size:20px;font-weight:900;color:${lvlColor};">${data.demandFactor}x</div>
+        <div style="font-size:11px;font-weight:700;color:${lvlColor};margin-top:3px;">${data.demandLevel}</div>
+      </div>
+    </div>
+    <div style="padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.55);">
+      💡 <b style="color:rgba(255,255,255,.75);">Phân tích:</b> ${data.reasoning}
+      <span style="margin-left:12px;">📊 Tỷ lệ lấp đầy TB: <b style="color:#00ffe0;">${data.avgOccupancyRate}%</b></span>
+    </div>`;
+}
+
 /* INIT */
 loaded["overview"]=true;
 loadOverview();
+
+/* Date label + Live clock */
+(function(){
+  function tick(){
+    const d=new Date();
+    const e=document.getElementById("dateLabel");
+    if(e) e.textContent="Hôm nay, "+d.toLocaleDateString("vi-VN",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})
+      +" — "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
+  }
+  tick();setInterval(tick,1000);
+  // Admin name
+  try{const u=JSON.parse(localStorage.getItem("user")||"{}");if(u.full_name){const el=document.querySelector(".admin-label");if(el)el.textContent=u.full_name;}}catch(e){}
+})();
 </script>
+<script src="/js/admin-notif.js"></script>
 </body>
 </html>

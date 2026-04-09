@@ -14,7 +14,14 @@ router.post("/",         bookingController.createBooking);
 /* POST pay           — /api/bookings/:id/pay  (before /:id to avoid clash) */
 router.post("/:id/pay",  bookingController.payBooking);
 
+/* GET QR ticket       — /api/bookings/:id/qr */
+router.get("/:id/qr",    bookingController.getBookingQR);
+
+/* POST verify QR      — /api/bookings/verify-qr */
+router.post("/verify-qr", bookingController.verifyBookingQR);
+
 /* PUT update status — /api/bookings/:id */
 router.put("/:id",       bookingController.updateBookingStatus);
+router.post("/:id/service-order", bookingController.addServiceOrder);
 
 module.exports = router;

@@ -32,6 +32,18 @@ router.post("/check-email", authController.checkEmail);
 router.post("/reset-password", authController.resetPassword);
 
 // =============================
+// REFRESH TOKEN
+// POST /api/auth/refresh
+// =============================
+router.post("/refresh", authController.refreshToken);
+
+// =============================
+// ĐĂNG XUẤT
+// POST /api/auth/logout
+// =============================
+router.post("/logout", authController.logout);
+
+// =============================
 // TEST ROUTE
 // GET /api/auth/test
 // =============================

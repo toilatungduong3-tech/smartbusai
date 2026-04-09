@@ -19,4 +19,8 @@ router.put("/:id", userController.updateUser);
 /* ================= DELETE USER ================= */
 router.delete("/:id", userController.deleteUser);
 
+/* ================= LOYALTY POINTS ================= */
+router.get("/:id/loyalty", userController.getUserLoyalty);
+router.post("/:id/redeem-points", userController.redeemPoints);
+
 module.exports = router;

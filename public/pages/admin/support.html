@@ -54,7 +54,13 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.20);}
 .hdr-nav a.active{color:var(--neon);background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.25);}
+.hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--neon);margin-left:4px;box-shadow:0 0 5px var(--neon);}
+.hdr-logo-badge{font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.16));border:1px solid rgba(0,255,224,.38);color:var(--neon);letter-spacing:.8px;box-shadow:0 0 10px rgba(0,255,224,.20);text-transform:uppercase;}
 .hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);
+  border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;}
+.hdr-badge:hover{background:var(--glass2);}
+.badge-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--red);border-radius:50%;}
 .admin-chip{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);
   border-radius:20px;padding:5px 12px 5px 6px;}
 .admin-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#7c5ce7,#00ffe0);
@@ -303,20 +309,25 @@ textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
   <a class="hdr-logo" href="admin.html">
     <div class="hdr-logo-ic">🚌</div>
     <div class="hdr-logo-tx">SmartBusAI</div>
+    <span class="hdr-logo-badge">ADMIN</span>
   </a>
   <div class="hdr-sep"></div>
-  <span class="hdr-role">Admin</span>
   <nav class="hdr-nav">
-    <a href="admin.html">Dashboard</a>
-    <a href="users.html">Người dùng</a>
-    <a href="operators.html">Nhà xe</a>
-    <a href="support.html" class="active">Hỗ trợ</a>
-    <a href="settings.html">Cấu hình</a>
+    <a href="admin.html">📊 Dashboard</a>
+    <a href="users.html">👥 Người dùng</a>
+    <a href="operators.html">🚌 Nhà xe</a>
+    <a href="support.html" class="active">🆘 Hỗ trợ</a>
+    <a href="settings.html">⚙️ Cài đặt</a>
   </nav>
   <div class="hdr-actions">
+    <div class="hdr-badge" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo" style="position:relative;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,.65)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <div class="badge-dot" id="notifDot" style="display:none;"></div>
+      <span id="notifBadge" class="notif-count" style="display:none;"></span>
+    </div>
     <div class="admin-chip">
       <div class="admin-av">👑</div>
-      <span class="admin-nm">Admin</span>
+      <span class="admin-nm" id="adminNameLabel">Admin</span>
     </div>
     <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
   </div>
@@ -330,8 +341,8 @@ textarea.form-control{resize:vertical;min-height:100px;line-height:1.6;}
       <p>Xử lý yêu cầu từ <code style="color:var(--neon);font-size:12px;">hotro.html</code> · Phân loại tự động · AI hỗ trợ xử lý</p>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-export" onclick="exportCSV()">📥 Xuất CSV</button>
-      <button class="btn btn-sec" onclick="loadTickets()">🔄 Làm mới</button>
+      <button class="btn btn-export" onclick="exportCSV()">Xuất CSV</button>
+      <button class="btn btn-sec" onclick="loadTickets()">Làm mới</button>
     </div>
   </div>
 
@@ -1019,6 +1030,14 @@ function exportCSV(){
 
 /* ── Init ── */
 loadTickets();
+
+/* ── Admin name + Live clock ── */
+(function(){
+  try{const u=JSON.parse(localStorage.getItem("user")||"{}");
+    if(u.full_name){const el=document.querySelector(".admin-nm");if(el)el.textContent=u.full_name;}
+  }catch(e){}
+})();
 </script>
+<script src="/js/admin-notif.js"></script>
 </body>
 </html>

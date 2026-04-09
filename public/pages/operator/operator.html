@@ -203,6 +203,61 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 /* Refresh spin */
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinning{animation:spin .7s linear infinite;display:inline-block;}
+
+/* ── PREMIUM UPGRADES ── */
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+
+/* KPI top colour stripe */
+.kpi-card::after{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;
+  background:linear-gradient(90deg,var(--k-col,#00ffe0),transparent);opacity:.7;
+}
+/* KPI shimmer sweep */
+@keyframes kpiShimmer{0%{left:-100%}60%,100%{left:160%}}
+.kpi-card:hover::before{
+  content:"";position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  animation:kpiShimmer 1.2s ease;pointer-events:none;border-radius:16px;z-index:1;
+}
+/* KPI value pop-in */
+@keyframes shimIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.kpi-val{animation:shimIn .45s ease both;}
+
+/* Quick actions row */
+.quick-actions{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+.qa-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;
+  font-size:12.5px;font-weight:700;cursor:pointer;border:none;
+  font-family:"Segoe UI",Arial,sans-serif;transition:all .22s;text-decoration:none;}
+.qa-btn:hover{transform:translateY(-2px);}
+.qa-trip{background:linear-gradient(135deg,rgba(0,255,224,.15),rgba(0,168,255,.10));
+  border:1px solid rgba(0,255,224,.28);color:var(--neon);}
+.qa-trip:hover{background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,168,255,.18));box-shadow:0 4px 16px rgba(0,255,224,.18);}
+.qa-book{background:rgba(0,168,255,.12);border:1px solid rgba(0,168,255,.28);color:#5dc8ff;}
+.qa-book:hover{background:rgba(0,168,255,.22);box-shadow:0 4px 16px rgba(0,168,255,.18);}
+.qa-vehicle{background:rgba(124,92,231,.12);border:1px solid rgba(124,92,231,.28);color:#a29bfe;}
+.qa-vehicle:hover{background:rgba(124,92,231,.22);box-shadow:0 4px 16px rgba(124,92,231,.18);}
+.qa-revenue{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.28);color:#2ecc71;}
+.qa-revenue:hover{background:rgba(46,204,113,.22);box-shadow:0 4px 16px rgba(46,204,113,.18);}
+.qa-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-right:auto;}
+
+/* Gradient heading */
+.pg-gradient-title{
+  background:linear-gradient(90deg,#fff 0%,#00ffe0 50%,#7eb8ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+/* Live clock in subtitle */
+#lastUpdated{
+  font-size:13px;color:var(--text2);margin-top:3px;
+  background:linear-gradient(90deg,rgba(0,255,224,.8),rgba(0,168,255,.8));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:600;letter-spacing:.2px;
+}
+/* Header logo icon bus emoji */
+.hdr-logo-ic{font-size:20px;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -232,12 +287,12 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
     <a href="revenue.html">Doanh thu</a>
   </nav>
   <div class="hdr-actions">
-    <div class="hdr-badge" title="Thông báo">🔔<div class="badge-dot"></div></div>
+    <div class="hdr-badge" title="Thông báo"><div class="badge-dot"></div></div>
     <div class="op-chip">
       <div class="op-avatar">🏢</div>
       <span class="op-name" id="opNameChip">Nhà xe</span>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -247,13 +302,23 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   <!-- Page header -->
   <div class="pg-head">
     <div class="pg-head-left">
-      <h1>📊 Tổng quan hoạt động</h1>
+      <h1 class="pg-gradient-title" id="pgTitle">🚌 Tổng quan hoạt động</h1>
       <p id="lastUpdated">Đang tải dữ liệu...</p>
     </div>
     <div class="pg-head-right">
       <button class="btn btn-sec" onclick="refreshAll()" id="refreshBtn">🔄 Làm mới</button>
       <button class="btn btn-primary" onclick="location.href='trips.html'">＋ Thêm chuyến xe</button>
     </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <span class="qa-label">Truy cập nhanh:</span>
+    <a class="qa-btn qa-trip" href="trips.html">🚍 Quản lý chuyến xe</a>
+    <a class="qa-btn qa-book" href="bookings.html">🎫 Theo dõi đặt vé</a>
+    <a class="qa-btn qa-vehicle" href="vehicles.html">🔧 Phương tiện</a>
+    <a class="qa-btn qa-revenue" href="revenue.html">💰 Báo cáo doanh thu</a>
+    <a class="qa-btn qa-vehicle" href="seats.html">💺 Sơ đồ ghế</a>
   </div>
 
   <!-- ═══ KPI ═══ -->
@@ -271,13 +336,13 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
       <div class="kpi-sub" id="bkSub">—</div>
     </div>
     <div class="kpi-card" style="--k-bg:rgba(46,204,113,.05);--k-col:#2ecc71;">
-      <div class="kpi-top"><span class="kpi-ico">🚌</span></div>
+      <div class="kpi-top"><span class="kpi-ico">🚦</span></div>
       <div class="kpi-val" id="activeTrips">—</div>
       <div class="kpi-label">Chuyến đang OPEN</div>
       <div class="kpi-sub" id="tripSub">—</div>
     </div>
     <div class="kpi-card" style="--k-bg:rgba(243,156,18,.05);--k-col:#f9c858;">
-      <div class="kpi-top"><span class="kpi-ico">🚍</span></div>
+      <div class="kpi-top"><span class="kpi-ico">🚌</span></div>
       <div class="kpi-val" id="activeBus">—</div>
       <div class="kpi-label">Xe đang AVAILABLE</div>
       <div class="kpi-sub" id="busSub">—</div>
@@ -318,14 +383,14 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
       </div>
     </div>
     <div class="panel">
-      <div class="panel-head"><h3>📋 Thống kê nhanh</h3></div>
+      <div class="panel-head"><h3>⚡ Thống kê nhanh</h3></div>
       <div class="panel-body">
-        <div class="stat-row"><span class="stat-label">💺 Tổng số ghế</span><span class="stat-val neon" id="totalSeats">—</span></div>
-        <div class="stat-row"><span class="stat-label">📊 Tỷ lệ đặt vé</span><span class="stat-val green" id="bookingRate">—</span></div>
-        <div class="stat-row"><span class="stat-label">🎫 TB doanh thu/vé</span><span class="stat-val amber" id="avgTicket">—</span></div>
-        <div class="stat-row"><span class="stat-label">🚌 Tổng số xe</span><span class="stat-val neon" id="totalBus">—</span></div>
-        <div class="stat-row"><span class="stat-label">🛣️ Số tuyến đường</span><span class="stat-val" id="totalRoutes">—</span></div>
-        <div class="stat-row"><span class="stat-label">⭐ Đánh giá TB</span><span class="stat-val amber" id="avgRating">—</span></div>
+        <div class="stat-row"><span class="stat-label">Tổng số ghế</span><span class="stat-val neon" id="totalSeats">—</span></div>
+        <div class="stat-row"><span class="stat-label">Tỷ lệ đặt vé</span><span class="stat-val green" id="bookingRate">—</span></div>
+        <div class="stat-row"><span class="stat-label">TB doanh thu/vé</span><span class="stat-val amber" id="avgTicket">—</span></div>
+        <div class="stat-row"><span class="stat-label">Tổng số xe</span><span class="stat-val neon" id="totalBus">—</span></div>
+        <div class="stat-row"><span class="stat-label">Số tuyến đường</span><span class="stat-val" id="totalRoutes">—</span></div>
+        <div class="stat-row"><span class="stat-label">Đánh giá TB</span><span class="stat-val amber" id="avgRating">—</span></div>
       </div>
     </div>
     <div class="panel">
@@ -341,7 +406,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 
     <div class="panel">
       <div class="panel-head">
-        <h3>🚌 Chuyến xe gần đây</h3>
+        <h3>🚍 Chuyến xe gần đây</h3>
         <a href="trips.html" style="font-size:12px;color:var(--neon);text-decoration:none;font-weight:700;">Xem tất cả →</a>
       </div>
       <div class="panel-body np">
@@ -357,7 +422,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
           </thead>
           <tbody id="recentTripsBody"></tbody>
         </table>
-        <div id="tripsEmpty" class="empty" style="display:none;"><div class="ei">🚌</div><p>Chưa có chuyến xe</p></div>
+        <div id="tripsEmpty" class="empty" style="display:none;"><div class="ei"></div><p>Chưa có chuyến xe</p></div>
       </div>
     </div>
 
@@ -382,7 +447,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   <!-- Row 4: Fleet status table -->
   <div class="panel">
     <div class="panel-head">
-      <h3>🚍 Đội xe — BUS</h3>
+      <h3>🚌 Đội xe</h3>
       <a href="vehicles.html" style="font-size:12px;color:var(--neon);text-decoration:none;font-weight:700;">Quản lý xe →</a>
     </div>
     <div class="panel-body np">
@@ -461,6 +526,22 @@ function toast(msg,type="info"){
 /* Operator name from localStorage */
 const opName=localStorage.getItem("operator_name")||"Nhà xe";
 document.getElementById("opNameChip").textContent=opName;
+// Show op name in page title
+(function(){
+  const title=document.getElementById("pgTitle");
+  if(title&&opName&&opName!=="Nhà xe")title.textContent="🚌 "+opName+" — Tổng quan";
+})();
+
+/* ── LIVE CLOCK ── */
+function tickClock(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,"0");
+  const timeStr=pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  const dateStr=d.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
+  const el=document.getElementById("lastUpdated");
+  if(el)el.textContent="📅 "+dateStr+" · ⏰ "+timeStr;
+}
+tickClock();setInterval(tickClock,1000);
 
 /* ── Chart instances ── */
 let charts={};
@@ -698,7 +779,7 @@ function renderFleet(data){
     return`<tr>
       <td><span style="font-weight:800;color:var(--neon);font-size:13px;letter-spacing:.5px;">${b.plate_number||"—"}</span></td>
       <td style="color:var(--text2);">${b.bus_type||"—"}</td>
-      <td><span class="bdg bdg-available">💺 ${b.total_seats||0}</span></td>
+      <td><span class="bdg bdg-available">${b.total_seats||0}</span></td>
       <td><span class="bdg ${isAvail?"bdg-available":"bdg-maintenance"}">
         <span class="sdot ${isAvail?"sdot-blue":"sdot-red"}"></span>${b.status}
       </span></td>
@@ -744,10 +825,10 @@ function renderReviews(data){
   document.getElementById("reviewList").innerHTML=data.slice(0,4).map(r=>`
     <div class="review-item">
       <div class="review-top">
-        <span class="review-user">👤 ${r.full_name||"Ẩn danh"}</span>
+        <span class="review-user">${r.full_name||"Ẩn danh"}</span>
         <span class="review-stars">${"⭐".repeat(Math.round(r.rating||5))}</span>
       </div>
-      <div class="review-route">🛣️ ${r.route||"—"}</div>
+      <div class="review-route">${r.route||"—"}</div>
       <div class="review-text">"${r.comment||"Không có nhận xét"}"</div>
     </div>`).join("");
 }
@@ -755,16 +836,14 @@ function renderReviews(data){
 /* ── REFRESH ALL ── */
 async function refreshAll(){
   const btn=document.getElementById("refreshBtn");
-  btn.innerHTML=`<span class="spinning">🔄</span> Đang tải...`;
+  btn.innerHTML=`Đang tải...`;
   btn.disabled=true;
   await Promise.allSettled([loadStats(),loadRevenue(),loadRoutes(),loadBookingStatus(),loadSeatOccupancy(),loadRecentTrips(),loadFleet(),loadReviews()]);
   btn.innerHTML="🔄 Làm mới";btn.disabled=false;
-  document.getElementById("lastUpdated").textContent="Cập nhật lúc "+new Date().toLocaleTimeString("vi-VN");
-  toast("Đã cập nhật dữ liệu","success");
+  toast("Đã cập nhật dữ liệu dashboard","success");
 }
 
 /* ── INIT ── */
-document.getElementById("lastUpdated").textContent="Đang tải...";
 refreshAll();
 </script>
 </body>

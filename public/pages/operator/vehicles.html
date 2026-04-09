@@ -272,6 +272,22 @@ select.form-control option{background:#0d1827;}
 .toast.success{background:rgba(46,204,113,.16);border:1px solid rgba(46,204,113,.35);color:#2ecc71;}
 .toast.error{background:rgba(231,76,60,.16);border:1px solid rgba(231,76,60,.35);color:#e74c3c;}
 .toast.info{background:rgba(0,168,255,.16);border:1px solid rgba(0,168,255,.35);color:#5dc8ff;}
+
+/* ── PREMIUM ── */
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+.kpi-card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;
+  background:linear-gradient(90deg,var(--k-col,#00ffe0),transparent);opacity:.7;}
+@keyframes shimIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.kpi-val{animation:shimIn .4s ease both;}
+.pg-head-left h1{background:linear-gradient(90deg,#fff,#00ffe0 55%,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.pg-sub{font-size:13px;color:var(--neon);margin-top:3px;font-weight:600;opacity:.8;}
+.hdr-logo-ic{font-size:20px;}
+/* Health indicator on card */
+.vc-head{position:relative;}
+.vc-head.available::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ffe0,transparent);border-radius:18px 18px 0 0;}
+.vc-head.maintenance::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#e74c3c,transparent);border-radius:18px 18px 0 0;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -301,9 +317,9 @@ select.form-control option{background:#0d1827;}
   <div class="hdr-actions">
     <div class="op-chip">
       <div class="op-avatar">🏢</div>
-      <span class="op-name">Nhà xe</span>
+      <span class="op-name" id="opNameChip">Nhà xe</span>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -312,11 +328,11 @@ select.form-control option{background:#0d1827;}
   <div class="pg-head">
     <div class="pg-head-left">
       <h1>🚍 Quản lý Phương Tiện</h1>
-      <p>Quản lý đội xe — BUS table · plate_number · bus_type · total_seats · status</p>
+      <p class="pg-sub" id="vehClock">Đang tải...</p>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-export" onclick="exportCSV()">📥 Xuất CSV</button>
-      <button class="btn btn-sec" onclick="loadVehicles()">🔄 Làm mới</button>
+      <button class="btn btn-export" onclick="exportCSV()">Xuất CSV</button>
+      <button class="btn btn-sec" onclick="loadVehicles()">Làm mới</button>
       <button class="btn btn-add" onclick="openAdd()">＋ Thêm xe mới</button>
     </div>
   </div>
@@ -458,7 +474,7 @@ select.form-control option{background:#0d1827;}
     </div>
     <div class="modal-body">
       <div class="view-hero">
-        <div class="view-icon">🚌</div>
+        <div class="view-icon"></div>
         <div>
           <div class="view-plate" id="vPlate">—</div>
           <div class="view-sub" id="vSub">—</div>
@@ -629,7 +645,7 @@ function buildCard(v){
   const isAvail=v.status==="AVAILABLE";
   const vipSeats=Math.round(Number(v.total_seats||0)*Number(v.vip_pct||35)/100);
   const normalSeats=Number(v.total_seats||0)-vipSeats;
-  const ico=isAvail?"🚌":"🔧";
+  const ico=isAvail?"":"🔧";
   const statusCls=isAvail?"available":"maintenance";
   return`<div class="vc">
     <div class="vc-head">
@@ -637,7 +653,7 @@ function buildCard(v){
         <div class="vc-plate-icon ${statusCls}">${ico}</div>
         <div>
           <div class="vc-plate">${v.plate_number||"—"}</div>
-          <div class="vc-type-tag">🚌 ${v.bus_type||"—"}</div>
+          <div class="vc-type-tag">${v.bus_type||"—"}</div>
         </div>
       </div>
       <span class="vc-status ${statusCls}">
@@ -699,7 +715,7 @@ function viewVehicle(id){
   const vipSeats=Math.round(Number(v.total_seats||0)*Number(v.vip_pct||35)/100);
   document.getElementById("vGrid").innerHTML=[
     ["🆔 Bus ID","#"+v.bus_id],["🪪 Biển số",v.plate_number||"—"],
-    ["🚌 Loại xe",v.bus_type||"—"],["📊 Trạng thái",v.status||"—"],
+    ["Loại xe",v.bus_type||"—"],["Trạng thái",v.status||"—"],
     ["💺 Tổng ghế",v.total_seats||0],["👑 Ghế VIP",vipSeats],
     ["🪑 Ghế thường",(Number(v.total_seats||0)-vipSeats)],["📝 Ghi chú",v.note||"—","full"],
   ].map(([l,val,c])=>`<div class="vg-item ${c||""}"><div class="vg-label">${l}</div><div class="vg-val">${val}</div></div>`).join("");
@@ -739,10 +755,13 @@ async function saveVehicle(){
   const plate=document.getElementById("f_plate").value.trim();
   const seats=document.getElementById("f_seats").value;
   if(!plate||!seats){toast("Vui lòng điền biển số và tổng ghế *","error");return;}
+  const newTotalSeats=Number(seats);
+  const oldVehicle=editingId?allVehicles.find(v=>v.bus_id==editingId):null;
+  const oldTotalSeats=oldVehicle?Number(oldVehicle.total_seats||0):0;
   const data={
     plate_number:plate,
     bus_type:document.getElementById("f_type").value.trim()||"Express",
-    total_seats:Number(seats),
+    total_seats:newTotalSeats,
     status:document.getElementById("f_status").value,
     vip_pct:Number(document.getElementById("f_vip_pct").value)||35,
     note:document.getElementById("f_note").value.trim(),
@@ -752,6 +771,20 @@ async function saveVehicle(){
     const method=editingId?"PUT":"POST";
     const res=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
     if(!res.ok)throw new Error();
+    // Determine busId for seat sync
+    let targetBusId=editingId;
+    if(!editingId){
+      const newBus=await res.json().catch(()=>null);
+      targetBusId=newBus?.bus_id||newBus?.id||null;
+    }
+    // Sync seats: expand if seat count increased (or new bus)
+    if(targetBusId&&(newTotalSeats>oldTotalSeats||!editingId)){
+      try{
+        const seatRes=await fetch(`/api/seats/expand-bus/${targetBusId}`,{method:"POST"});
+        const seatData=await seatRes.json().catch(()=>({}));
+        if(seatData.added>0)toast(`✅ Đã tạo thêm ${seatData.added} ghế mới cho xe`,"info");
+      }catch{}
+    }
     toast(editingId?"Cập nhật xe thành công!":"Thêm xe mới thành công!","success");
     closeModal("formModal");loadVehicles();
   }catch{
@@ -810,6 +843,18 @@ function exportCSV(){
   a.download=`vehicles_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   toast("Đã xuất CSV đội xe!","success");
 }
+
+/* ── Operator name & live clock ── */
+(function(){
+  const nm=localStorage.getItem("operator_name")||"Nhà xe";
+  const chip=document.getElementById("opNameChip");if(chip)chip.textContent=nm;
+  function tick(){
+    const d=new Date();const pad=n=>String(n).padStart(2,"0");
+    const el=document.getElementById("vehClock");
+    if(el)el.textContent="📅 "+d.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"})+" · ⏰ "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  tick();setInterval(tick,1000);
+})();
 
 /* ── Init ── */
 loadVehicles();

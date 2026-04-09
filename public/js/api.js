@@ -1,6 +1,10 @@
 /**
  * SmartBusAI — Shared API Utility
  * Dùng chung cho tất cả các trang frontend
+ *
+ * Cập nhật: Hỗ trợ JWT authentication
+ * - Tự động gắn Authorization: Bearer <accessToken> vào mọi request
+ * - Tự động refresh token nếu nhận được 401 (token hết hạn)
  */
 
 const API_BASE = "/api";
@@ -17,6 +21,15 @@ function getUserId() {
 
 function getRole() {
     return getUser()?.role || null;
+}
+
+/* ── Lấy JWT tokens từ localStorage ── */
+function getAccessToken() {
+    return localStorage.getItem("accessToken") || null;
+}
+
+function getRefreshToken() {
+    return localStorage.getItem("refreshToken") || null;
 }
 
 /* ── Kiểm tra đăng nhập, redirect nếu chưa login ── */
@@ -38,19 +51,80 @@ function requireRole(role, redirectTo = "/pages/auth/login.html") {
     return true;
 }
 
-/* ── Đăng xuất ── */
+/* ── Đăng xuất: xóa cả user object lẫn tokens ── */
 function logout() {
-    localStorage.clear();
+    localStorage.removeItem("user");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    // Gọi API logout (không cần chờ response)
+    fetch(API_BASE + "/auth/logout", { method: "POST" }).catch(() => {});
     window.location.href = "/pages/auth/login.html";
 }
 
-/* ── Generic fetch wrapper ── */
-async function apiFetch(endpoint, options = {}) {
+/* ── Thực hiện token refresh: lấy accessToken mới dùng refreshToken ── */
+async function _doTokenRefresh() {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+        const res = await fetch(API_BASE + "/auth/refresh", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken })
+        });
+
+        if (!res.ok) {
+            // Refresh token hết hạn hoặc không hợp lệ — đăng xuất
+            logout();
+            return null;
+        }
+
+        const data = await res.json();
+        if (data.accessToken) {
+            localStorage.setItem("accessToken", data.accessToken);
+            return data.accessToken;
+        }
+        return null;
+    } catch (err) {
+        console.error("[api.js] Token refresh error:", err);
+        return null;
+    }
+}
+
+/* ── Generic fetch wrapper với JWT auto-inject và auto-refresh ── */
+async function apiFetch(endpoint, options = {}, _isRetry = false) {
+    // Lấy access token hiện tại (nếu có)
+    const accessToken = getAccessToken();
+
+    // Xây dựng headers — gắn Bearer token nếu có
+    const headers = {
+        "Content-Type": "application/json",
+        ...options.headers
+    };
+
+    if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
     try {
         const res = await fetch(API_BASE + endpoint, {
-            headers: { "Content-Type": "application/json", ...options.headers },
-            ...options
+            ...options,
+            headers
         });
+
+        // Nếu nhận 401 và chưa retry — thử refresh token một lần
+        if (res.status === 401 && !_isRetry) {
+            const newToken = await _doTokenRefresh();
+            if (newToken) {
+                // Retry request với token mới
+                return apiFetch(endpoint, options, true);
+            }
+            // Không refresh được — throw lỗi 401
+            const data = await res.json().catch(() => ({}));
+            throw { status: 401, message: data.message || "Phiên đăng nhập hết hạn" };
+        }
+
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw { status: res.status, message: data.message || "Lỗi server" };
         return data;

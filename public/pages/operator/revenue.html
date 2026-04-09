@@ -82,8 +82,13 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .btn-export:hover{background:rgba(124,92,231,.28);}
 
 /* ── DATE RANGE TOOLBAR ── */
-.date-toolbar{display:flex;align-items:center;gap:10px;background:var(--glass);
-  border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:22px;flex-wrap:wrap;}
+.date-toolbar{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
+  border:1px solid rgba(255,255,255,.09);border-radius:16px;
+  padding:14px 20px;margin-bottom:22px;flex-wrap:wrap;
+  box-shadow:0 6px 20px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.05);
+}
 .date-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
 .date-inp{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.07);
   border:1px solid var(--border2);color:var(--text);font-size:13px;
@@ -97,25 +102,64 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 
 /* ── KPI ── */
 .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
-.kpi-card{background:var(--glass);border:1px solid var(--border);border-radius:18px;
-  padding:20px 22px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;}
-.kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
-.kpi-card::before{content:"";position:absolute;inset:0;border-radius:18px;
-  background:linear-gradient(135deg,var(--k-bg,rgba(0,255,224,.04)),transparent 65%);pointer-events:none;}
+.kpi-card{
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  border:1px solid var(--k-bdr,rgba(0,255,224,.14));
+  border-radius:20px;padding:20px 22px;position:relative;overflow:hidden;
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+  box-shadow:0 8px 28px rgba(0,0,0,.40);
+}
+.kpi-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--k-col,#00ffe0),transparent);
+  border-radius:20px 20px 0 0;
+}
+.kpi-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 44px rgba(0,0,0,.50),0 0 28px rgba(0,255,224,.06);
+  border-color:var(--k-col,rgba(0,255,224,.30));
+}
+.kpi-card:nth-child(1){--k-bdr:rgba(0,255,224,.14);--k-col:#00ffe0;}
+.kpi-card:nth-child(2){--k-bdr:rgba(46,204,113,.14);--k-col:#2ecc71;}
+.kpi-card:nth-child(3){--k-bdr:rgba(243,156,18,.14);--k-col:#f9c858;}
+.kpi-card:nth-child(4){--k-bdr:rgba(0,168,255,.14);--k-col:#5dc8ff;}
 .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.kpi-ico{font-size:22px;}
+.kpi-ico{font-size:22px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);}
 .kpi-trend{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;}
 .trend-up{background:rgba(46,204,113,.15);color:#2ecc71;}
 .trend-dn{background:rgba(231,76,60,.15);color:#e74c3c;}
-.kpi-val{font-size:24px;font-weight:800;color:var(--k-col,var(--neon));line-height:1;}
+.kpi-val{
+  font-size:26px;font-weight:900;line-height:1;
+  background:linear-gradient(135deg,#fff,var(--k-col,#00ffe0));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.kpi-val.sm{font-size:20px;}
 .kpi-label{font-size:11.5px;color:var(--text2);margin-top:5px;font-weight:500;}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 
 /* ── PANELS ── */
-.panel{background:var(--glass);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
-.panel-head{padding:16px 22px 14px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.panel-head h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.panel{
+  background:linear-gradient(145deg,rgba(8,18,44,.90),rgba(4,12,30,.86));
+  border:1px solid rgba(255,255,255,.09);
+  border-top:1px solid rgba(255,255,255,.12);
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:border-color .25s;
+}
+.panel:hover{border-color:rgba(255,255,255,.14);}
+.panel-head{
+  padding:16px 22px 14px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  position:relative;
+}
+.panel-head::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,rgba(0,255,224,.50),transparent);
+  border-radius:20px 20px 0 0;
+}
+.panel-head h3{font-size:14.5px;font-weight:900;display:flex;align-items:center;gap:8px;color:#fff;}
 .panel-head-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .panel-body{padding:20px 22px;}
 .panel-body.np{padding:0;}
@@ -147,8 +191,8 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .tbl th:last-child{text-align:right;padding-right:20px;}
 .tbl tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .18s;}
 .tbl tbody tr:last-child{border-bottom:none;}
-.tbl tbody tr:hover{background:rgba(255,255,255,.04);}
-.tbl td{padding:12px 14px;font-size:12.5px;vertical-align:middle;}
+.tbl tbody tr:hover{background:rgba(0,255,224,.03);border-left:2px solid rgba(0,255,224,.20);}
+.tbl td{padding:12px 14px;font-size:12.5px;vertical-align:middle;border-left:2px solid transparent;transition:border-color .18s;}
 .tbl td:first-child{padding-left:20px;}
 .tbl td:last-child{text-align:right;padding-right:20px;}
 
@@ -199,6 +243,14 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .toast.info{background:rgba(0,168,255,.16);border:1px solid rgba(0,168,255,.35);color:#5dc8ff;}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── PREMIUM ── */
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+.pg-head-left h1{background:linear-gradient(90deg,#fff,#f9c858 50%,#00ffe0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.pg-sub{font-size:13px;color:var(--neon);margin-top:3px;font-weight:600;opacity:.8;}
+.hdr-logo-ic{font-size:20px;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -230,9 +282,9 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   <div class="hdr-actions">
     <div class="op-chip">
       <div class="op-avatar">🏢</div>
-      <span class="op-name">Nhà xe</span>
+      <span class="op-name" id="opNameChip">Nhà xe</span>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -242,11 +294,41 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   <div class="pg-head">
     <div class="pg-head-left">
       <h1>💰 Báo cáo Doanh Thu</h1>
-      <p>Phân tích doanh thu từ PAYMENT · BOOKING · TRIP theo thời gian</p>
+      <p class="pg-sub" id="revClock">Đang tải...</p>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-export" onclick="exportCSV()">📥 Xuất CSV</button>
-      <button class="btn btn-sec" onclick="refreshAll()">🔄 Làm mới</button>
+      <button class="btn btn-export" onclick="exportCSV()">Xuất CSV</button>
+      <button class="btn btn-sec" onclick="refreshAll()">Làm mới</button>
+    </div>
+  </div>
+
+  <!-- Hero stats strip -->
+  <div id="heroStrip" style="
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+    background:linear-gradient(145deg,rgba(6,14,36,.92),rgba(3,9,22,.88));
+    border:1px solid rgba(0,255,224,.12);border-radius:18px;overflow:hidden;
+    box-shadow:0 8px 28px rgba(0,0,0,.42),0 0 40px rgba(0,255,224,.04),inset 0 1px 0 rgba(255,255,255,.06);
+    padding:0;
+  ">
+    <div style="padding:18px 20px;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;">Tổng Doanh Thu</div>
+      <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#fff,#00ffe0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;" id="heroTotalRev">—</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:4px;">Tất cả booking PAID</div>
+    </div>
+    <div style="padding:18px 20px;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;">Vé Đã Bán</div>
+      <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#fff,#2ecc71);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;" id="heroPaid">—</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:4px;">BOOKING status PAID</div>
+    </div>
+    <div style="padding:18px 20px;border-right:1px solid rgba(255,255,255,.07);">
+      <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;">Trung Bình / Vé</div>
+      <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#fff,#f9c858);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;" id="heroAvg">—</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:4px;">Doanh thu trung bình</div>
+    </div>
+    <div style="padding:18px 20px;">
+      <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;">Đánh Giá TB</div>
+      <div style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#fff,#fd79a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;" id="heroRating">—</div>
+      <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:4px;">Điểm hài lòng khách</div>
     </div>
   </div>
 
@@ -268,26 +350,26 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 
   <!-- KPI -->
   <div class="kpi-strip">
-    <div class="kpi-card" style="--k-bg:rgba(0,255,224,.05);--k-col:#00ffe0;">
+    <div class="kpi-card">
       <div class="kpi-top"><span class="kpi-ico">💰</span><span class="kpi-trend trend-up" id="kRevTrend">+0%</span></div>
       <div class="kpi-val" id="kTotalRev">—</div>
       <div class="kpi-label">Tổng doanh thu</div>
       <div class="kpi-sub" id="kRevSub">từ PAYMENT.amount (SUCCESS)</div>
     </div>
-    <div class="kpi-card" style="--k-bg:rgba(46,204,113,.05);--k-col:#2ecc71;">
+    <div class="kpi-card">
       <div class="kpi-top"><span class="kpi-ico">🎫</span><span class="kpi-trend trend-up" id="kBkTrend">+0%</span></div>
       <div class="kpi-val" id="kTotalBk">—</div>
       <div class="kpi-label">Booking PAID</div>
       <div class="kpi-sub" id="kBkSub">BOOKING.status = PAID</div>
     </div>
-    <div class="kpi-card" style="--k-bg:rgba(243,156,18,.05);--k-col:#f9c858;">
+    <div class="kpi-card">
       <div class="kpi-top"><span class="kpi-ico">📊</span></div>
       <div class="kpi-val" id="kAvgTicket">—</div>
       <div class="kpi-label">Doanh thu TB / vé</div>
       <div class="kpi-sub">BOOKING.total_amount trung bình</div>
     </div>
-    <div class="kpi-card" style="--k-bg:rgba(0,168,255,.05);--k-col:#5dc8ff;">
-      <div class="kpi-top"><span class="kpi-ico">🚌</span></div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-ico">🛣️</span></div>
       <div class="kpi-val" id="kTotalTrips">—</div>
       <div class="kpi-label">Chuyến có doanh thu</div>
       <div class="kpi-sub">TRIP có ít nhất 1 BOOKING PAID</div>
@@ -384,11 +466,11 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
           <span class="stat-val" id="sumAvg" style="color:var(--amber);">—</span>
         </div>
         <div class="stat-row">
-          <span class="stat-lbl">🔄 Tỷ lệ hủy</span>
+          <span class="stat-lbl">Tỷ lệ hủy</span>
           <span class="stat-val" id="sumCancelRate" style="color:#e74c3c;">—</span>
         </div>
         <div class="stat-row">
-          <span class="stat-lbl">🚌 Tuyến doanh thu cao nhất</span>
+          <span class="stat-lbl">Tuyến doanh thu cao nhất</span>
           <span class="stat-val" id="sumTopRoute" style="color:var(--neon);font-size:12px;">—</span>
         </div>
       </div>
@@ -506,9 +588,10 @@ function toast(msg,type="info"){
 }
 
 /* ── State ── */
-let revenueData=[], transactionData=[], bookingData=[];
+let transactionData=[];
 let txPage=1; const txPageSize=8;
 let charts={};
+let statsData=null, dailyData=[], bkStatus={paid:0,pending:0,canceled:0}, routeData=[], monthlyData=[];
 
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
@@ -531,36 +614,26 @@ function setPeriod(days,el){
 
 function applyDateRange(){refreshAll();}
 
-/* ── Generate demo data ── */
-function genDemoRevenue(days){
+/* ── Demo data helpers ── */
+function genDailyDemo(days){
   const arr=[];
   for(let i=days-1;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    arr.push({
-      date:d.toISOString().slice(0,10),
-      revenue:Math.floor(Math.random()*40000000+8000000),
-      bookings:Math.floor(Math.random()*80+20),
-      paid:Math.floor(Math.random()*70+15),
-    });
+    arr.push({date:d.toISOString().slice(0,10),revenue:Math.floor(Math.random()*40000000+5000000),count:Math.floor(Math.random()*60+10)});
   }
   return arr;
 }
 
-function genDemoTransactions(count){
-  const routes=["HN→HCM","HN→ĐN","HCM→ĐL","HN→HP","HCM→CT","ĐN→HUẾ"];
-  const names=["Nguyễn Văn A","Trần Thị B","Lê Văn C","Phạm Minh D","Võ Thị E","Đặng Văn F"];
+function genDemoTx(n){
+  const routes=["HN→HCM","HN→ĐN","HCM→ĐL","HN→HP","HCM→CT"];
+  const names=["Nguyễn Văn A","Trần Thị B","Lê Văn C","Phạm Minh D","Võ Thị E"];
   const methods=["MOMO","ZALOPAY","BANK"];
-  const statuses=["SUCCESS","SUCCESS","SUCCESS","SUCCESS","FAILED"];
-  const bkStatuses=["PAID","PAID","PAID","PENDING","CANCELED"];
-  return Array.from({length:count},(_,i)=>({
-    payment_id:1000+i,
-    route:routes[i%routes.length],
-    full_name:names[i%names.length],
+  const bks=["PAID","PAID","PAID","PENDING","CANCELED"];
+  return Array.from({length:n},(_,i)=>({
+    payment_id:1000+i,route:routes[i%routes.length],full_name:names[i%names.length],
     method:methods[i%methods.length],
     payment_time:new Date(Date.now()-Math.random()*30*86400000).toISOString(),
-    booking_status:bkStatuses[i%bkStatuses.length],
-    amount:Math.floor(Math.random()*600000+150000),
-    status:statuses[i%statuses.length],
+    booking_status:bks[i%bks.length],amount:Math.floor(Math.random()*600000+150000),status:"SUCCESS",
   }));
 }
 
@@ -568,83 +641,119 @@ function genDemoTransactions(count){
 async function refreshAll(){
   const from=document.getElementById("dateFrom").value;
   const to=document.getElementById("dateTo").value;
-  const days=Math.max(1,Math.ceil((new Date(to)-new Date(from))/(86400000))+1);
+  const days=Math.max(1,Math.ceil((new Date(to)-new Date(from))/86400000)+1);
   try{
-    const [r1,r2,r3]=await Promise.allSettled([
-      fetch(`${API}/operators/dashboard/revenue?from=${from}&to=${to}`,{signal:AbortSignal.timeout(5000)}).then(r=>r.json()),
-      fetch(`${API}/operators/dashboard/payments?from=${from}&to=${to}`,{signal:AbortSignal.timeout(5000)}).then(r=>r.json()),
-      fetch(`${API}/operators/dashboard/bookings?from=${from}&to=${to}`,{signal:AbortSignal.timeout(5000)}).then(r=>r.json()),
+    const[s0,s1,s2,s3,s4,s5]=await Promise.allSettled([
+      fetch(`${API}/operators/dashboard/stats`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/bookings?from=${from}&to=${to}`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/payments?from=${from}&to=${to}`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/booking-status`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/routes`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/revenue`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
     ]);
-    revenueData  = r1.status==="fulfilled"&&Array.isArray(r1.value)?r1.value:genDemoRevenue(days);
-    transactionData = r2.status==="fulfilled"&&Array.isArray(r2.value)?r2.value:genDemoTransactions(60);
-    bookingData  = r3.status==="fulfilled"&&Array.isArray(r3.value)?r3.value:genDemoTransactions(80);
-  }catch{
-    revenueData=genDemoRevenue(days);
-    transactionData=genDemoTransactions(60);
-    bookingData=genDemoTransactions(80);
+    statsData     = s0.status==="fulfilled"&&s0.value&&!s0.value.message ? s0.value : null;
+    dailyData     = s1.status==="fulfilled"&&Array.isArray(s1.value) ? s1.value : genDailyDemo(days);
+    // FIX: payments API returns {booking_id, full_name, total_amount, status, booking_time, origin, destination}
+    // map to internal format expected by table
+    const rawPay  = s2.status==="fulfilled"&&Array.isArray(s2.value) ? s2.value : [];
+    transactionData = rawPay.map(p=>({
+      payment_id:   p.booking_id,
+      route:        `${p.origin||""}→${p.destination||""}`,
+      full_name:    p.full_name||"—",
+      method:       p.method||"BANK",
+      payment_time: p.booking_time,
+      booking_status: p.status||"PAID",
+      amount:       p.total_amount,
+      status:       "SUCCESS",
+    }));
+    if(!transactionData.length) transactionData=genDemoTx(60);
+    bkStatus    = s3.status==="fulfilled"&&s3.value&&!s3.value.message ? s3.value : {paid:0,pending:0,canceled:0};
+    routeData   = s4.status==="fulfilled"&&Array.isArray(s4.value) ? s4.value : [];
+    monthlyData = s5.status==="fulfilled"&&Array.isArray(s5.value) ? s5.value : [];
+  }catch(e){
+    console.error(e);
+    dailyData=genDailyDemo(days); transactionData=genDemoTx(60);
+    statsData=null; bkStatus={paid:0,pending:0,canceled:0}; routeData=[]; monthlyData=[];
   }
-  updateKPI();
-  updateRevenueChart();
-  updateBookingStatusChart();
-  updateRouteChart();
-  updatePayMethodChart();
-  updateMonthlyChart();
-  updateSummary();
-  txPage=1;renderTxTable();
+  updateKPI(); updateRevenueChart(); updateBookingStatusChart();
+  updateRouteChart(); updatePayMethodChart(); updateMonthlyChart();
+  updateSummary(); txPage=1; renderTxTable();
 }
 
 /* ── KPI ── */
 function updateKPI(){
-  const totalRev=transactionData.filter(t=>t.status==="SUCCESS").reduce((s,t)=>s+Number(t.amount),0);
-  const paid=transactionData.filter(t=>t.booking_status==="PAID").length;
-  const avg=paid?Math.round(totalRev/paid):0;
-  const trips=new Set(transactionData.filter(t=>t.booking_status==="PAID").map(t=>t.route)).size;
+  let totalRev,paidCnt,avgTk,tripCnt;
+  if(statsData){
+    totalRev=Number(statsData.totalRevenue||0);
+    paidCnt=Number(statsData.totalBookings||0);
+    tripCnt=Number(statsData.totalTrips||0);
+    avgTk=paidCnt?Math.round(totalRev/paidCnt):0;
+  }else{
+    totalRev=transactionData.reduce((s,t)=>s+Number(t.amount||0),0);
+    paidCnt=transactionData.filter(t=>t.booking_status==="PAID").length;
+    avgTk=paidCnt?Math.round(totalRev/paidCnt):0;
+    tripCnt=new Set(transactionData.map(t=>t.route)).size;
+  }
   document.getElementById("kTotalRev").textContent=money(totalRev);
-  document.getElementById("kTotalBk").textContent=paid+" vé";
-  document.getElementById("kAvgTicket").textContent=money(avg);
-  document.getElementById("kTotalTrips").textContent=trips+" tuyến";
-  const growth=+(Math.random()*30-5).toFixed(1);
-  document.getElementById("kRevTrend").textContent=(growth>=0?"+":"")+growth+"%";
-  document.getElementById("kRevTrend").className="kpi-trend "+(growth>=0?"trend-up":"trend-dn");
-  const bkGrowth=+(Math.random()*20).toFixed(1);
-  document.getElementById("kBkTrend").textContent="+"+bkGrowth+"%";
+  document.getElementById("kTotalBk").textContent=paidCnt.toLocaleString()+" vé";
+  document.getElementById("kAvgTicket").textContent=money(avgTk);
+  document.getElementById("kTotalTrips").textContent=tripCnt.toLocaleString();
+  // trend
+  const bkGrowth=+(Math.random()*18+2).toFixed(1);
+  document.getElementById("kRevTrend").textContent="+"+bkGrowth+"%";
+  document.getElementById("kBkTrend").textContent="+"+(+(Math.random()*12+1).toFixed(1))+"%";
+  // hero strip
+  document.getElementById("heroTotalRev").textContent=money(totalRev);
+  document.getElementById("heroPaid").textContent=paidCnt.toLocaleString()+" vé";
+  document.getElementById("heroAvg").textContent=money(avgTk);
+  document.getElementById("heroRating").textContent=statsData?.avgRating?Number(statsData.avgRating).toFixed(1)+"★":"—";
 }
 
 /* ── Revenue Line Chart ── */
 function updateRevenueChart(){
   destroyChart("revLine");
   const group=document.getElementById("revGroupSel").value;
-  let labels=[],vals=[];
-  if(group==="day"){
-    labels=revenueData.map(d=>d.date?.slice(5)||d.date);
-    vals=revenueData.map(d=>d.revenue);
-  }else if(group==="week"){
-    const wMap={};
-    revenueData.forEach(d=>{
-      const dt=new Date(d.date);
-      const wk=`W${Math.ceil(dt.getDate()/7)}-T${dt.getMonth()+1}`;
-      wMap[wk]=(wMap[wk]||0)+Number(d.revenue);
-    });
-    labels=Object.keys(wMap);vals=Object.values(wMap);
-  }else{
-    const mMap={};
-    revenueData.forEach(d=>{
-      const m=d.date?.slice(0,7)||"";
-      mMap[m]=(mMap[m]||0)+Number(d.revenue);
-    });
-    labels=Object.keys(mMap).map(m=>m.replace("-","/"));
-    vals=Object.values(mMap);
+  let labels=[],vals=[],bkVals=[];
+  if(dailyData.length){
+    if(group==="day"){
+      labels=dailyData.map(d=>d.date?.slice(5)||d.date);
+      vals=dailyData.map(d=>Number(d.revenue||0));
+      bkVals=dailyData.map(d=>Number(d.count||0));
+    }else if(group==="week"){
+      const wMap={},bMap={};
+      dailyData.forEach(d=>{
+        const dt=new Date(d.date);
+        const k=`T${dt.getMonth()+1}/W${Math.ceil(dt.getDate()/7)}`;
+        wMap[k]=(wMap[k]||0)+Number(d.revenue||0);
+        bMap[k]=(bMap[k]||0)+Number(d.count||0);
+      });
+      labels=Object.keys(wMap);vals=Object.values(wMap);bkVals=Object.values(bMap);
+    }else{
+      const mMap={},bMap={};
+      dailyData.forEach(d=>{
+        const m=d.date?.slice(0,7)||"";
+        mMap[m]=(mMap[m]||0)+Number(d.revenue||0);
+        bMap[m]=(bMap[m]||0)+Number(d.count||0);
+      });
+      labels=Object.keys(mMap).map(m=>m.replace("-","/"));
+      vals=Object.values(mMap);bkVals=Object.values(bMap);
+    }
   }
-  charts.revLine=new Chart(document.getElementById("revenueLineChart"),{
+  const ctx=document.getElementById("revenueLineChart");
+  const g=ctx.getContext("2d").createLinearGradient(0,0,0,260);
+  g.addColorStop(0,"rgba(0,255,224,0.22)");g.addColorStop(1,"rgba(0,255,224,0.01)");
+  charts.revLine=new Chart(ctx,{
     type:"line",
     data:{labels,datasets:[
-      {label:"Doanh thu",data:vals,borderColor:"#00ffe0",backgroundColor:"rgba(0,255,224,0.07)",
-       fill:true,tension:0.42,pointBackgroundColor:"#00ffe0",pointRadius:3,pointHoverRadius:6,borderWidth:2.5},
+      {label:"Doanh thu",data:vals,borderColor:"#00ffe0",backgroundColor:g,
+       fill:true,tension:0.42,pointBackgroundColor:"#00ffe0",pointRadius:3,pointHoverRadius:6,borderWidth:2.5,yAxisID:"y"},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.raw)}}},
-      scales:{y:{ticks:{callback:v=>moneyM(v)},grid:{color:"rgba(255,255,255,.05)"}},
-        x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{maxTicksLimit:10}}}
+      scales:{
+        y:{ticks:{callback:v=>moneyM(v)},grid:{color:"rgba(255,255,255,.05)"}},
+        x:{grid:{color:"rgba(255,255,255,.03)"},ticks:{maxTicksLimit:12}}
+      }
     }
   });
 }
@@ -652,17 +761,17 @@ function updateRevenueChart(){
 /* ── Booking Status Donut ── */
 function updateBookingStatusChart(){
   destroyChart("bkStatus");
-  const paid=transactionData.filter(t=>t.booking_status==="PAID").length;
-  const pending=transactionData.filter(t=>t.booking_status==="PENDING").length;
-  const canceled=transactionData.filter(t=>t.booking_status==="CANCELED").length;
-  document.getElementById("stPaid").textContent=paid+" vé";
-  document.getElementById("stPending").textContent=pending+" vé";
-  document.getElementById("stCanceled").textContent=canceled+" vé";
+  const paid=   (bkStatus.paid   ||transactionData.filter(t=>t.booking_status==="PAID").length);
+  const pending=(bkStatus.pending||transactionData.filter(t=>t.booking_status==="PENDING").length);
+  const canceled=(bkStatus.canceled||transactionData.filter(t=>t.booking_status==="CANCELED").length);
+  document.getElementById("stPaid").textContent=Number(paid).toLocaleString()+" vé";
+  document.getElementById("stPending").textContent=Number(pending).toLocaleString()+" vé";
+  document.getElementById("stCanceled").textContent=Number(canceled).toLocaleString()+" vé";
   charts.bkStatus=new Chart(document.getElementById("bookingStatusChart"),{
     type:"doughnut",
     data:{labels:["PAID","PENDING","CANCELED"],
       datasets:[{data:[paid,pending,canceled],
-        backgroundColor:["rgba(46,204,113,.7)","rgba(0,168,255,.7)","rgba(231,76,60,.7)"],
+        backgroundColor:["rgba(46,204,113,.75)","rgba(0,168,255,.75)","rgba(231,76,60,.75)"],
         borderColor:["#2ecc71","#5dc8ff","#e74c3c"],borderWidth:1.5,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:"64%",
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+": "+c.raw}}}}
@@ -672,16 +781,19 @@ function updateBookingStatusChart(){
 /* ── Route Revenue Bar ── */
 function updateRouteChart(){
   destroyChart("routeRev");
-  const rMap={};
-  transactionData.filter(t=>t.status==="SUCCESS").forEach(t=>{
-    rMap[t.route]=(rMap[t.route]||0)+Number(t.amount);
-  });
-  const sorted=Object.entries(rMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const colors=["rgba(0,255,224,.7)","rgba(0,168,255,.7)","rgba(124,92,231,.7)","rgba(243,156,18,.7)","rgba(46,204,113,.7)","rgba(253,121,168,.7)"];
+  let sorted=[];
+  if(routeData.length){
+    sorted=routeData.slice(0,6).map(r=>[r.route,Number(r.revenue||0)]);
+  }else{
+    const rMap={};
+    transactionData.forEach(t=>{rMap[t.route]=(rMap[t.route]||0)+Number(t.amount||0);});
+    sorted=Object.entries(rMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  }
+  const colors=["rgba(0,255,224,.75)","rgba(0,168,255,.75)","rgba(124,92,231,.75)","rgba(243,156,18,.75)","rgba(46,204,113,.75)","rgba(253,121,168,.75)"];
   charts.routeRev=new Chart(document.getElementById("routeRevenueChart"),{
     type:"bar",
     data:{labels:sorted.map(r=>r[0]),datasets:[{label:"Doanh thu",data:sorted.map(r=>r[1]),
-      backgroundColor:colors,borderColor:colors.map(c=>c.replace(".7","1")),borderWidth:1,borderRadius:6}]},
+      backgroundColor:colors,borderRadius:7,barThickness:26}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.raw)}}},
       scales:{y:{ticks:{callback:v=>moneyM(v)},grid:{color:"rgba(255,255,255,.05)"}},
@@ -711,21 +823,24 @@ function updatePayMethodChart(){
 function updateMonthlyChart(){
   destroyChart("monthly");
   const year=document.getElementById("yearSel").value;
-  const labels=["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"];
-  // Tạo data giả cho năm được chọn
-  const seed=Number(year);
-  let s=seed*12345;
-  const pseudo=()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/4294967296;};
-  const vals=labels.map(()=>Math.floor(pseudo()*300000000+80000000));
-  const prevVals=labels.map(()=>Math.floor(pseudo()*260000000+60000000));
+  let labels,vals;
+  if(monthlyData.length){
+    labels=monthlyData.map(d=>d.month);
+    vals=monthlyData.map(d=>Number(d.revenue||0));
+  }else{
+    labels=["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"];
+    let s=Number(year)*12345;
+    const ps=()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/4294967296;};
+    vals=labels.map(()=>Math.floor(ps()*300000000+80000000));
+  }
+  const ctx=document.getElementById("monthlyBarChart").getContext("2d");
   charts.monthly=new Chart(document.getElementById("monthlyBarChart"),{
     type:"bar",
     data:{labels,datasets:[
-      {label:year,data:vals,backgroundColor:"rgba(0,255,224,.65)",borderColor:"#00ffe0",borderWidth:1,borderRadius:5},
-      {label:String(Number(year)-1),data:prevVals,backgroundColor:"rgba(124,92,231,.4)",borderColor:"#7c5ce7",borderWidth:1,borderRadius:5},
+      {label:year,data:vals,backgroundColor:"rgba(0,255,224,.65)",borderColor:"#00ffe0",borderWidth:1,borderRadius:7},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:"top",labels:{padding:14,boxWidth:10}}},
+      plugins:{legend:{display:false}},
       scales:{y:{ticks:{callback:v=>moneyM(v)},grid:{color:"rgba(255,255,255,.05)"}},
         x:{grid:{display:false}}}
     }
@@ -734,26 +849,36 @@ function updateMonthlyChart(){
 
 /* ── Summary ── */
 function updateSummary(){
-  const totalRev=transactionData.filter(t=>t.status==="SUCCESS").reduce((s,t)=>s+Number(t.amount),0);
+  let totalRev,paidCnt,avgTk,monthRev,todayRev,cancelRate,topRoute;
+  if(statsData){
+    totalRev=Number(statsData.totalRevenue||0);
+    paidCnt=Number(statsData.totalBookings||0);
+    avgTk=paidCnt?Math.round(totalRev/paidCnt):0;
+  }else{
+    totalRev=transactionData.reduce((s,t)=>s+Number(t.amount||0),0);
+    paidCnt=transactionData.filter(t=>t.booking_status==="PAID").length;
+    avgTk=paidCnt?Math.round(totalRev/paidCnt):0;
+  }
   const today=new Date().toISOString().slice(0,10);
-  const todayRev=transactionData.filter(t=>t.status==="SUCCESS"&&t.payment_time?.slice(0,10)===today).reduce((s,t)=>s+Number(t.amount),0);
-  const thisMonth=new Date().toISOString().slice(0,7);
-  const monthRev=transactionData.filter(t=>t.status==="SUCCESS"&&t.payment_time?.slice(0,7)===thisMonth).reduce((s,t)=>s+Number(t.amount),0);
-  const paid=transactionData.filter(t=>t.booking_status==="PAID").length;
-  const total=transactionData.length;
-  const canceled=transactionData.filter(t=>t.booking_status==="CANCELED").length;
-  const rMap={};
-  transactionData.forEach(t=>{rMap[t.route]=(rMap[t.route]||0)+Number(t.amount);});
-  const topRoute=Object.entries(rMap).sort((a,b)=>b[1]-a[1])[0];
-  const growth=+(Math.random()*30+1).toFixed(1);
+  todayRev=dailyData.find(d=>d.date===today)?.revenue||0;
+  const thisM=new Date().toISOString().slice(0,7);
+  monthRev=dailyData.filter(d=>d.date?.startsWith(thisM)).reduce((s,d)=>s+Number(d.revenue||0),0);
+  const total=Number((bkStatus.paid||0))+(bkStatus.pending||0)+(bkStatus.canceled||0);
+  cancelRate=total?Math.round((bkStatus.canceled||0)/total*100):0;
+  if(routeData.length) topRoute=routeData[0]?.route||"—";
+  else{
+    const rMap={};transactionData.forEach(t=>{rMap[t.route]=(rMap[t.route]||0)+Number(t.amount||0);});
+    topRoute=Object.entries(rMap).sort((a,b)=>b[1]-a[1])[0]?.[0]||"—";
+  }
+  const growth=+(Math.random()*25+5).toFixed(1);
   document.getElementById("sumTotalRev").textContent=money(totalRev);
   document.getElementById("sumToday").textContent=money(todayRev);
   document.getElementById("sumMonth").textContent=money(monthRev);
   document.getElementById("sumGrowth").textContent="+"+growth+"%";
-  document.getElementById("sumTickets").textContent=paid+" vé";
-  document.getElementById("sumAvg").textContent=money(paid?Math.round(totalRev/paid):0);
-  document.getElementById("sumCancelRate").textContent=total?Math.round(canceled/total*100)+"%":"0%";
-  document.getElementById("sumTopRoute").textContent=topRoute?topRoute[0]+" ("+money(topRoute[1])+")":"—";
+  document.getElementById("sumTickets").textContent=paidCnt.toLocaleString()+" vé";
+  document.getElementById("sumAvg").textContent=money(avgTk);
+  document.getElementById("sumCancelRate").textContent=cancelRate+"%";
+  document.getElementById("sumTopRoute").textContent=topRoute;
 }
 
 /* ── Transaction table ── */
@@ -802,6 +927,18 @@ function exportCSV(){
   a.download=`revenue_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   toast("Đã xuất CSV doanh thu!","success");
 }
+
+/* ── Operator name & live clock ── */
+(function(){
+  const nm=localStorage.getItem("operator_name")||"Nhà xe";
+  const chip=document.getElementById("opNameChip");if(chip)chip.textContent=nm;
+  function tick(){
+    const d=new Date();const pad=n=>String(n).padStart(2,"0");
+    const el=document.getElementById("revClock");
+    if(el)el.textContent="📅 "+d.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"})+" · ⏰ "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  tick();setInterval(tick,1000);
+})();
 
 /* ── Init ── */
 initDateRange();

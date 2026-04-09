@@ -15,7 +15,9 @@ exports.getSeatsByTrip = async (req, res) => {
             FROM trip t
             JOIN bus b ON t.bus_id = b.bus_id
             JOIN seat s ON s.bus_id = b.bus_id
-            LEFT JOIN booking bk ON bk.trip_id = t.trip_id AND bk.status IN ('CONFIRMED','PAID')
+            LEFT JOIN booking bk ON bk.trip_id = t.trip_id
+                                 AND bk.status IN ('CONFIRMED','PAID','PENDING')
+                                 AND DATE(bk.booking_time) = DATE(t.departure_time)
             LEFT JOIN booking_detail bd ON bd.booking_id = bk.booking_id AND bd.seat_id = s.seat_id
             WHERE t.trip_id = ?
             GROUP BY s.seat_id, s.seat_number, s.seat_type
@@ -41,6 +43,103 @@ exports.updateSeat = async (req, res) => {
     } catch (err) {
         console.error("UPDATE SEAT ERROR:", err);
         res.status(500).json({ message: "Update seat failed" });
+    }
+};
+
+/* ===============================
+   LẤY GHẾ THEO BUS
+=============================== */
+exports.getSeatsByBus = async (req, res) => {
+    try {
+        const { busId } = req.params;
+        const [result] = await db.query(
+            `SELECT seat_id, bus_id, seat_number, seat_type
+             FROM seat WHERE bus_id = ?
+             ORDER BY LENGTH(seat_number), seat_number`,
+            [busId]
+        );
+        res.json(result);
+    } catch (err) {
+        console.error("GET SEATS BY BUS ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ===============================
+   TẠO GHẾ MỚI
+=============================== */
+exports.createSeat = async (req, res) => {
+    try {
+        const { bus_id, seat_number, seat_type } = req.body;
+        if (!bus_id || !seat_number) return res.status(400).json({ message: "Thiếu bus_id hoặc seat_number" });
+        const [[dup]] = await db.query("SELECT seat_id FROM seat WHERE bus_id=? AND seat_number=?", [bus_id, seat_number]);
+        if (dup) return res.status(400).json({ message: `Ghế ${seat_number} đã tồn tại` });
+        const [r] = await db.query(
+            "INSERT INTO seat (bus_id, seat_number, seat_type) VALUES (?, ?, ?)",
+            [bus_id, seat_number, seat_type || "NORMAL"]
+        );
+        res.json({ seat_id: r.insertId, bus_id, seat_number, seat_type: seat_type || "NORMAL" });
+    } catch (err) {
+        console.error("CREATE SEAT ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ===============================
+   XÓA GHẾ
+=============================== */
+exports.deleteSeat = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [[chk]] = await db.query("SELECT COUNT(*) AS cnt FROM booking_detail WHERE seat_id=?", [id]);
+        if (chk.cnt > 0) return res.status(400).json({ message: "Ghế đang có booking, không thể xóa" });
+        await db.query("DELETE FROM seat WHERE seat_id=?", [id]);
+        res.json({ message: "Đã xóa ghế" });
+    } catch (err) {
+        console.error("DELETE SEAT ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ===============================
+   MỞ RỘNG GHẾ THEO TOTAL_SEATS CỦA BUS
+=============================== */
+exports.expandSeats = async (req, res) => {
+    try {
+        const { busId } = req.params;
+        const [[bus]] = await db.query("SELECT bus_id, total_seats FROM bus WHERE bus_id=?", [busId]);
+        if (!bus) return res.status(404).json({ message: "Không tìm thấy xe" });
+
+        const [existing] = await db.query(
+            "SELECT seat_number FROM seat WHERE bus_id=? ORDER BY LENGTH(seat_number), seat_number",
+            [busId]
+        );
+        const target = bus.total_seats;
+        if (existing.length >= target) return res.json({ message: "Ghế đã đủ", added: 0 });
+
+        const existingNums = new Set(existing.map(s => s.seat_number));
+        const cols = ["A", "B", "C", "D"];
+        const newSeats = [];
+        let needed = target - existing.length;
+        let row = 1;
+        while (needed > 0 && row <= 100) {
+            for (let c = 0; c < cols.length && needed > 0; c++) {
+                const num = cols[c] + row;
+                if (!existingNums.has(num)) {
+                    newSeats.push([busId, num, row <= 2 ? "VIP" : "NORMAL"]);
+                    existingNums.add(num);
+                    needed--;
+                }
+            }
+            row++;
+        }
+        if (newSeats.length > 0) {
+            await db.query("INSERT INTO seat (bus_id, seat_number, seat_type) VALUES ?", [newSeats]);
+        }
+        res.json({ message: "Đã thêm ghế", added: newSeats.length });
+    } catch (err) {
+        console.error("EXPAND SEATS ERROR:", err);
+        res.status(500).json({ message: "DB error" });
     }
 };
 

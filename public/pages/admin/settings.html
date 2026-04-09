@@ -56,6 +56,8 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.20);}
 .hdr-nav a.active{color:var(--neon);background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.25);}
+.hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--neon);margin-left:4px;box-shadow:0 0 5px var(--neon);}
+.hdr-logo-badge{font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.16));border:1px solid rgba(0,255,224,.38);color:var(--neon);letter-spacing:.8px;box-shadow:0 0 10px rgba(0,255,224,.20);text-transform:uppercase;}
 .hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:16px;transition:background .2s;}
@@ -234,6 +236,47 @@ select.form-control option{background:#0d1827;}
 
 /* Saved indicator */
 .saved-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);display:inline-block;}
+
+/* ── VIP ENHANCEMENTS ── */
+/* Gradient page title */
+.pg-head-left h1{background:linear-gradient(90deg,#00ffe0,#00a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* Card accent top stripe */
+.s-card{position:relative;}
+.s-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#00ffe0,#00a8ff,#7c5ce7);
+  border-radius:18px 18px 0 0;pointer-events:none;z-index:1;}
+
+/* Enhanced save button */
+.btn-save{position:relative;overflow:hidden;}
+.btn-save::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s;}
+.btn-save:hover::after{background:rgba(255,255,255,.12);}
+
+/* Settings status bar */
+.settings-status-bar{
+  display:flex;align-items:center;gap:0;margin-bottom:22px;
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  border:1px solid var(--border);border-radius:14px;overflow:hidden;flex-wrap:wrap;}
+.ssb-item{display:flex;align-items:center;gap:7px;padding:11px 20px;font-size:12.5px;font-weight:600;color:var(--text2);}
+.ssb-item strong{color:var(--neon);font-size:13px;}
+.ssb-sep{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+.ssb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ssb-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green);}
+.ssb-dot.warn{background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 1.5s infinite;}
+
+/* Maintenance mode banner */
+.maint-banner{
+  display:none;align-items:center;gap:14px;
+  background:rgba(231,76,60,.10);border:1px solid rgba(231,76,60,.35);
+  border-radius:14px;padding:14px 20px;margin-bottom:20px;}
+.maint-banner.show{display:flex;animation:slideIn .3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.maint-ico{font-size:24px;flex-shrink:0;}
+.maint-text strong{display:block;font-size:14px;font-weight:800;color:#e74c3c;}
+.maint-text span{font-size:12px;color:rgba(231,76,60,.75);}
+
+/* Instant-save toggle highlight */
+.toggle-row.highlight-on{background:rgba(231,76,60,.05);border-radius:10px;padding-left:8px;margin:-4px -8px;}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -251,21 +294,25 @@ select.form-control option{background:#0d1827;}
   <a class="hdr-logo" href="admin.html">
     <div class="hdr-logo-ic">🚌</div>
     <div class="hdr-logo-tx">SmartBusAI</div>
+    <span class="hdr-logo-badge">ADMIN</span>
   </a>
   <div class="hdr-sep"></div>
-  <span class="hdr-title">ADMIN PANEL</span>
   <nav class="hdr-nav">
-    <a href="admin.html">Dashboard</a>
-    <a href="users.html">Người dùng</a>
-    <a href="operators.html">Nhà xe</a>
-    <a href="settings.html" class="active">Cấu hình</a>
-    <a href="support.html">Hỗ trợ</a>
+    <a href="admin.html">📊 Dashboard</a>
+    <a href="users.html">👥 Người dùng</a>
+    <a href="operators.html">🚌 Nhà xe</a>
+    <a href="support.html">🆘 Hỗ trợ</a>
+    <a href="settings.html" class="active">⚙️ Cài đặt</a>
   </nav>
   <div class="hdr-actions">
-    <div class="hdr-badge">🔔<div class="badge-dot"></div></div>
+    <div class="hdr-badge" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo" style="position:relative;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,.65)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <div class="badge-dot" id="notifDot" style="display:none;"></div>
+      <span id="notifBadge" class="notif-count" style="display:none;"></span>
+    </div>
     <div class="admin-chip">
       <div class="admin-avatar">👑</div>
-      <span class="admin-name">Admin</span>
+      <span class="admin-name" id="adminNameLabel">Admin</span>
     </div>
     <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
   </div>
@@ -274,10 +321,19 @@ select.form-control option{background:#0d1827;}
 <!-- MAIN -->
 <main class="main">
 
+  <!-- Maintenance warning banner -->
+  <div class="maint-banner" id="maintenanceBanner">
+    <div class="maint-ico">🛑</div>
+    <div class="maint-text">
+      <strong>Chế độ bảo trì đang BẬT</strong>
+      <span>Tài khoản PASSENGER và OPERATOR hiện không thể đăng nhập vào hệ thống</span>
+    </div>
+  </div>
+
   <div class="pg-head">
     <div class="pg-head-left">
-      <h1>⚙️ Cấu hình hệ thống</h1>
-      <p>Quản lý tham số vận hành, tích hợp thanh toán, AI và bảo mật</p>
+      <h1>⚙️ <span data-i18n="pg_title">Cấu hình hệ thống</span></h1>
+      <p data-i18n="pg_sub">Quản lý tham số vận hành, tích hợp thanh toán, AI và bảo mật</p>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <span class="saved-dot"></span>
@@ -285,20 +341,38 @@ select.form-control option{background:#0d1827;}
     </div>
   </div>
 
+  <!-- Live settings status bar -->
+  <div class="settings-status-bar">
+    <div class="ssb-item">
+      <div class="ssb-dot ok" id="ssb_dot"></div>
+      <span id="ssb_status">Hệ thống hoạt động bình thường</span>
+    </div>
+    <div class="ssb-sep"></div>
+    <div class="ssb-item">💰 Phí nền tảng: <strong id="ssb_fee">5%</strong></div>
+    <div class="ssb-sep"></div>
+    <div class="ssb-item">⏱️ QR Timeout: <strong id="ssb_timeout">15 phút</strong></div>
+    <div class="ssb-sep"></div>
+    <div class="ssb-item">🎫 Tối đa / lần: <strong id="ssb_tickets">4 vé</strong></div>
+    <div class="ssb-sep"></div>
+    <div class="ssb-item">🌐 Ngôn ngữ: <strong id="ssb_lang">Tiếng Việt</strong></div>
+  </div>
+
   <div class="settings-layout">
 
     <!-- SIDEBAR NAV -->
     <nav class="settings-nav">
       <div class="snav-label">Cấu hình</div>
-      <div class="snav-item active" onclick="switchTab('general')"><span class="sico">🛠️</span> Cài đặt chung</div>
-      <div class="snav-item" onclick="switchTab('payment')"><span class="sico">💳</span> Thanh toán</div>
-      <div class="snav-item" onclick="switchTab('booking')"><span class="sico">🎫</span> Đặt vé & Vận hành</div>
-      <div class="snav-item" onclick="switchTab('ai')"><span class="sico">🤖</span> AI & Gợi ý</div>
+      <div class="snav-item active" onclick="switchTab('general')"><span class="sico">🛠️</span> <span data-i18n="nav_general">Cài đặt chung</span></div>
+      <div class="snav-item" onclick="switchTab('payment')"><span class="sico">💳</span> <span data-i18n="nav_payment">Thanh toán</span></div>
+      <div class="snav-item" onclick="switchTab('booking')"><span class="sico">🎫</span> <span data-i18n="nav_booking">Đặt vé & Vận hành</span></div>
+      <div class="snav-item" onclick="switchTab('ai')"><span class="sico">🤖</span> <span data-i18n="nav_ai">AI & Gợi ý</span></div>
       <div class="snav-divider"></div>
-      <div class="snav-label">Hệ thống</div>
-      <div class="snav-item" onclick="switchTab('security')"><span class="sico">🔐</span> Bảo mật</div>
-      <div class="snav-item" onclick="switchTab('notifications')"><span class="sico">🔔</span> Thông báo</div>
-      <div class="snav-item" onclick="switchTab('system')"><span class="sico">🖥️</span> Hệ thống & Log</div>
+      <div class="snav-item" onclick="switchTab('routes')"><span class="sico">🗺️</span> Quản lý tuyến đường</div>
+      <div class="snav-divider"></div>
+      <div class="snav-label" data-i18n="nav_system_label">Hệ thống</div>
+      <div class="snav-item" onclick="switchTab('security')"><span class="sico">🔐</span> <span data-i18n="nav_security">Bảo mật</span></div>
+      <div class="snav-item" onclick="switchTab('notifications')"><span class="sico">🔔</span> <span data-i18n="nav_notifications">Thông báo</span></div>
+      <div class="snav-item" onclick="switchTab('system')"><span class="sico">🖥️</span> <span data-i18n="nav_system">Hệ thống & Log</span></div>
     </nav>
 
     <!-- PANELS -->
@@ -367,9 +441,9 @@ select.form-control option{background:#0d1827;}
             <div class="toggle-row">
               <div class="toggle-left">
                 <span class="toggle-ico">🛡️</span>
-                <div><div class="toggle-label">Chế độ bảo trì</div><div class="toggle-sub">Tạm dừng toàn bộ dịch vụ cho người dùng</div></div>
+                <div><div class="toggle-label" data-i18n="maintenance_label">Chế độ bảo trì</div><div class="toggle-sub" data-i18n="maintenance_sub">Tạm dừng toàn bộ dịch vụ cho người dùng</div></div>
               </div>
-              <label class="toggle"><input type="checkbox" id="t_maintenance"><span class="toggle-slider"></span></label>
+              <label class="toggle"><input type="checkbox" id="t_maintenance" onchange="onMaintenanceToggle(this.checked)"><span class="toggle-slider"></span></label>
             </div>
             <div class="toggle-row">
               <div class="toggle-left">
@@ -633,7 +707,7 @@ select.form-control option{background:#0d1827;}
             </div>
             <div class="btn-wrap">
               <button class="btn btn-save" onclick="saveSection('ai')">💾 Lưu cấu hình AI</button>
-              <button class="btn btn-secondary" onclick="retrain()">🔄 Retrain model</button>
+              <button class="btn btn-secondary" onclick="retrain()">Retrain model</button>
             </div>
           </div>
         </div>
@@ -819,7 +893,7 @@ select.form-control option{background:#0d1827;}
           <div class="s-card-body">
             <div class="log-list" id="logList"></div>
             <div class="btn-wrap">
-              <button class="btn btn-secondary" onclick="refreshLogs()">🔄 Làm mới log</button>
+              <button class="btn btn-secondary" onclick="refreshLogs()">Làm mới log</button>
               <button class="btn btn-danger" onclick="clearLogs()">🗑️ Xóa log</button>
             </div>
           </div>
@@ -837,13 +911,62 @@ select.form-control option{background:#0d1827;}
             </div>
             <div class="btn-wrap">
               <button class="btn btn-save" onclick="backupDB()">💾 Backup database</button>
-              <button class="btn btn-secondary" onclick="exportData()">📥 Xuất dữ liệu JSON</button>
+              <button class="btn btn-secondary" onclick="exportData()">Xuất dữ liệu JSON</button>
               <button class="btn btn-danger" onclick="confirmPurge()">🗑️ Purge log cũ</button>
             </div>
           </div>
         </div>
 
       </div><!-- end panel-system -->
+
+      <!-- ─── ROUTES MANAGEMENT ─── -->
+      <div class="settings-panel" id="panel-routes">
+        <div class="s-card">
+          <div class="s-card-head">
+            <span class="s-card-ico">🗺️</span>
+            <div>
+              <h3>Quản lý tuyến đường</h3>
+              <p>Xem toàn bộ tuyến đường — thống kê chuyến, lượt đặt, doanh thu</p>
+            </div>
+          </div>
+          <div class="s-card-body">
+            <!-- KPI mini -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+              <div style="background:rgba(0,255,224,.06);border:1px solid rgba(0,255,224,.16);border-radius:14px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Tổng tuyến</div>
+                <div style="font-size:24px;font-weight:800;color:#00ffe0;margin-top:6px;" id="srt_total">—</div>
+              </div>
+              <div style="background:rgba(124,92,231,.06);border:1px solid rgba(124,92,231,.16);border-radius:14px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Tổng chuyến</div>
+                <div style="font-size:24px;font-weight:800;color:#a78bfa;margin-top:6px;" id="srt_trips">—</div>
+              </div>
+              <div style="background:rgba(243,156,18,.06);border:1px solid rgba(243,156,18,.16);border-radius:14px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Tổng doanh thu</div>
+                <div style="font-size:20px;font-weight:800;color:#f39c12;margin-top:6px;" id="srt_rev">—</div>
+              </div>
+            </div>
+
+            <!-- Routes table -->
+            <div style="overflow-x:auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);">
+              <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+                <thead><tr style="background:rgba(0,0,0,.20);">
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">#ID</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Tuyến đường</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Km</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Chuyến</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Lượt đặt</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Doanh thu</th>
+                  <th style="padding:11px 14px;text-align:left;font-size:10px;font-weight:800;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.7px;">Nhà xe</th>
+                </tr></thead>
+                <tbody id="srt_tbody"><tr><td colspan="7" style="text-align:center;padding:30px;color:rgba(255,255,255,.30);">⏳ Đang tải…</td></tr></tbody>
+              </table>
+            </div>
+            <div class="btn-wrap" style="margin-top:16px;">
+              <button class="btn btn-save" onclick="loadSettingsRoutes()">🔄 Làm mới</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- end panel-routes -->
 
     </div><!-- end settings-panels -->
   </div><!-- end settings-layout -->
@@ -887,49 +1010,263 @@ document.addEventListener("click",e=>{
 
 function logout(){localStorage.clear();window.location.href="../auth/login.html";}
 
-/* Toast */
+/* ── TOAST ── */
 function toast(msg,type="success"){
   const w=document.getElementById("toastWrap");
   const el=document.createElement("div");el.className=`toast ${type}`;
   const ic={success:"✅",error:"❌",info:"ℹ️"};
-  el.innerHTML=`<span>${ic[type]}</span><span>${msg}</span>`;
+  el.innerHTML=`<span>${ic[type]||"ℹ️"}</span><span>${msg}</span>`;
   w.appendChild(el);
-  setTimeout(()=>{el.style.animation="toastOut .3s ease forwards";setTimeout(()=>el.remove(),320);},3200);
+  setTimeout(()=>{el.style.animation="toastOut .3s ease forwards";setTimeout(()=>el.remove(),320);},3400);
 }
 
-/* Tab switch */
+/* ── TAB SWITCH ── */
+let _routesLoaded=false;
 function switchTab(tab){
   document.querySelectorAll(".snav-item").forEach(el=>el.classList.remove("active"));
   document.querySelectorAll(".settings-panel").forEach(el=>el.classList.remove("active"));
   event.currentTarget.classList.add("active");
   document.getElementById("panel-"+tab).classList.add("active");
+  if(tab==="routes"&&!_routesLoaded){_routesLoaded=true;loadSettingsRoutes();}
 }
 
-/* Payment cards */
+async function loadSettingsRoutes(){
+  const tbody=document.getElementById("srt_tbody");
+  if(!tbody)return;
+  tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:rgba(255,255,255,.30);">⏳ Đang tải…</td></tr>`;
+  try{
+    const r=await fetch("/api/admin/all-routes");
+    const data=r.ok?await r.json():[];
+    const totalTrips=data.reduce((s,x)=>s+(+x.total_trips||0),0);
+    const totalRev=data.reduce((s,x)=>s+(+x.total_revenue||0),0);
+    const fmt=v=>Number(v||0).toLocaleString("vi-VN")+"đ";
+    const t=document.getElementById("srt_total");if(t)t.textContent=data.length;
+    const tr=document.getElementById("srt_trips");if(tr)tr.textContent=totalTrips.toLocaleString();
+    const rv=document.getElementById("srt_rev");if(rv)rv.textContent=fmt(totalRev);
+    if(!data.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:rgba(255,255,255,.30);">Chưa có tuyến nào</td></tr>`;return;}
+    tbody.innerHTML=data.map(r=>`<tr style="border-bottom:1px solid rgba(255,255,255,.04);transition:background .18s;" onmouseover="this.style.background='rgba(0,255,224,.03)'" onmouseout="this.style.background=''">
+      <td style="padding:12px 14px;color:rgba(0,255,224,.80);font-weight:700;">#${r.route_id}</td>
+      <td style="padding:12px 14px;font-weight:700;">${r.origin||"—"} → ${r.destination||"—"}</td>
+      <td style="padding:12px 14px;color:rgba(255,255,255,.45);">${r.distance_km?r.distance_km+" km":"—"}</td>
+      <td style="padding:12px 14px;color:#a78bfa;font-weight:700;">${(+r.total_trips||0).toLocaleString()}</td>
+      <td style="padding:12px 14px;color:#00ffe0;font-weight:700;">${(+r.total_bookings||0).toLocaleString()}</td>
+      <td style="padding:12px 14px;color:#f39c12;font-weight:700;">${fmt(r.total_revenue)}</td>
+      <td style="padding:12px 14px;color:rgba(255,255,255,.45);">${r.operator_count||0} nhà xe</td>
+    </tr>`).join("");
+  }catch(e){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:#e74c3c;">❌ Lỗi tải dữ liệu</td></tr>`;}
+}
+
+/* ── PAYMENT CARDS ── */
 function togglePayCard(m){
-  const cb=document.getElementById("pm_"+m);
-  cb.checked=!cb.checked;
+  const cb=document.getElementById("pm_"+m);cb.checked=!cb.checked;
   document.getElementById("pc_"+m).classList.toggle("active",cb.checked);
 }
 function syncPayCard(m){
   document.getElementById("pc_"+m).classList.toggle("active",document.getElementById("pm_"+m).checked);
 }
 
-/* Save section */
+/* ════════════════════════════════════════
+   SETTINGS API
+════════════════════════════════════════ */
+let _cfg = {};
+
+/* Helper accessors */
+const v  = id => document.getElementById(id)?.value ?? "";
+const vn = id => parseFloat(document.getElementById(id)?.value) || 0;
+const vc = id => document.getElementById(id)?.checked ?? false;
+const set = (id, val) => {
+  const el = document.getElementById(id); if(!el) return;
+  if(el.type==="checkbox") el.checked = !!val;
+  else el.value = val !== undefined ? val : "";
+};
+
+/* Load from API */
+async function loadSettingsFromAPI(){
+  try{
+    const r = await fetch("/api/settings");
+    if(!r.ok) return;
+    _cfg = await r.json();
+    _populateForm(_cfg);
+  } catch(e){ console.warn("Settings load failed",e); }
+}
+
+function _populateForm(s){
+  /* General */
+  set("appName",s.appName); set("lang",s.lang);
+  set("supportEmail",s.supportEmail); set("hotline",s.hotline); set("website",s.website);
+  set("t_maintenance",s.maintenanceMode);
+  set("t_mobile_booking",s.mobileBooking); set("t_review",s.allowReview); set("t_push",s.pushNotification);
+  /* Payment */
+  set("systemFee",s.systemFee); set("minAmount",s.minAmount);
+  set("payTimeout",s.payTimeout); set("refundMode",s.refundMode);
+  set("pm_momo",s.paymentMethods?.momo); set("pm_zalopay",s.paymentMethods?.zalopay); set("pm_bank",s.paymentMethods?.bank);
+  ["momo","zalopay","bank"].forEach(m=>{
+    document.getElementById("pc_"+m)?.classList.toggle("active", s.paymentMethods?.[m]!==false);
+  });
+  /* Booking */
+  set("cancelTime",s.cancelTime); set("maxTickets",s.maxTickets);
+  set("defaultStatus",s.defaultStatus); set("autoCancel",s.autoCancel);
+  set("vipSurcharge",s.vipSurcharge); set("seatHold",s.seatHold);
+  set("t_autoFull",s.autoFull); set("t_canceledBook",s.canceledBook);
+  /* AI */
+  set("aiMaxRec",s.aiMaxRec); set("aiMinScore",s.aiMinScore);
+  set("aiRefresh",s.aiRefresh); set("behaviorRetain",s.behaviorRetain);
+  set("t_aiRec",s.aiRec); set("t_behavior",s.collectBehavior); set("t_chatbot",s.chatbot);
+  /* Security */
+  set("maxLogin",s.maxLogin); set("lockTime",s.lockTime); set("jwtExp",s.jwtExp); set("minPw",s.minPw);
+  set("t_verifyEmail",s.verifyEmail); set("t_2fa",s.twoFA); set("t_autoBlock",s.autoBlock);
+  /* Notifications */
+  set("n_bookingPaid",s.n_bookingPaid); set("n_bookingCancel",s.n_bookingCancel);
+  set("n_tripRemind",s.n_tripRemind); set("n_review",s.n_review);
+  set("smtpHost",s.smtpHost); set("smtpPort",s.smtpPort); set("smtpName",s.smtpName); set("smtpFrom",s.smtpFrom);
+
+  /* UI sync */
+  _syncMaintBanner(!!s.maintenanceMode);
+  _syncStatusBar(s);
+  if(s.lang) applyLang(s.lang);
+}
+
+/* POST partial update */
+async function _postSettings(data){
+  const r = await fetch("/api/settings",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+  if(!r.ok) throw new Error("Save failed");
+  const d = await r.json();
+  _cfg = {..._cfg,...data};
+  _syncStatusBar(_cfg);
+  return d;
+}
+
+/* ── Save section ── */
 function saveSection(section){
-  const labels={
-    general:"Cài đặt chung",payment:"Thanh toán",booking:"Đặt vé",
-    ai:"AI Engine",security:"Bảo mật",notifications:"Thông báo"
-  };
-  toast(`✅ Đã lưu: ${labels[section]||section}`);
-  document.getElementById("savedLabel").textContent="Đã lưu lúc "+new Date().toLocaleTimeString("vi-VN");
-  addLog("Cập nhật cấu hình: "+labels[section],"success");
+  const LABELS={general:"Cài đặt chung",payment:"Thanh toán",booking:"Đặt vé",
+    ai:"AI Engine",security:"Bảo mật",notifications:"Thông báo"};
+  let data = {};
+
+  if(section==="general"){
+    data={
+      appName:v("appName"), lang:v("lang"),
+      supportEmail:v("supportEmail"), hotline:v("hotline"), website:v("website"),
+      maintenanceMode:vc("t_maintenance"), mobileBooking:vc("t_mobile_booking"),
+      allowReview:vc("t_review"), pushNotification:vc("t_push")
+    };
+  } else if(section==="payment"){
+    data={
+      systemFee:vn("systemFee"), minAmount:vn("minAmount"),
+      payTimeout:vn("payTimeout"), refundMode:v("refundMode"),
+      paymentMethods:{momo:vc("pm_momo"),zalopay:vc("pm_zalopay"),bank:vc("pm_bank")}
+    };
+  } else if(section==="booking"){
+    data={
+      cancelTime:vn("cancelTime"), maxTickets:vn("maxTickets"),
+      defaultStatus:v("defaultStatus"), autoCancel:vn("autoCancel"),
+      vipSurcharge:vn("vipSurcharge"), seatHold:vn("seatHold"),
+      autoFull:vc("t_autoFull"), canceledBook:vc("t_canceledBook")
+    };
+  } else if(section==="ai"){
+    data={
+      aiMaxRec:vn("aiMaxRec"), aiMinScore:parseFloat(document.getElementById("aiMinScore")?.value)||0.6,
+      aiRefresh:vn("aiRefresh"), behaviorRetain:vn("behaviorRetain"),
+      aiRec:vc("t_aiRec"), collectBehavior:vc("t_behavior"), chatbot:vc("t_chatbot")
+    };
+  } else if(section==="security"){
+    data={
+      maxLogin:vn("maxLogin"), lockTime:vn("lockTime"), jwtExp:vn("jwtExp"), minPw:vn("minPw"),
+      verifyEmail:vc("t_verifyEmail"), twoFA:vc("t_2fa"), autoBlock:vc("t_autoBlock")
+    };
+  } else if(section==="notifications"){
+    data={
+      n_bookingPaid:vc("n_bookingPaid"), n_bookingCancel:vc("n_bookingCancel"),
+      n_tripRemind:vc("n_tripRemind"), n_review:vc("n_review"),
+      smtpHost:v("smtpHost"), smtpPort:vn("smtpPort"), smtpName:v("smtpName"), smtpFrom:v("smtpFrom")
+    };
+  }
+
+  _postSettings(data)
+    .then(()=>{
+      toast(`Đã lưu: ${LABELS[section]||section}`);
+      document.getElementById("savedLabel").textContent="Đã lưu lúc "+new Date().toLocaleTimeString("vi-VN");
+      addLog("Cập nhật cấu hình: "+LABELS[section],"success");
+      if(section==="general"){
+        _syncMaintBanner(data.maintenanceMode);
+        applyLang(data.lang);
+      }
+    })
+    .catch(()=>toast("Lỗi kết nối — không thể lưu cài đặt","error"));
 }
 
 function resetSection(section){
   toast("Đã khôi phục cài đặt mặc định","info");
 }
 
+/* ── Maintenance instant-toggle ── */
+function onMaintenanceToggle(on){
+  _syncMaintBanner(on);
+  _postSettings({maintenanceMode:on})
+    .then(()=>{
+      toast(on
+        ? "🛑 Chế độ bảo trì ĐÃ BẬT — Passenger & Operator bị chặn đăng nhập"
+        : "✅ Đã tắt chế độ bảo trì", on?"error":"success");
+      addLog((on?"BẬT":"TẮT")+" chế độ bảo trì", on?"warn":"success");
+    })
+    .catch(()=>toast("Lỗi lưu trạng thái bảo trì","error"));
+}
+
+function _syncMaintBanner(on){
+  document.getElementById("maintenanceBanner")?.classList.toggle("show",!!on);
+  const dot=document.getElementById("ssb_dot");
+  const txt=document.getElementById("ssb_status");
+  if(dot){ dot.className="ssb-dot "+(on?"warn":"ok"); }
+  if(txt){ txt.textContent=on?"⚠️ Chế độ bảo trì ĐANG BẬT":"Hệ thống hoạt động bình thường"; }
+}
+
+function _syncStatusBar(s){
+  const $=id=>document.getElementById(id);
+  if($("ssb_fee"))     $("ssb_fee").textContent     = (s.systemFee||0)+"%";
+  if($("ssb_timeout")) $("ssb_timeout").textContent  = (s.payTimeout||15)+" phút";
+  if($("ssb_tickets")) $("ssb_tickets").textContent  = (s.maxTickets||4)+" vé";
+  const langMap={vi:"Tiếng Việt",en:"English"};
+  if($("ssb_lang"))    $("ssb_lang").textContent     = langMap[s.lang||"vi"]||s.lang||"Tiếng Việt";
+}
+
+/* ── Language i18n ── */
+const I18N = {
+  vi:{
+    nav_general:"Cài đặt chung", nav_payment:"Thanh toán",
+    nav_booking:"Đặt vé & Vận hành", nav_ai:"AI & Gợi ý",
+    nav_security:"Bảo mật", nav_notifications:"Thông báo",
+    nav_system:"Hệ thống & Log", nav_system_label:"Hệ thống",
+    pg_title:"Cấu hình hệ thống",
+    pg_sub:"Quản lý tham số vận hành, tích hợp thanh toán, AI và bảo mật",
+    maintenance_label:"Chế độ bảo trì",
+    maintenance_sub:"Tạm dừng toàn bộ dịch vụ cho người dùng"
+  },
+  en:{
+    nav_general:"General", nav_payment:"Payment",
+    nav_booking:"Booking & Operations", nav_ai:"AI & Suggestions",
+    nav_security:"Security", nav_notifications:"Notifications",
+    nav_system:"System & Logs", nav_system_label:"System",
+    pg_title:"System Configuration",
+    pg_sub:"Manage operation parameters, payment integrations, AI and security",
+    maintenance_label:"Maintenance Mode",
+    maintenance_sub:"Suspend all services for passengers and operators"
+  }
+};
+
+function applyLang(lang){
+  const t = I18N[lang] || I18N.vi;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    if(t[key]) el.textContent = t[key];
+  });
+  const langMap={vi:"Tiếng Việt",en:"English"};
+  const ssbl=document.getElementById("ssb_lang");
+  if(ssbl) ssbl.textContent = langMap[lang]||lang;
+}
+
+/* ── Other actions ── */
 function retrain(){
   toast("Đang khởi động retrain model...","info");
   setTimeout(()=>toast("Retrain hoàn tất! Accuracy: 94.2%"),2000);
@@ -955,9 +1292,10 @@ function exportData(){
 }
 
 function confirmPurge(){
-  if(confirm("Xóa toàn bộ log cũ hơn 30 ngày?")){ clearLogs(); toast("Đã purge log cũ"); }}
+  if(confirm("Xóa toàn bộ log cũ hơn 30 ngày?")){ clearLogs(); toast("Đã purge log cũ"); }
+}
 
-/* Log system */
+/* ── Log system ── */
 const LOGS=[
   {t:"10:45:22",msg:"Server khởi động thành công tại port 2704",type:"success"},
   {t:"10:45:23",msg:"MySQL Connected — smartbus_db",type:"success"},
@@ -987,12 +1325,10 @@ function addLog(msg,type="info"){
   renderLogs();
 }
 
-function refreshLogs(){
-  logData=[...LOGS];renderLogs();toast("Đã làm mới log","info");
-}
-function clearLogs(){logData=[];renderLogs();}
+function refreshLogs(){ logData=[...LOGS]; renderLogs(); toast("Đã làm mới log","info"); }
+function clearLogs(){ logData=[]; renderLogs(); }
 
-/* System uptime */
+/* ── System uptime ── */
 const bootTime=new Date(Date.now()-Math.random()*86400000*3);
 document.getElementById("startTime").textContent=bootTime.toLocaleString("vi-VN");
 function updateUptime(){
@@ -1000,9 +1336,19 @@ function updateUptime(){
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
   document.getElementById("uptime").textContent=`${h}h ${m}m ${sec}s`;
 }
-updateUptime();setInterval(updateUptime,1000);
+updateUptime(); setInterval(updateUptime,1000);
 
+/* ── INIT ── */
 renderLogs();
+loadSettingsFromAPI();
+
+/* ── Admin name ── */
+(function(){
+  try{const u=JSON.parse(localStorage.getItem("user")||"{}");
+    if(u.full_name){const el=document.querySelector(".admin-name");if(el)el.textContent=u.full_name;}
+  }catch(e){}
+})();
 </script>
+<script src="/js/admin-notif.js"></script>
 </body>
 </html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quét vé QR — SmartBusAI</title>
+<style>
+:root{
+  --bg:#04080f; --neon:#00ffe0; --neon2:#00a8ff; --purple:#7c5ce7;
+  --amber:#f39c12; --green:#2ecc71; --red:#e74c3c; --pink:#fd79a8;
+  --glass:rgba(255,255,255,0.055); --glass2:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
+  --hh:62px; --text:#e8f4f8; --text2:rgba(255,255,255,.52); --text3:rgba(255,255,255,.30);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html{background:var(--bg);min-height:100vh;}
+body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn .3s ease;}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Galaxy */
+#gc{position:fixed;inset:0;z-index:-3;pointer-events:none;}
+.neb{position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 10% 18%,rgba(0,255,224,.07) 0%,transparent 40%),
+    radial-gradient(ellipse at 88% 78%,rgba(124,92,231,.08) 0%,transparent 44%),
+    radial-gradient(ellipse at 52% 4%,rgba(0,164,255,.06) 0%,transparent 38%);}
+.pl1{position:fixed;width:110px;height:110px;top:70px;right:85px;border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 30% 30%,#d0c8ff,#7c5ce7 44%,#1a0a40 78%);
+  box-shadow:0 0 50px rgba(124,92,231,.5),0 0 100px rgba(124,92,231,.18);}
+.pl2{position:fixed;width:50px;height:50px;bottom:75px;left:90px;border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 38% 38%,#fff,#00d4ff 52%,#001a33 82%);
+  box-shadow:0 0 32px rgba(0,212,255,.5);animation:pfloat 12s ease-in-out infinite;}
+@keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.mt{position:fixed;width:2px;height:50px;pointer-events:none;z-index:-1;
+  background:linear-gradient(rgba(255,255,255,.8),transparent);
+  transform:rotate(42deg);animation:mt linear infinite;}
+.mt:nth-child(1){top:7%;left:13%;animation-duration:17s;}
+.mt:nth-child(2){top:33%;left:58%;animation-duration:22s;animation-delay:5s;}
+.mt:nth-child(3){top:62%;left:80%;animation-duration:19s;animation-delay:10s;}
+@keyframes mt{0%{transform:translate3d(0,0,0) rotate(42deg);opacity:1}100%{transform:translate3d(580px,580px,0) rotate(42deg);opacity:0}}
+
+/* ═══ HEADER ═══ */
+.hdr{position:sticky;top:0;z-index:3000;height:var(--hh);display:flex;align-items:center;
+  background:rgba(4,8,15,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);padding:0 32px;gap:12px;}
+.hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.hdr-logo-ic{width:34px;height:34px;border-radius:9px;font-size:18px;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px rgba(0,255,224,.38);}
+.hdr-logo-tx{font-size:16px;font-weight:800;background:linear-gradient(90deg,#00ffe0,#7eb8ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-sep{width:1px;height:30px;background:var(--border);margin:0 8px;flex-shrink:0;}
+.hdr-role{background:rgba(0,255,224,.10);border:1px solid rgba(0,255,224,.22);
+  color:var(--neon);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.6px;flex-shrink:0;}
+.hdr-nav{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.hdr-nav a{text-decoration:none;color:var(--text2);font-size:12.5px;font-weight:600;padding:7px 12px;
+  border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
+.hdr-nav a:hover{color:var(--neon);background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.20);}
+.hdr-nav a.active{color:var(--neon);background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.25);}
+.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
+  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;margin-left:8px;}
+.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
+
+/* ═══ MAIN ═══ */
+.main{max-width:900px;margin:0 auto;padding:32px 24px 80px;}
+.pg-head{margin-bottom:28px;}
+.pg-head h1{font-size:22px;font-weight:800;}
+.pg-head p{font-size:13px;color:var(--text2);margin-top:4px;}
+
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:8px;margin-bottom:24px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:5px;}
+.tab-btn{flex:1;padding:10px 16px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif;background:transparent;color:var(--text2);transition:all .2s;}
+.tab-btn.active{background:linear-gradient(135deg,rgba(0,255,224,.15),rgba(0,168,255,.10));
+  color:var(--neon);border:1px solid rgba(0,255,224,.25);}
+.tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,.06);}
+
+/* ═══ CARDS ═══ */
+.card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:20px;}
+
+/* ═══ SCANNER ═══ */
+#reader{width:100%;max-width:420px;margin:0 auto;border-radius:16px;overflow:hidden;}
+.scan-hint{text-align:center;font-size:12.5px;color:var(--text3);margin-top:12px;}
+
+/* ═══ MANUAL INPUT ═══ */
+.manual-area{display:flex;flex-direction:column;gap:12px;}
+.manual-area textarea{
+  width:100%;padding:14px 16px;background:rgba(255,255,255,.06);
+  border:1px solid var(--border2);border-radius:12px;color:var(--text);
+  font-size:13px;font-family:"Courier New",monospace;resize:vertical;min-height:100px;
+  outline:none;transition:border-color .2s;}
+.manual-area textarea:focus{border-color:rgba(0,255,224,.4);}
+.manual-area textarea::placeholder{color:var(--text3);}
+.btn-verify{background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#04080f;border:none;
+  padding:12px 28px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif;box-shadow:0 0 18px rgba(0,255,224,.30);transition:all .22s;}
+.btn-verify:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,255,224,.5);}
+.btn-verify:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* ═══ RESULT ═══ */
+#resultBox{display:none;border-radius:18px;padding:24px;animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.result-valid{background:linear-gradient(145deg,rgba(46,204,113,.12),rgba(0,255,180,.06));
+  border:1px solid rgba(46,204,113,.35);border-top:2px solid #2ecc71;}
+.result-invalid{background:linear-gradient(145deg,rgba(231,76,60,.12),rgba(180,0,0,.06));
+  border:1px solid rgba(231,76,60,.35);border-top:2px solid #e74c3c;}
+.result-icon{font-size:42px;margin-bottom:10px;text-align:center;}
+.result-status{font-size:20px;font-weight:900;text-align:center;margin-bottom:16px;}
+.result-valid .result-status{color:#2ecc71;}
+.result-invalid .result-status{color:#e74c3c;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.result-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;}
+.result-lbl{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.result-val{font-size:13.5px;font-weight:700;color:var(--text);}
+.result-scan-again{margin-top:16px;width:100%;padding:11px;background:rgba(255,255,255,.07);
+  border:1px solid var(--border);color:var(--text2);border-radius:12px;font-size:13px;
+  font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
+.result-scan-again:hover{color:var(--neon);border-color:rgba(0,255,224,.25);background:rgba(0,255,224,.06);}
+
+/* ═══ STATUS BADGE ═══ */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
+.badge-paid{background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.35);color:#2ecc71;}
+.badge-pending{background:rgba(243,156,18,.15);border:1px solid rgba(243,156,18,.35);color:#f39c12;}
+.badge-canceled{background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.35);color:#e74c3c;}
+.badge-confirmed{background:rgba(0,168,255,.15);border:1px solid rgba(0,168,255,.35);color:#00a8ff;}
+
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:rgba(8,18,40,.96);border:1px solid rgba(0,255,224,.25);
+  color:#fff;border-radius:12px;padding:12px 22px;font-size:13px;font-weight:600;
+  z-index:9999;display:none;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+#toast.show{display:block;animation:toastIn .25s ease;}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<div class="neb"></div>
+<div class="pl1"></div>
+<div class="pl2"></div>
+<div class="mt"></div>
+<div class="mt"></div>
+<div class="mt"></div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a href="/pages/operator/operator.html" class="hdr-logo">
+    <div class="hdr-logo-ic">🚌</div>
+    <span class="hdr-logo-tx">SmartBusAI</span>
+  </a>
+  <div class="hdr-sep"></div>
+  <span class="hdr-role">Operator</span>
+  <nav class="hdr-nav">
+    <a href="/pages/operator/operator.html">Dashboard</a>
+    <a href="/pages/operator/trips.html">Chuyến đi</a>
+    <a href="/pages/operator/bookings.html">Đặt vé</a>
+    <a href="/pages/operator/vehicles.html">Xe</a>
+    <a href="/pages/operator/seats.html">Ghế</a>
+    <a href="/pages/operator/revenue.html">Doanh thu</a>
+    <a href="/pages/operator/scan.html" class="active">🔍 Quét vé</a>
+  </nav>
+  <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="pg-head">
+    <h1>🔍 Quét & Xác thực vé QR</h1>
+    <p>Quét mã QR từ camera hoặc nhập thủ công để xác thực vé hành khách</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tabCamera" onclick="switchTab('camera')">📷 Quét bằng camera</button>
+    <button class="tab-btn" id="tabManual" onclick="switchTab('manual')">⌨️ Nhập thủ công</button>
+  </div>
+
+  <!-- CAMERA TAB -->
+  <div id="paneCamera" class="card">
+    <div id="reader"></div>
+    <p class="scan-hint">Hướng camera vào mã QR trên vé điện tử của hành khách</p>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn-verify" id="btnStartScan" onclick="startScan()">▶ Bắt đầu quét</button>
+      <button class="btn-verify" id="btnStopScan" onclick="stopScan()" style="display:none;background:rgba(231,76,60,.2);border:1px solid rgba(231,76,60,.4);color:#e74c3c;box-shadow:none;">⏹ Dừng</button>
+    </div>
+  </div>
+
+  <!-- MANUAL TAB -->
+  <div id="paneManual" class="card" style="display:none;">
+    <div class="manual-area">
+      <label style="font-size:13px;font-weight:700;color:var(--text2);">Dán dữ liệu QR (JSON) vào đây:</label>
+      <textarea id="manualInput" placeholder='{"bid":123,"uid":45,"cs":"ABC123DEF456","ts":1700000000000}'></textarea>
+      <button class="btn-verify" id="btnManualVerify" onclick="verifyManual()">✅ Xác thực vé</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultBox"></div>
+</main>
+
+<div id="toast"></div>
+
+<script src="/js/api.js"></script>
+<!-- html5-qrcode CDN -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+// ── Galaxy canvas ──
+(function(){
+  const c=document.getElementById('gc'),ctx=c.getContext('2d');
+  let W,H,stars=[];
+  function init(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    stars=Array.from({length:130},()=>({
+      x:Math.random()*W,y:Math.random()*H,
+      r:Math.random()*1.2+.2,
+      a:Math.random(),da:(Math.random()-.5)*.004
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+      s.a=Math.max(.08,Math.min(1,s.a+s.da));
+      if(s.a<=.08||s.a>=1)s.da*=-1;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,2*Math.PI);
+      ctx.fillStyle=`rgba(255,255,255,${s.a})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',init);init();draw();
+})();
+
+// ── Auth ──
+requireLogin();
+if(getRole()!=='OPERATOR'&&getRole()!=='ADMIN'){
+  window.location.href='/pages/auth/login.html';
+}
+
+// ── Tab switching ──
+function switchTab(tab){
+  document.getElementById('tabCamera').classList.toggle('active', tab==='camera');
+  document.getElementById('tabManual').classList.toggle('active', tab==='manual');
+  document.getElementById('paneCamera').style.display = tab==='camera'?'':'none';
+  document.getElementById('paneManual').style.display = tab==='manual'?'':'none';
+  if(tab==='manual' && html5QrCode){
+    stopScan();
+  }
+  clearResult();
+}
+
+// ── QR Scanner ──
+let html5QrCode = null;
+let scanning = false;
+
+function startScan(){
+  if(scanning) return;
+  clearResult();
+  if(!html5QrCode){
+    html5QrCode = new Html5Qrcode('reader');
+  }
+  html5QrCode.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 260, height: 260 } },
+    (decodedText) => {
+      if(scanning){
+        stopScan();
+        doVerify(decodedText);
+      }
+    },
+    (err) => { /* scan in progress, ignore */ }
+  ).then(()=>{
+    scanning = true;
+    document.getElementById('btnStartScan').style.display = 'none';
+    document.getElementById('btnStopScan').style.display = '';
+  }).catch(err=>{
+    showToast('Không thể mở camera: ' + err, 'error');
+  });
+}
+
+function stopScan(){
+  if(html5QrCode && scanning){
+    html5QrCode.stop().catch(()=>{});
+    scanning = false;
+  }
+  document.getElementById('btnStartScan').style.display = '';
+  document.getElementById('btnStopScan').style.display = 'none';
+}
+
+// ── Manual verify ──
+function verifyManual(){
+  const val = document.getElementById('manualInput').value.trim();
+  if(!val){ showToast('Vui lòng nhập dữ liệu QR','error'); return; }
+  doVerify(val);
+}
+
+// ── Core verify ──
+async function doVerify(qrData){
+  clearResult();
+  const box = document.getElementById('resultBox');
+  box.style.display = 'block';
+  box.className = '';
+  box.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:14px;">⏳ Đang xác thực...</div>`;
+
+  try {
+    const res = await fetch('/api/bookings/verify-qr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ qr_data: qrData })
+    });
+    const data = await res.json();
+    renderResult(data, res.ok && data.valid);
+  } catch(e) {
+    box.className = 'result-invalid';
+    box.innerHTML = `
+      <div class="result-icon">❌</div>
+      <div class="result-status">Lỗi kết nối</div>
+      <p style="text-align:center;color:var(--text2);font-size:13px;">Không thể kết nối máy chủ. Vui lòng thử lại.</p>
+      <button class="result-scan-again" onclick="clearResult()">↩ Thử lại</button>
+    `;
+  }
+}
+
+// ── Render result ──
+function renderResult(data, isValid){
+  const box = document.getElementById('resultBox');
+  box.style.display = 'block';
+
+  if(!isValid){
+    box.className = 'result-invalid';
+    box.innerHTML = `
+      <div class="result-icon">❌</div>
+      <div class="result-status">Vé không hợp lệ</div>
+      <p style="text-align:center;color:rgba(231,76,60,.8);font-size:13px;">${data.message||'QR không hợp lệ hoặc vé không tồn tại'}</p>
+      <button class="result-scan-again" onclick="clearResult()">↩ Quét lại</button>
+    `;
+    return;
+  }
+
+  const statusBadge = (s) => {
+    const map = {PAID:'badge-paid',PENDING:'badge-pending',CANCELED:'badge-canceled',CONFIRMED:'badge-confirmed'};
+    return `<span class="badge ${map[s]||''}">${s}</span>`;
+  };
+
+  const depTime = data.departure_time
+    ? new Date(data.departure_time).toLocaleString('vi-VN', {dateStyle:'short',timeStyle:'short'})
+    : '—';
+
+  const isPaid = data.status === 'PAID';
+
+  box.className = isPaid ? 'result-valid' : 'result-invalid';
+  box.innerHTML = `
+    <div class="result-icon">${isPaid ? '✅' : '⚠️'}</div>
+    <div class="result-status">${data.message || (isPaid ? 'Vé hợp lệ' : 'Trạng thái: ' + data.status)}</div>
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="result-lbl">Hành khách</div>
+        <div class="result-val">👤 ${data.full_name||'—'}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-lbl">Trạng thái</div>
+        <div class="result-val">${statusBadge(data.status||'—')}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-lbl">Tuyến đường</div>
+        <div class="result-val">🗺 ${data.origin||'—'} → ${data.destination||'—'}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-lbl">Khởi hành</div>
+        <div class="result-val">🕐 ${depTime}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-lbl">Số ghế</div>
+        <div class="result-val">💺 ${data.seat_numbers||'—'}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-lbl">Mã đặt vé</div>
+        <div class="result-val">#${String(data.booking_id||'').padStart(6,'0')}</div>
+      </div>
+    </div>
+    <button class="result-scan-again" onclick="clearResult()">↩ Quét vé tiếp theo</button>
+  `;
+}
+
+function clearResult(){
+  const box = document.getElementById('resultBox');
+  box.style.display = 'none';
+  box.innerHTML = '';
+  box.className = '';
+  document.getElementById('manualInput') && (document.getElementById('manualInput').value = '');
+}
+
+// ── Toast ──
+let _toastTimer;
+function showToast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = type==='error' ? 'rgba(231,76,60,.35)' : 'rgba(0,255,224,.25)';
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ── Logout ──
+function logout(){
+  localStorage.removeItem('user');
+  localStorage.removeItem('user_id');
+  window.location.href='/pages/auth/login.html';
+}
+</script>
+</body>
+</html>

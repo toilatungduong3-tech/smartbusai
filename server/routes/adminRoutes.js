@@ -34,9 +34,28 @@ router.get("/payment-methods",     admin.getPaymentMethods);
 /* ── Reviews ── */
 router.get("/reviews",             admin.getReviews);
 
-/* ── AI ── */
-router.get("/ai-top-routes",       admin.getTopAIRecommendations);
-router.get("/user-behavior",       admin.getUserBehavior);
-router.get("/ai-stats",            admin.getAIStats);
+/* ── AI (legacy) ── */
+router.get("/ai-top-routes",          admin.getTopAIRecommendations);
+router.get("/user-behavior",          admin.getUserBehavior);
+router.get("/user-behavior-hours",    admin.getUserBehaviorHours);
+router.get("/ai-stats",               admin.getAIStats);
+
+/* ── AI Engine (new ML algorithms) ── */
+router.get("/ai/recommendations",     admin.getAIRecommendations);
+router.get("/ai/revenue-forecast",    admin.getRevenueForecast);
+router.get("/ai/anomalies",           admin.getAnomalyDetection);
+router.get("/ai/heatmap",             admin.getBookingHeatmap);
+router.get("/ai/price-prediction",    admin.getPricePrediction);
+router.get("/ai/trip-demand",         admin.getTripDemandForecast);
+router.post("/ai/classify-ticket",    admin.classifySupportTicket);
+
+router.get("/notifications",        admin.getNotifications);
+
+/* ── Bookings management ── */
+router.get("/all-bookings",           admin.getAllBookings);
+router.put("/bookings/:id/status",    admin.updateBookingStatus);
+
+/* ── Routes management ── */
+router.get("/all-routes",             admin.getAllRoutes);
 
 module.exports = router;

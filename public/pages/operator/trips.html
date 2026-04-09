@@ -180,6 +180,38 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .act-cancel:hover{background:rgba(231,76,60,.24);}
 .act-reopen{background:rgba(46,204,113,.10);color:#2ecc71;border:1px solid rgba(46,204,113,.18);}
 .act-reopen:hover{background:rgba(46,204,113,.24);}
+.act-map{background:rgba(108,92,231,.12);color:#a29bfe;border:1px solid rgba(108,92,231,.22);}
+.act-map:hover{background:rgba(108,92,231,.24);}
+
+/* ═══ MAP MODAL ═══ */
+#opMapModal{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.78);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;}
+#opMapModal.open{display:flex;}
+.op-map-box{width:780px;max-width:97vw;background:linear-gradient(160deg,#0d1827 0%,#060d1a 100%);
+  border:1px solid rgba(108,92,231,.35);border-radius:22px;
+  box-shadow:0 30px 80px rgba(0,0,0,.75),0 0 40px rgba(108,92,231,.12);
+  overflow:hidden;animation:modalIn .28s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;}
+.op-map-head{padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;}
+.op-map-title{font-size:15px;font-weight:800;color:#e8f4ff;display:flex;align-items:center;gap:10px;}
+.op-map-close{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);
+  width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;transition:all .2s;font-family:"Segoe UI",Arial,sans-serif;}
+.op-map-close:hover{background:rgba(231,76,60,.2);color:#e74c3c;}
+.op-map-body{position:relative;height:420px;}
+#opMapLeaflet{width:100%;height:100%;}
+.leaflet-container{background:#060d1a !important;}
+.leaflet-tile-pane{filter:brightness(.88) saturate(.75) hue-rotate(190deg);}
+.leaflet-control-zoom a{background:rgba(6,14,32,.92)!important;color:#00ffe0!important;border:1px solid rgba(0,255,224,.25)!important;}
+.op-map-foot{padding:14px 24px;border-top:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.op-map-route-lbl{font-size:14px;font-weight:700;color:#e8f4ff;}
+.op-map-dist{font-size:12px;color:rgba(255,255,255,.45);}
+.op-lf-tip.leaflet-tooltip{background:rgba(4,10,24,.92)!important;border:1px solid rgba(0,255,224,.28)!important;
+  color:#e8f4ff!important;font-size:12px!important;font-weight:700!important;
+  border-radius:9px!important;padding:5px 11px!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.50)!important;}
+.op-lf-tip.leaflet-tooltip::before{border-top-color:rgba(0,255,224,.28)!important;}
 
 /* Pagination */
 .pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:24px 0 0;}
@@ -282,7 +314,135 @@ select.form-control option{background:#0d1827;}
 .tbl-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .tbl-info-text{font-size:12.5px;color:var(--text2);}
 .tbl-info-text span{color:var(--neon);font-weight:700;}
+
+/* ── PREMIUM ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+.kpi-card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;
+  background:linear-gradient(90deg,var(--k-col,#00ffe0),transparent);opacity:.7;}
+@keyframes shimIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.kpi-val{animation:shimIn .4s ease both;}
+.pg-head-left h1{background:linear-gradient(90deg,#fff,#00ffe0 60%,#7eb8ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.pg-sub{font-size:13px;color:var(--neon);margin-top:3px;font-weight:600;opacity:.8;}
+.hdr-logo-ic{font-size:20px;}
+
+/* Departure countdown badge */
+.countdown-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;
+  font-size:11px;font-weight:700;background:rgba(0,255,224,.10);color:var(--neon);
+  border:1px solid rgba(0,255,224,.2);margin-top:4px;}
+.countdown-badge.soon{background:rgba(243,156,18,.12);color:#f9c858;border-color:rgba(243,156,18,.22);}
+.countdown-badge.past{background:rgba(231,76,60,.10);color:#e74c3c;border-color:rgba(231,76,60,.18);}
+
+/* ── LIVE / RUNNING TRIPS PANEL ── */
+.chip-live{background:rgba(253,149,0,.10);border-color:rgba(253,149,0,.30);color:#fd9500;animation:livePulse 2s ease-in-out infinite alternate;}
+.chip-live.active{background:rgba(253,149,0,.20);border-color:rgba(253,149,0,.55);color:#fdba57;}
+@keyframes livePulse{from{box-shadow:none}to{box-shadow:0 0 10px rgba(253,149,0,.30)}}
+
+.live-panel{
+  background:linear-gradient(135deg,rgba(253,149,0,.06),rgba(255,107,53,.04));
+  border:1px solid rgba(253,149,0,.22); border-radius:18px;
+  padding:20px 22px; margin-bottom:24px;
+  animation:shimIn .4s ease both;
+}
+.live-panel-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.live-panel-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;color:#fd9500;}
+.live-pulse-dot{width:10px;height:10px;border-radius:50%;background:#fd9500;animation:lPulse 1.2s ease-in-out infinite;}
+@keyframes lPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.65)}}
+.live-count-badge{background:rgba(253,149,0,.18);border:1px solid rgba(253,149,0,.35);color:#fdba57;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;}
+.live-meta-row{display:flex;align-items:center;gap:14px;}
+.live-upd{font-size:11.5px;color:var(--text3);}
+.live-refresh-btn{background:rgba(253,149,0,.12);border:1px solid rgba(253,149,0,.25);color:#fd9500;padding:6px 12px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
+.live-refresh-btn:hover{background:rgba(253,149,0,.24);}
+
+.live-cards{display:flex;flex-direction:column;gap:14px;}
+
+.live-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(253,149,0,.18);border-radius:14px;
+  padding:16px 18px;transition:box-shadow .2s;
+}
+.live-card:hover{box-shadow:0 8px 32px rgba(253,149,0,.12);}
+.live-card-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.live-route{font-size:14px;font-weight:800;flex:1;}
+.live-origin{color:var(--text);}
+.live-arr-ico{color:#fd9500;font-size:13px;margin:0 4px;}
+.live-dest{color:#fd9500;}
+.live-card-plate{background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.18);color:var(--neon);font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;}
+.live-card-pax{font-size:11.5px;color:var(--text2);margin-left:auto;white-space:nowrap;}
+
+.live-prog-wrap{position:relative;margin-bottom:10px;}
+.live-prog-bar{width:100%;height:10px;background:rgba(255,255,255,.07);border-radius:10px;overflow:visible;position:relative;}
+.live-prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#fd9500,#ff6b35);transition:width .8s ease;position:relative;}
+.live-prog-bus{position:absolute;top:50%;right:-10px;transform:translateY(-50%);font-size:16px;filter:drop-shadow(0 0 5px rgba(253,149,0,.7));}
+.live-prog-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);margin-top:4px;}
+.live-eta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+.live-eta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.live-eta-item b{color:#fd9500;font-size:12.5px;}
+
+.live-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.live-act{border:none;border-radius:9px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.live-act-call{background:rgba(46,204,113,.12);color:#2ecc71;border:1px solid rgba(46,204,113,.25);}
+.live-act-call:hover{background:rgba(46,204,113,.25);}
+.live-act-notify{background:rgba(0,168,255,.12);color:#5dc8ff;border:1px solid rgba(0,168,255,.25);}
+.live-act-notify:hover{background:rgba(0,168,255,.25);}
+.live-act-eta{background:rgba(243,156,18,.12);color:#f9c858;border:1px solid rgba(243,156,18,.25);}
+.live-act-eta:hover{background:rgba(243,156,18,.25);}
+.live-act-done{background:rgba(0,255,224,.10);color:var(--neon);border:1px solid rgba(0,255,224,.22);}
+.live-act-done:hover{background:rgba(0,255,224,.22);}
+.live-act-sos{background:rgba(231,76,60,.12);color:#e74c3c;border:1px solid rgba(231,76,60,.25);}
+.live-act-sos:hover{background:rgba(231,76,60,.25);}
+
+/* Notify modal */
+.notify-modal{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;}
+.notify-modal.open{display:flex;}
+.notify-box{background:linear-gradient(160deg,#0d1827,#080f1c);border:1px solid var(--border2);border-radius:20px;padding:28px;width:460px;max-width:94vw;box-shadow:0 30px 80px rgba(0,0,0,.7);animation:modalIn .28s cubic-bezier(.22,.61,.36,1);}
+.notify-title{font-size:15px;font-weight:800;margin-bottom:16px;color:var(--neon);}
+.notify-textarea{width:100%;min-height:90px;padding:12px 14px;background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:11px;color:var(--text);font-size:13px;font-family:"Segoe UI",Arial,sans-serif;outline:none;resize:vertical;transition:border .2s;}
+.notify-textarea:focus{border-color:rgba(0,255,224,.4);}
+.notify-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;}
+
+/* Live event log */
+.live-log{margin-top:12px;border-top:1px solid rgba(253,149,0,.14);padding-top:10px;max-height:120px;overflow-y:auto;min-height:44px;}
+.live-log::-webkit-scrollbar{width:3px;}.live-log::-webkit-scrollbar-thumb{background:rgba(255,149,0,.2);}
+.live-log-empty{font-size:11px;color:var(--text3);font-style:italic;}
+.live-log-entry{display:flex;align-items:flex-start;gap:7px;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.live-log-entry:last-child{border-bottom:none;}
+.live-log-time{color:var(--text3);white-space:nowrap;flex-shrink:0;font-size:10px;}
+.live-log-msg{color:var(--text2);}
+/* Card flash when updated */
+@keyframes cardFlash{0%{box-shadow:0 0 0 2px rgba(0,255,224,.7)}100%{box-shadow:none}}
+.live-card.updated{animation:cardFlash .8s ease-out;}
+
+/* SOS banner on card */
+.live-sos-banner{background:rgba(231,76,60,.13);border:1px solid rgba(231,76,60,.3);border-radius:9px;
+  padding:8px 12px;margin-bottom:10px;font-size:12px;font-weight:700;color:#e74c3c;
+  display:flex;align-items:center;gap:8px;animation:sosPulse 1.5s ease-in-out infinite;}
+@keyframes sosPulse{0%,100%{opacity:1}50%{opacity:.65}}
+
+/* Live modals info block */
+.live-modal-info{background:rgba(0,255,224,.05);border:1px solid rgba(0,255,224,.13);border-radius:11px;
+  padding:12px 14px;margin-bottom:16px;}
+.live-modal-info-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;
+  padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.live-modal-info-row:last-child{border-bottom:none;}
+.live-modal-lbl{color:var(--text3);}
+.live-modal-val{color:var(--neon);font-weight:700;}
+
+/* SOS severity grid */
+.sos-sev-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.sos-sev-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:11px;
+  padding:12px 10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;
+  transition:all .2s;color:var(--text2);}
+.sos-sev-btn.active-yellow{background:rgba(249,200,88,.15);border-color:rgba(249,200,88,.5);color:#f9c858;}
+.sos-sev-btn.active-orange{background:rgba(253,149,0,.18);border-color:rgba(253,149,0,.5);color:#fd9500;}
+.sos-sev-btn.active-red{background:rgba(231,76,60,.2);border-color:rgba(231,76,60,.55);color:#e74c3c;}
+.sos-sev-btn.active-black{background:rgba(180,30,30,.25);border-color:rgba(200,50,50,.65);color:#ff6b6b;}
+.sos-sev-btn:hover{opacity:.82;}
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/js/api.js"></script>
 </head>
 <body>
@@ -311,12 +471,12 @@ select.form-control option{background:#0d1827;}
     <a href="revenue.html">Doanh thu</a>
   </nav>
   <div class="hdr-actions">
-    <div class="hdr-badge">🔔<div class="badge-dot"></div></div>
+    <div class="hdr-badge"><div class="badge-dot"></div></div>
     <div class="op-chip">
       <div class="op-avatar">🏢</div>
-      <span class="op-name">Nhà xe</span>
+      <span class="op-name" id="opNameChip">Nhà xe</span>
     </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
   </div>
 </header>
 
@@ -325,18 +485,18 @@ select.form-control option{background:#0d1827;}
 
   <div class="pg-head">
     <div class="pg-head-left">
-      <h1>🚌 Quản lý Chuyến Xe</h1>
-      <p>Tạo, chỉnh sửa và theo dõi toàn bộ chuyến xe — TRIP table</p>
+      <h1>🚍 Quản lý Chuyến Xe</h1>
+      <p class="pg-sub" id="tripClock">Đang tải...</p>
     </div>
     <div class="pg-head-right">
-      <button class="btn btn-export" onclick="exportCSV()">📥 Xuất CSV</button>
-      <button class="btn btn-sec" onclick="loadTrips()">🔄 Làm mới</button>
+      <button class="btn btn-export" onclick="exportCSV()">Xuất CSV</button>
+      <button class="btn btn-sec" onclick="loadTrips()">Làm mới</button>
       <button class="btn btn-add" onclick="openAdd()">＋ Thêm chuyến xe</button>
     </div>
   </div>
 
   <!-- KPI -->
-  <div class="kpi-strip">
+  <div class="kpi-strip" style="grid-template-columns:repeat(5,1fr);">
     <div class="kpi-card" style="--k-bg:rgba(46,204,113,.05);--k-col:#2ecc71;">
       <div class="kpi-ico">🟢</div>
       <div class="kpi-val" id="kOpen">—</div>
@@ -357,6 +517,11 @@ select.form-control option{background:#0d1827;}
       <div class="kpi-val" id="kSeats">—</div>
       <div class="kpi-label">Ghế còn trống</div>
     </div>
+    <div class="kpi-card" style="--k-bg:rgba(253,149,0,.07);--k-col:#fd9500;" id="kRunningCard">
+      <div class="kpi-ico">🟠</div>
+      <div class="kpi-val" id="kRunning">—</div>
+      <div class="kpi-label">Đang chạy</div>
+    </div>
   </div>
 
   <!-- Toolbar -->
@@ -365,7 +530,7 @@ select.form-control option{background:#0d1827;}
       <span class="sico">🔍</span>
       <input class="inp-search" id="searchInp" placeholder="Tìm theo tuyến, biển số, loại xe..." oninput="applyFilters()">
     </div>
-    <select class="sel" id="statusFilter" onchange="applyFilters()">
+    <select class="sel" id="statusFilter" onchange="activeChip=this.value;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));applyFilters()">
       <option value="">Tất cả trạng thái</option>
       <option value="OPEN">OPEN</option>
       <option value="FULL">FULL</option>
@@ -387,10 +552,131 @@ select.form-control option{background:#0d1827;}
 
   <!-- Filter chips -->
   <div class="filter-chips">
-    <div class="chip active" onclick="setChip(this,'')">🚌 Tất cả</div>
+    <div class="chip active" onclick="setChip(this,'')">Tất cả</div>
     <div class="chip" onclick="setChip(this,'OPEN')">🟢 OPEN</div>
     <div class="chip" onclick="setChip(this,'FULL')">🟡 FULL</div>
     <div class="chip" onclick="setChip(this,'CANCELED')">🔴 CANCELED</div>
+    <div class="chip chip-live" id="chipRunning" onclick="setChip(this,'__RUNNING__')">🟠 Đang chạy</div>
+  </div>
+
+  <!-- LIVE RUNNING PANEL -->
+  <div class="live-panel" id="livePanel" style="display:none;">
+    <div class="live-panel-hdr">
+      <div class="live-panel-title">
+        <span class="live-pulse-dot"></span>
+        🟠 Chuyến đang chạy thời gian thực
+        <span class="live-count-badge" id="liveCountBadge">0 chuyến</span>
+      </div>
+      <div class="live-meta-row">
+        <span class="live-upd">Cập nhật: <span id="liveLastUpd">—</span></span>
+        <button class="live-refresh-btn" onclick="refreshLive()">🔄 Làm mới</button>
+      </div>
+    </div>
+    <div class="live-cards" id="liveCards"></div>
+  </div>
+
+  <!-- Contact Driver Modal -->
+  <div class="modal-overlay" id="liveCallModal">
+    <div class="modal sm">
+      <div class="modal-head">
+        <h3>📞 Liên hệ tài xế</h3>
+        <button class="modal-close" onclick="closeLiveModal('liveCallModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="live-modal-info" id="callTripInfo"></div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>📞 Hotline tài xế</label>
+          <div style="background:rgba(0,255,224,.07);border:1px solid rgba(0,255,224,.25);border-radius:10px;padding:12px 16px;font-size:18px;font-weight:900;color:var(--neon);letter-spacing:2px;text-align:center;">1900 6067</div>
+        </div>
+        <div class="form-group">
+          <label>📝 Ghi chú cuộc gọi (sẽ ghi vào lịch sử)</label>
+          <textarea class="form-control" id="callNote" rows="3" placeholder="VD: Thông báo xe trễ ~20 phút do kẹt xe tại Km120..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel-m" onclick="closeLiveModal('liveCallModal')">Đóng</button>
+        <button class="btn-save-m" onclick="submitLiveCall()">📝 Ghi nhận & Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETA Update Modal -->
+  <div class="modal-overlay" id="liveEtaModal">
+    <div class="modal sm">
+      <div class="modal-head">
+        <h3>⏱ Cập nhật ETA</h3>
+        <button class="modal-close" onclick="closeLiveModal('liveEtaModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="live-modal-info" id="etaTripInfo"></div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>🕐 Giờ đến mới</label>
+          <input class="form-control" type="datetime-local" id="etaNewTime">
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>📋 Lý do thay đổi</label>
+          <select class="form-control" id="etaReason">
+            <option value="Kẹt xe">🚗 Kẹt xe</option>
+            <option value="Sự cố kỹ thuật">🔧 Sự cố kỹ thuật</option>
+            <option value="Thời tiết xấu">🌧 Thời tiết xấu</option>
+            <option value="Dừng nghỉ bổ sung">☕ Dừng nghỉ bổ sung</option>
+            <option value="Khác">📝 Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>📝 Ghi chú thêm</label>
+          <textarea class="form-control" id="etaNote" rows="2" placeholder="Chi tiết thêm..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel-m" onclick="closeLiveModal('liveEtaModal')">Hủy</button>
+        <button class="btn-save-m" onclick="saveLiveEta()">💾 Cập nhật ETA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOS Emergency Modal -->
+  <div class="modal-overlay" id="liveSosModal">
+    <div class="modal sm">
+      <div class="modal-head">
+        <h3>🚨 Kích hoạt Khẩn cấp</h3>
+        <button class="modal-close" onclick="closeLiveModal('liveSosModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="live-modal-info" id="sosTripInfo"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Mức độ nghiêm trọng</div>
+        <div class="sos-sev-grid" id="sosSevGrid">
+          <div class="sos-sev-btn" data-sev="Trì hoãn" onclick="selectSev(this,'active-yellow')">🟡 Trì hoãn</div>
+          <div class="sos-sev-btn" data-sev="Sự cố kỹ thuật" onclick="selectSev(this,'active-orange')">🟠 Sự cố kỹ thuật</div>
+          <div class="sos-sev-btn" data-sev="Khẩn cấp y tế" onclick="selectSev(this,'active-red')">🔴 Khẩn cấp y tế</div>
+          <div class="sos-sev-btn" data-sev="Tai nạn" onclick="selectSev(this,'active-black')">⚫ Tai nạn</div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>📍 Vị trí hiện tại</label>
+          <input class="form-control" id="sosLocation" placeholder="VD: Km 135 QL1A, tỉnh Bình Định">
+        </div>
+        <div class="form-group">
+          <label>📝 Mô tả sự cố</label>
+          <textarea class="form-control" id="sosDesc" rows="3" placeholder="Mô tả chi tiết tình huống..."></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel-m" onclick="closeLiveModal('liveSosModal')">Hủy</button>
+        <button class="btn-danger-m" onclick="confirmSOS()">🚨 Kích hoạt Khẩn cấp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notify modal -->
+  <div class="notify-modal" id="notifyModal">
+    <div class="notify-box">
+      <div class="notify-title">📢 Gửi thông báo đến hành khách</div>
+      <textarea class="notify-textarea" id="notifyText" placeholder="Nhập nội dung thông báo...&#10;VD: Xe sẽ dừng nghỉ 15 phút tại trạm Hải Phòng lúc 14:30. Hành khách vui lòng không xuống quá 10 phút."></textarea>
+      <div class="notify-foot">
+        <button class="btn-cancel-m" onclick="closeNotifyModal()">Hủy</button>
+        <button class="btn-save-m" onclick="sendNotify()">📢 Gửi thông báo</button>
+      </div>
+    </div>
   </div>
 
   <!-- List -->
@@ -400,7 +686,7 @@ select.form-control option{background:#0d1827;}
   </div>
   <div id="tripList"></div>
   <div id="emptyState" class="empty" style="display:none;">
-    <div class="ei">🚌</div>
+    <div class="ei"></div>
     <h3>Không tìm thấy chuyến xe</h3>
     <p>Thử thay đổi bộ lọc hoặc thêm chuyến mới</p>
   </div>
@@ -587,9 +873,13 @@ document.addEventListener("click",e=>{
 });
 
 /* ── Utils ── */
-const API="/api/trips";
-const API_BUS="/api/buses";
-let allTrips=[],filteredTrips=[],allBuses=[],currentPage=1,pageSize=10,editingId=null;
+const _user      = JSON.parse(localStorage.getItem("user")||"{}");
+const _opId      = _user.operator_id || "";
+const API        = "/api/trips"       + (_opId ? "?operator_id="+_opId : "");
+const API_RUNNING= "/api/trips/running"+ (_opId ? "?operator_id="+_opId : "");
+const API_BUS    = "/api/buses"       + (_opId ? "?operator_id="+_opId : "");
+let allTrips=[],runningTrips=[],filteredTrips=[],allBuses=[],currentPage=1,pageSize=10,editingId=null;
+let activeChip = ""; // tracks which chip is currently selected
 
 function logout(){localStorage.clear();window.location.href="../auth/login.html";}
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
@@ -618,15 +908,47 @@ async function loadBuses(){
   }catch{}
 }
 
-/* ── Load Trips ── */
+/* ── Load upcoming/future trips (danh sách chính) ── */
 async function loadTrips(){
   try{
     const res=await fetch(API);
     allTrips=await res.json();
     if(!Array.isArray(allTrips))allTrips=allTrips.data||[];
-    updateKPI();applyFilters();
+    applyFilters();
     toast(`Đã tải ${allTrips.length} chuyến xe`,"info");
   }catch(e){toast("Không thể kết nối server","error");}
+}
+
+/* ── Load running trips từ endpoint riêng ── */
+async function loadRunningTrips(){
+  try{
+    const res=await fetch(API_RUNNING);
+    const data=await res.json();
+    runningTrips=Array.isArray(data)?data:[];
+    updateKPI();
+    renderLivePanel();
+    document.getElementById("liveLastUpd").textContent=new Date().toLocaleTimeString("vi-VN");
+  }catch(e){
+    runningTrips=[];
+    updateKPI();renderLivePanel();
+  }
+}
+
+/* ── Running trips detection ── */
+/* Parse DB datetime as LOCAL time (no UTC shift).
+   "2026-03-28 06:00:00" → "2026-03-28T06:00:00" keeps Vietnam time.
+   Handles trips that span midnight or run into the next day.           */
+function _parseDT(s){
+  if(!s)return NaN;
+  return new Date(String(s).replace(' ','T')).getTime();
+}
+function isRunning(t){
+  const now=Date.now();
+  const dep=_parseDT(t.departure_time);
+  if(isNaN(dep))return false;
+  // Default 40 h window if no arrival_time (covers overnight + next-day routes)
+  const arr=t.arrival_time?_parseDT(t.arrival_time):dep+144000000;
+  return now>=dep && now<arr && t.status!=="CANCELED";
 }
 
 /* ── KPI ── */
@@ -635,19 +957,63 @@ function updateKPI(){
   document.getElementById("kFull").textContent=allTrips.filter(t=>t.status==="FULL").length;
   document.getElementById("kCanceled").textContent=allTrips.filter(t=>t.status==="CANCELED").length;
   document.getElementById("kSeats").textContent=allTrips.filter(t=>t.status==="OPEN").reduce((s,t)=>s+(Number(t.available_seats)||0),0);
+  /* Running trips từ endpoint riêng — không dùng isRunning() filter */
+  const runCount=runningTrips.length;
+  document.getElementById("kRunning").textContent=runCount;
+  const rc=document.getElementById("kRunningCard");
+  if(rc) rc.style.border=runCount>0?"1px solid rgba(253,149,0,.40)":"";
 }
 
 /* ── Filters ── */
 function setChip(el,val){
   document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
   el.classList.add("active");
-  document.getElementById("statusFilter").value=val;
+  activeChip = val; // lưu chip đang active vào biến riêng
+
+  if(val==="__RUNNING__"){
+    document.getElementById("statusFilter").value=""; // xoá dropdown để không conflict
+    loadRunningTrips(); // fetch fresh từ server
+  } else {
+    document.getElementById("statusFilter").value=val;
+  }
   applyFilters();
 }
+
 function applyFilters(){
   const q=(document.getElementById("searchInp").value||"").toLowerCase();
-  const st=document.getElementById("statusFilter").value;
+  // Dùng activeChip cho __RUNNING__, còn lại dùng statusFilter dropdown
+  const st = activeChip === "__RUNNING__" ? "__RUNNING__" : document.getElementById("statusFilter").value;
   const sort=document.getElementById("sortFilter").value;
+
+  const tripListWrap = document.getElementById("tripList");
+  const paginWrap    = document.getElementById("paginationWrap");
+  const emptyState   = document.getElementById("emptyState");
+
+  if(st==="__RUNNING__"){
+    // Chế độ Đang chạy: ẩn danh sách thường, hiện livePanel
+    if(tripListWrap) tripListWrap.style.display="none";
+    if(paginWrap)    paginWrap.innerHTML="";
+    if(emptyState)   emptyState.style.display="none";
+    // Lọc theo search nếu có
+    const baseRunning = runningTrips.filter(t=>{
+      if(!q) return true;
+      const route=((t.origin||"")+" "+(t.destination||"")).toLowerCase();
+      const plate=(t.plate_number||"").toLowerCase();
+      const btype=(t.bus_type||"").toLowerCase();
+      return route.includes(q) || plate.includes(q) || btype.includes(q);
+    });
+    document.getElementById("totalCount").textContent = baseRunning.length;
+    document.getElementById("showCount").textContent  = baseRunning.length;
+    // Render livePanel ngay với data hiện có (sẽ cập nhật khi fetch xong)
+    renderLivePanel();
+    return;
+  }
+
+  // Chế độ bình thường — hiện lại tripList, ẩn livePanel
+  if(tripListWrap) tripListWrap.style.display="";
+  const lp=document.getElementById("livePanel");
+  if(lp) lp.style.display="none";
+
   filteredTrips=allTrips.filter(t=>{
     const route=((t.origin||"")+" "+(t.destination||"")).toLowerCase();
     const plate=(t.plate_number||"").toLowerCase();
@@ -738,6 +1104,7 @@ function renderTrips(){
         <button class="act-btn act-view" onclick="viewTrip(${t.trip_id})">👁 Xem</button>
         <button class="act-btn act-edit" onclick="openEdit(${t.trip_id})">✏️ Sửa</button>
         <button class="act-btn act-price" onclick="openEditPrice(${t.trip_id})">💰 Sửa giá</button>
+        <button class="act-btn act-map" onclick="openMapModal(${t.trip_id})">🗺️ Bản đồ</button>
         ${t.status!=="CANCELED"
           ?`<button class="act-btn act-cancel" onclick="confirmAction(${t.trip_id},'cancel')">⛔ Hủy chuyến</button>`
           :`<button class="act-btn act-reopen" onclick="confirmAction(${t.trip_id},'reopen')">✅ Mở lại</button>`}
@@ -762,6 +1129,324 @@ function renderPagination(){
   pg.innerHTML=html;
 }
 function goPage(p){const t=Math.ceil(filteredTrips.length/pageSize);if(p<1||p>t)return;currentPage=p;renderTrips();}
+
+/* ═══════════════════════════════════════════
+   LIVE RUNNING TRIPS PANEL
+═══════════════════════════════════════════ */
+let _liveInterval=null;
+let _notifyTripId=null;
+let _liveCallTripId=null, _liveEtaTripId=null, _liveSosTripId=null;
+let _liveLog={};        // tripId → [{time,icon,msg}]
+let _sosAlerts=new Set(); // tripIds with active SOS
+let _selectedSev=null;
+
+/* ── Persist live state to localStorage ── */
+function _saveLivePersist(){
+  try{
+    localStorage.setItem("sbus_live_log",JSON.stringify(_liveLog));
+    localStorage.setItem("sbus_sos_alerts",JSON.stringify([..._sosAlerts]));
+  }catch{}
+}
+function _loadLivePersist(){
+  try{
+    const log=localStorage.getItem("sbus_live_log");
+    if(log)_liveLog=JSON.parse(log);
+    const sos=localStorage.getItem("sbus_sos_alerts");
+    if(sos)_sosAlerts=new Set(JSON.parse(sos));
+  }catch{}
+}
+_loadLivePersist();
+
+/* Helper: search runningTrips first, then allTrips */
+function findTrip(id){
+  return runningTrips.find(t=>t.trip_id==id)||allTrips.find(t=>t.trip_id==id)||null;
+}
+
+function addLiveLog(tripId,icon,msg){
+  if(!_liveLog[tripId])_liveLog[tripId]=[];
+  const time=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+  _liveLog[tripId].unshift({time,icon,msg});
+  if(_liveLog[tripId].length>12)_liveLog[tripId].pop();
+  _saveLivePersist();
+}
+
+function buildTripInfoHtml(t){
+  if(!t)return"";
+  const pax=Number(t.total_seats||0)-Number(t.available_seats||0);
+  return[
+    ["🗺️ Tuyến",`${t.origin||"?"}  →  ${t.destination||"?"}`],
+    ["🪪 Biển số",t.plate_number||"—"],
+    ["👥 Hành khách",`${pax}/${t.total_seats||0}`],
+    ["🏁 ETA",t.arrival_time?new Date(t.arrival_time).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"}):"—"],
+  ].map(([l,v])=>`<div class="live-modal-info-row"><span class="live-modal-lbl">${l}</span><span class="live-modal-val">${v}</span></div>`).join("");
+}
+
+function closeLiveModal(id){const el=document.getElementById(id);if(!el)return;el.style.display="";el.classList.remove("open");}
+function selectSev(el,cls){
+  document.querySelectorAll(".sos-sev-btn").forEach(b=>{b.className="sos-sev-btn";});
+  el.classList.add(cls);_selectedSev=el.dataset.sev;
+}
+
+function fmtDur(ms){
+  if(ms<=0)return"Đã đến";
+  const h=Math.floor(ms/3600000);
+  const m=Math.floor((ms%3600000)/60000);
+  if(h>0)return h+"g "+m+"p";
+  return m+" phút";
+}
+
+function renderLivePanel(){
+  /* Dùng runningTrips từ /api/trips/running — đã query đúng bằng SQL timestamp */
+  const running=runningTrips;
+  const panel=document.getElementById("livePanel");
+  const badge=document.getElementById("liveCountBadge");
+  const cards=document.getElementById("liveCards");
+  const chipR=document.getElementById("chipRunning");
+  const now=Date.now();
+
+  badge.textContent=running.length+" chuyến";
+  if(chipR) chipR.textContent="🟠 Đang chạy ("+running.length+")";
+
+  if(running.length===0){
+    panel.style.display="none";
+    return;
+  }
+  panel.style.display="block";
+  document.getElementById("liveLastUpd").textContent=new Date().toLocaleTimeString("vi-VN");
+
+  cards.innerHTML=running.map(t=>{
+    const dep=_parseDT(t.departure_time);
+    const arr=t.arrival_time?_parseDT(t.arrival_time):dep+144000000;
+    const totalMs=arr-dep;
+    const elapsedMs=now-dep;
+    const pct=Math.min(100,Math.round(elapsedMs/totalMs*100));
+    const remainMs=arr-now;
+    const etaStr=new Date(arr).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+    const etaDateStr=new Date(arr).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"});
+    const pax=Number(t.total_seats||0)-Number(t.available_seats||0);
+    const total=Number(t.total_seats||0);
+    const remainStr=fmtDur(remainMs);
+    const sosBanner=_sosAlerts.has(t.trip_id)?`<div class="live-sos-banner">🚨 CẢNH BÁO KHẨN CẤP đang hoạt động · Hotline: 113 / 1900 6067</div>`:"";
+    return`<div class="live-card" id="liveCard_${t.trip_id}">
+      ${sosBanner}
+      <div class="live-card-head">
+        <div class="live-route">
+          <span class="live-origin">📍 ${t.origin||"?"}</span>
+          <span class="live-arr-ico">→</span>
+          <span class="live-dest">${t.destination||"?"}</span>
+        </div>
+        ${t.plate_number?`<span class="live-card-plate">${t.plate_number}</span>`:""}
+        <span class="live-card-pax">👥 ${pax}/${total} hành khách</span>
+      </div>
+      <div class="live-prog-wrap">
+        <div class="live-prog-bar">
+          <div class="live-prog-fill" style="width:${pct}%">
+            <span class="live-prog-bus">🚌</span>
+          </div>
+        </div>
+        <div class="live-prog-labels">
+          <span>📍 ${t.origin||"?"}</span>
+          <span style="color:#fd9500;font-weight:700;">${pct}% hành trình</span>
+          <span>🏁 ${t.destination||"?"}</span>
+        </div>
+      </div>
+      <div class="live-eta-row">
+        <div class="live-eta-item">⏱ Còn lại: <b>${remainStr}</b></div>
+        <div class="live-eta-item">🏁 ETA: <b>${etaStr} · ${etaDateStr}</b></div>
+        <div class="live-eta-item">🚌 Loại xe: <b>${t.bus_type||"—"}</b></div>
+        <div class="live-eta-item">📏 <b>${t.distance_km||"—"} km</b></div>
+      </div>
+      <div class="live-actions">
+        <button class="live-act live-act-call" onclick="liveCall(${t.trip_id})">📞 Liên hệ tài xế</button>
+        <button class="live-act live-act-notify" onclick="openNotifyModal(${t.trip_id})">📢 Thông báo</button>
+        <button class="live-act live-act-eta" onclick="liveUpdateEta(${t.trip_id})">⏱ Cập nhật ETA</button>
+        <button class="live-act live-act-done" onclick="liveDone(${t.trip_id})">✅ Đến nơi</button>
+        <button class="live-act live-act-sos" onclick="liveSOS(${t.trip_id})">🚨 Khẩn cấp</button>
+      </div>
+      <div class="live-log" id="liveLog_${t.trip_id}">${buildLogHtml(t.trip_id)}</div>
+    </div>`;
+  }).join("");
+}
+
+function refreshLive(){
+  renderLivePanel();
+  toast("Đã cập nhật dữ liệu live","info");
+}
+
+/* ── Contact Driver ── */
+function liveCall(id){
+  try{
+    _liveCallTripId=id;
+    const t=findTrip(id);
+    document.getElementById("callTripInfo").innerHTML=buildTripInfoHtml(t);
+    document.getElementById("callNote").value="";
+    document.getElementById("liveCallModal").style.display="flex";
+  }catch(e){toast("Lỗi mở modal liên hệ: "+e.message,"error");}
+}
+function submitLiveCall(){
+  const note=document.getElementById("callNote").value.trim();
+  if(note)addLiveLog(_liveCallTripId,"📞",note);
+  else addLiveLog(_liveCallTripId,"📞","Đã liên hệ tài xế");
+  closeLiveModal("liveCallModal");
+  refreshLogSection(_liveCallTripId);
+  toast("📝 Đã ghi nhận cuộc gọi","success");
+}
+
+/* ── Notify (existing, keep working) ── */
+function openNotifyModal(id){
+  _notifyTripId=id;
+  document.getElementById("notifyText").value="";
+  document.getElementById("notifyModal").classList.add("open");
+}
+function closeNotifyModal(){
+  document.getElementById("notifyModal").classList.remove("open");
+  _notifyTripId=null;
+}
+function sendNotify(){
+  const msg=document.getElementById("notifyText").value.trim();
+  if(!msg){toast("Vui lòng nhập nội dung thông báo","error");return;}
+  addLiveLog(_notifyTripId,"📢",`Thông báo: ${msg.slice(0,60)}${msg.length>60?"…":""}`);
+  closeNotifyModal();
+  refreshLogSection(_notifyTripId);
+  toast("✅ Đã gửi thông báo đến hành khách chuyến #"+_notifyTripId,"success");
+}
+
+/* ── Update ETA ── */
+function liveUpdateEta(id){
+  try{
+    _liveEtaTripId=id;
+    const t=findTrip(id);
+    document.getElementById("etaTripInfo").innerHTML=buildTripInfoHtml(t);
+    if(t&&t.arrival_time){
+      const d=new Date(t.arrival_time);
+      const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+      document.getElementById("etaNewTime").value=local;
+    }else{
+      document.getElementById("etaNewTime").value="";
+    }
+    document.getElementById("etaNote").value="";
+    document.getElementById("liveEtaModal").style.display="flex";
+  }catch(e){toast("Lỗi mở modal ETA: "+e.message,"error");}
+}
+async function saveLiveEta(){
+  const newTime=document.getElementById("etaNewTime").value;
+  if(!newTime){toast("Vui lòng chọn giờ đến mới","error");return;}
+  const reason=document.getElementById("etaReason").value;
+  const note=document.getElementById("etaNote").value.trim();
+  const newArr=new Date(newTime).toISOString().replace("T"," ").slice(0,19);
+  try{
+    const res=await fetch(`/api/trips/${_liveEtaTripId}`,{
+      method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({arrival_time:newArr})
+    });
+    if(res.ok){
+      // Update local runningTrips
+      const t=runningTrips.find(x=>x.trip_id==_liveEtaTripId);
+      if(t)t.arrival_time=newTime;
+    }
+  }catch{}
+  const timeStr=new Date(newTime).toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+  const logMsg=`ETA mới: ${timeStr} · ${reason}${note?" — "+note:""}`;
+  addLiveLog(_liveEtaTripId,"⏱",logMsg);
+  closeLiveModal("liveEtaModal");
+  renderLivePanel();
+  toast(`⏱ Đã cập nhật ETA → ${timeStr} (${reason})`,"success");
+}
+
+/* ── Arrived ── */
+function liveDone(id){
+  const t=findTrip(id);
+  const tripLabel=t?`${t.origin||""}→${t.destination||""} (${t.plate_number||""})`: `#${id}`;
+  document.getElementById("confirmIco").textContent="✅";
+  document.getElementById("confirmTitle").textContent="Xác nhận chuyến đã đến nơi?";
+  document.getElementById("confirmMsg").innerHTML=`Chuyến <strong>${tripLabel}</strong> sẽ được đánh dấu <strong>COMPLETED</strong>.`;
+  document.getElementById("confirmBtn").textContent="✅ Đến nơi";
+  document.getElementById("confirmBtn").onclick=async()=>{
+    closeModal("confirmModal");
+    const card=document.getElementById("liveCard_"+id);
+    if(card)card.style.opacity=".5";
+    try{
+      const res=await fetch(`/api/trips/status/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"COMPLETED"})});
+      if(res.ok){
+        addLiveLog(id,"✅","Chuyến đã đến nơi — đánh dấu COMPLETED");
+        runningTrips=runningTrips.filter(x=>x.trip_id!=id);
+        _sosAlerts.delete(id);_saveLivePersist();
+        toast("✅ Chuyến #"+id+" đã đến nơi thành công!","success");
+        await Promise.all([loadTrips(),loadRunningTrips()]);
+      }else{
+        if(card)card.style.opacity="";
+        toast("Lỗi cập nhật trạng thái — thử lại","error");
+      }
+    }catch{
+      addLiveLog(id,"✅","Chuyến đã đến nơi (offline)");
+      runningTrips=runningTrips.filter(x=>x.trip_id!=id);
+      _sosAlerts.delete(id);_saveLivePersist();
+      updateKPI();renderLivePanel();renderTrips();
+      toast("✅ Đã đánh dấu đến nơi (offline)","success");
+    }
+  };
+  document.getElementById("confirmModal").style.display="flex";
+}
+
+/* ── SOS ── */
+function liveSOS(id){
+  try{
+    _liveSosTripId=id;_selectedSev=null;
+    document.querySelectorAll(".sos-sev-btn").forEach(b=>b.className="sos-sev-btn");
+    const t=findTrip(id);
+    document.getElementById("sosTripInfo").innerHTML=buildTripInfoHtml(t);
+    document.getElementById("sosLocation").value="";
+    document.getElementById("sosDesc").value="";
+    document.getElementById("liveSosModal").style.display="flex";
+  }catch(e){toast("Lỗi mở modal SOS: "+e.message,"error");}
+}
+async function confirmSOS(){
+  if(!_selectedSev){toast("Vui lòng chọn mức độ nghiêm trọng","error");return;}
+  const loc=document.getElementById("sosLocation").value.trim();
+  const desc=document.getElementById("sosDesc").value.trim();
+  if(!desc){toast("Vui lòng mô tả sự cố","error");return;}
+  // Log to support API
+  try{
+    await fetch("/api/support",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        subject:`🚨 SOS [${_selectedSev}] chuyến #${_liveSosTripId}`,
+        message:`Mức độ: ${_selectedSev}\nVị trí: ${loc||"Không xác định"}\nMô tả: ${desc}`,
+        user_id:null
+      })
+    });
+  }catch{}
+  _sosAlerts.add(_liveSosTripId);
+  _saveLivePersist();
+  const logMsg=`🚨 ${_selectedSev}${loc?" tại "+loc:""} — ${desc.slice(0,80)}`;
+  addLiveLog(_liveSosTripId,"🚨",logMsg);
+  closeLiveModal("liveSosModal");
+  renderLivePanel();
+  toast(`🚨 CẢNH BÁO KHẨN CẤP đã được kích hoạt cho chuyến #${_liveSosTripId} · Liên hệ: 113 / 1900 6067`,"error");
+}
+
+/* ── Refresh log section in existing card without full re-render ── */
+function refreshLogSection(tripId){
+  const logEl=document.getElementById("liveLog_"+tripId);
+  if(!logEl)return;
+  logEl.innerHTML=buildLogHtml(tripId);
+  // Flash the card to signal update
+  const card=document.getElementById("liveCard_"+tripId);
+  if(card){card.classList.remove("updated");void card.offsetWidth;card.classList.add("updated");}
+}
+function buildLogHtml(tripId){
+  const log=_liveLog[tripId]||[];
+  const badge=log.length?`<span style="background:rgba(253,149,0,.18);color:#fd9500;border:1px solid rgba(253,149,0,.3);border-radius:20px;font-size:10px;font-weight:800;padding:1px 7px;margin-left:6px;">${log.length}</span>`:"";
+  const hdr=`<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;">📋 Nhật ký sự kiện${badge}</div>`;
+  if(!log.length)return hdr+`<div class="live-log-empty">Chưa có sự kiện nào trong ca này</div>`;
+  return hdr+log.map(e=>`<div class="live-log-entry"><span class="live-log-time">${e.time}</span><span>${e.icon}</span><span class="live-log-msg">${e.msg}</span></div>`).join("");
+}
+
+/* ── Fetch running trips từ server mỗi 30s (real-time panel) ── */
+function startLiveInterval(){
+  if(_liveInterval)clearInterval(_liveInterval);
+  _liveInterval=setInterval(()=>loadRunningTrips(), 30000);
+}
 
 /* ── View ── */
 function viewTrip(id){
@@ -899,14 +1584,142 @@ document.getElementById("f_bus").addEventListener("change",function(){
 });
 
 /* ── Close modals ── */
-function closeModal(id){document.getElementById(id).classList.remove("open");}
+function closeModal(id){const el=document.getElementById(id);if(!el)return;el.style.display="";el.classList.remove("open");}
 document.querySelectorAll(".modal-overlay").forEach(ov=>{
-  ov.addEventListener("click",e=>{if(e.target===ov)ov.classList.remove("open");});
+  ov.addEventListener("click",e=>{if(e.target===ov){ov.style.display="";ov.classList.remove("open");}});
 });
 
+/* ── Operator name & live clock ── */
+(function(){
+  const nm=localStorage.getItem("operator_name")||"Nhà xe";
+  const chip=document.getElementById("opNameChip");
+  if(chip)chip.textContent=nm;
+  function tick(){
+    const d=new Date();const pad=n=>String(n).padStart(2,"0");
+    const el=document.getElementById("tripClock");
+    if(el)el.textContent="📅 "+d.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"})+" · ⏰ "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  tick();setInterval(tick,1000);
+})();
+
 /* ── Init ── */
-loadBuses();
-loadTrips();
+loadTrips();loadBuses();loadRunningTrips();startLiveInterval();
+</script>
+
+<!-- ═══ OPERATOR MAP MODAL ═══ -->
+<div id="opMapModal">
+  <div class="op-map-box">
+    <div class="op-map-head">
+      <div class="op-map-title">🗺️ <span id="opMapRouteTitle">Bản đồ tuyến đường</span></div>
+      <button class="op-map-close" onclick="closeMapModal()">✕</button>
+    </div>
+    <div class="op-map-body">
+      <div id="opMapLeaflet"></div>
+    </div>
+    <div class="op-map-foot">
+      <span class="op-map-route-lbl" id="opMapRouteLbl">—</span>
+      <span class="op-map-dist" id="opMapDistLbl"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ OPERATOR LEAFLET MAP ═══ */
+const OP_CITY_COORDS = {
+  'Hà Nội': [21.0285, 105.8542], 'Hồ Chí Minh': [10.8231, 106.6297],
+  'Đà Nẵng': [16.0544, 108.2022], 'Hải Phòng': [20.8449, 106.6881],
+  'Cần Thơ': [10.0452, 105.7469], 'Huế': [16.4637, 107.5909],
+  'Nha Trang': [12.2388, 109.1967], 'Đà Lạt': [11.9404, 108.4583],
+  'Quy Nhơn': [13.7829, 109.2196], 'Vũng Tàu': [10.4113, 107.1362],
+  'Buôn Ma Thuột': [12.6797, 108.0502], 'Vinh': [18.6734, 105.6922],
+  'Thái Nguyên': [21.5943, 105.8482], 'Nam Định': [20.4200, 106.1683],
+  'Thanh Hóa': [19.8079, 105.7764], 'Biên Hòa': [10.9575, 106.8426],
+  'Đồng Nai': [11.0686, 107.1676], 'Long An': [10.5354, 106.4104],
+  'Phan Thiết': [10.9280, 108.1007], 'Rạch Giá': [10.0125, 105.0809],
+  'Pleiku': [13.9830, 108.0000], 'Quảng Ngãi': [15.1214, 108.8036],
+  'Hội An': [15.8801, 108.3380], 'Tuy Hòa': [13.0955, 109.3184],
+  'Thủ Dầu Một': [10.9804, 106.6519], 'Mỹ Tho': [10.3600, 106.3600]
+};
+
+let _opMap = null;
+
+function _findCityCoords(name) {
+  if (!name) return null;
+  const key = Object.keys(OP_CITY_COORDS).find(k => name.includes(k) || k.includes(name));
+  return key ? OP_CITY_COORDS[key] : null;
+}
+
+function _haversineKm(c1, c2) {
+  const R = 6371;
+  const dLat = (c2[0] - c1[0]) * Math.PI / 180;
+  const dLon = (c2[1] - c1[1]) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(c1[0]*Math.PI/180)*Math.cos(c2[0]*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function openMapModal(tripId) {
+  const t = allTrips.find(x => x.trip_id == tripId);
+  if (!t) return;
+
+  const c1 = _findCityCoords(t.origin);
+  const c2 = _findCityCoords(t.destination);
+
+  document.getElementById('opMapRouteTitle').textContent = `${t.origin} → ${t.destination}`;
+  document.getElementById('opMapRouteLbl').textContent   = `${t.origin} → ${t.destination}`;
+
+  const modal = document.getElementById('opMapModal');
+  modal.classList.add('open');
+
+  // Slight delay so modal is visible before Leaflet initialises
+  setTimeout(() => {
+    if (_opMap) { _opMap.remove(); _opMap = null; }
+
+    if (!c1 || !c2) {
+      document.getElementById('opMapLeaflet').innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.45);font-size:14px;">Không tìm thấy toạ độ cho tuyến này</div>';
+      document.getElementById('opMapDistLbl').textContent = '';
+      return;
+    }
+
+    const mid = [(c1[0]+c2[0])/2, (c1[1]+c2[1])/2];
+    _opMap = L.map('opMapLeaflet', { center: mid, zoom: 6, zoomControl: true, attributionControl: false });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 19
+    }).addTo(_opMap);
+
+    try { _opMap.fitBounds(L.latLngBounds([c1, c2]).pad(0.22)); } catch(e) {}
+
+    // Dashed background line
+    L.polyline([c1, c2], { color: 'rgba(0,255,224,0.18)', weight: 3, dashArray: '10 7' }).addTo(_opMap);
+
+    // Main route line
+    L.polyline([c1, c2], { color: '#00a8ff', weight: 5, lineCap: 'round' }).addTo(_opMap);
+
+    // Origin marker (green)
+    const mkStart = L.divIcon({ html: `<div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(46,204,113,.8))">🟢</div>`, iconSize: [26,26], iconAnchor: [13,13], className: '' });
+    L.marker(c1, { icon: mkStart }).addTo(_opMap)
+      .bindTooltip(`<b>Điểm xuất phát</b><br>${t.origin}`, { direction: 'right', className: 'op-lf-tip', permanent: false });
+
+    // Destination marker (red)
+    const mkEnd = L.divIcon({ html: `<div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(231,76,60,.8))">🔴</div>`, iconSize: [26,26], iconAnchor: [13,13], className: '' });
+    L.marker(c2, { icon: mkEnd }).addTo(_opMap)
+      .bindTooltip(`<b>Điểm đến</b><br>${t.destination}`, { direction: 'left', className: 'op-lf-tip', permanent: false });
+
+    // Distance
+    const distKm = t.distance_km || _haversineKm(c1, c2);
+    document.getElementById('opMapDistLbl').textContent = `Khoảng cách: ~${distKm} km`;
+  }, 120);
+}
+
+function closeMapModal() {
+  document.getElementById('opMapModal').classList.remove('open');
+  if (_opMap) { _opMap.remove(); _opMap = null; }
+}
+
+document.getElementById('opMapModal').addEventListener('click', function(e) {
+  if (e.target === this) closeMapModal();
+});
 </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 console.log("✅ userController loaded");
 
 const db = require("../config/db");
+const loyaltyService = require("../services/loyaltyService");
 
 /* ================= GET ALL USERS ================= */
 exports.getUsers = async (req, res) => {
@@ -98,5 +99,29 @@ exports.deleteUser = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Delete failed" });
+    }
+};
+
+/* ================= GET USER LOYALTY ================= */
+exports.getUserLoyalty = async (req, res) => {
+    try {
+        const data = await loyaltyService.getUserLoyalty(db, req.params.id);
+        res.json(data);
+    } catch (err) {
+        console.error("GET LOYALTY ERROR:", err);
+        res.status(500).json({ message: "Lỗi lấy dữ liệu loyalty" });
+    }
+};
+
+/* ================= REDEEM LOYALTY POINTS ================= */
+exports.redeemPoints = async (req, res) => {
+    try {
+        const { points } = req.body;
+        if (!points || points <= 0) return res.status(400).json({ message: "Số điểm không hợp lệ" });
+        const result = await loyaltyService.redeemPoints(db, req.params.id, points);
+        res.json({ message: "Đổi điểm thành công", ...result });
+    } catch (err) {
+        console.error("REDEEM POINTS ERROR:", err);
+        res.status(400).json({ message: err.message || "Lỗi đổi điểm" });
     }
 };
