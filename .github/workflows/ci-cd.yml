@@ -1,0 +1,72 @@
+name: SmartBusAI CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ─── GIAI ĐOẠN 1: CI – Kiểm tra code ───────────────────────────────────────
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --omit=dev
+
+      - name: Check syntax (node --check)
+        run: |
+          node --check server/server.js
+          node --check server/config/db.js
+          echo "✅ Syntax OK"
+
+      - name: Verify entry point exists
+        run: |
+          test -f server/server.js && echo "✅ server.js found"
+          test -f package.json && echo "✅ package.json found"
+
+  # ─── GIAI ĐOẠN 2: CD – Deploy (chỉ chạy khi push lên main) ─────────────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --omit=dev
+
+      - name: Confirm deploy ready
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  SmartBusAI – Deploy Pipeline"
+          echo "  Branch : ${{ github.ref_name }}"
+          echo "  Commit : ${{ github.sha }}"
+          echo "  Author : ${{ github.actor }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Build successful – ready for deployment"
+          echo ""
+          echo "Manual steps on server:"
+          echo "  1. git pull origin main"
+          echo "  2. npm ci --omit=dev"
+          echo "  3. pm2 restart smartbusai"
