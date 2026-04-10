@@ -23,7 +23,12 @@ exports.getUsers = async (req, res) => {
 /* ================= GET USER BY ID ================= */
 exports.getUserById = async (req, res) => {
     try {
-        const [result] = await db.query("SELECT * FROM users WHERE user_id=?", [req.params.id]);
+        const [result] = await db.query(
+            `SELECT user_id, username, full_name, email, phone, gender, birth_date,
+                    province, district, address_detail, role, status, created_at
+             FROM users WHERE user_id=?`,
+            [req.params.id]
+        );
         if (result.length === 0) return res.status(404).json({ message: "User not found" });
         res.json(result[0]);
     } catch (err) {
@@ -44,7 +49,7 @@ exports.createUser = async (req, res) => {
         const [result] = await db.query(sql, [
             username || full_name?.replace(/\s+/g, "").toLowerCase(),
             full_name, email,
-            password || "123456",
+            await require("bcryptjs").hash(password || "123456", 10),
             phone || null,
             province || null,
             district || null,
@@ -68,12 +73,13 @@ exports.updateUser = async (req, res) => {
 
         let sql, params;
         if (password) {
+            const hashed = await require("bcryptjs").hash(password, 10);
             sql = `UPDATE users SET full_name=?,email=?,phone=?,gender=?,birth_date=?,
                    province=?,district=?,address_detail=?,role=IFNULL(?,role),
                    status=IFNULL(?,status), password_hash=? WHERE user_id=?`;
             params = [full_name||null, email||null, phone||null, gender||null, birth_date||null,
                       province||null, district||null, address_detail||null,
-                      role||null, status||null, password, userId];
+                      role||null, status||null, hashed, userId];
         } else {
             sql = `UPDATE users SET full_name=?,email=?,phone=?,gender=?,birth_date=?,
                    province=?,district=?,address_detail=?,role=IFNULL(?,role),

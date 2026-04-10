@@ -867,12 +867,14 @@ function viewUser(id){
     <span class="bdg ${roleClass}">${roleLabel}</span>
     <span class="bdg ${isActive?"bdg-active":"bdg-blocked"}">${isActive?"✅ Hoạt động":"🚫 Bị khóa"}</span>`;
 
+  const genderMap={"MALE":"Nam","FEMALE":"Nữ","OTHER":"Khác"};
   const items=[
-    ["🆔 ID",`#${u.user_id}`],["📱 Điện thoại",u.phone||"—"],
-    ["👤 Giới tính",u.gender||"—"],["🎂 Ngày sinh",fmtDate(u.birth_date)],
-    ["Tỉnh/TP",u.province||"—"],["🏙 Quận/Huyện",u.district||"—"],
+    ["🆔 ID",`#${u.user_id}`],["👤 Username",u.username||"—"],
+    ["📱 Điện thoại",u.phone||"—"],["⚧ Giới tính",genderMap[u.gender]||"—"],
+    ["🎂 Ngày sinh",fmtDate(u.birth_date)],["Tỉnh/TP",u.province||"—"],
+    ["🏙 Quận/Huyện",u.district||"—"],
     ["🏠 Địa chỉ",u.address_detail||"—","full"],
-    ["📅 Ngày tạo",fmtDate(u.created_at)],["🕐 Cập nhật",fmtDate(u.updated_at)],
+    ["📅 Ngày tạo",fmtDate(u.created_at)],
   ];
   document.getElementById("vGrid").innerHTML=items.map(([l,v,cls])=>
     `<div class="view-item ${cls||""}"><div class="view-item-label">${l}</div><div class="view-item-val">${v}</div></div>`

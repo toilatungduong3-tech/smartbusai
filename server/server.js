@@ -41,7 +41,7 @@ const setupSwagger = require('./swagger');
 setupSwagger(app);
 
 /* ================= STATIC FRONTEND ================= */
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../public"), { maxAge: 0, etag: false }));
 
 /* ================= ROUTES ================= */
 const authRoutes     = require("./routes/authRoutes");

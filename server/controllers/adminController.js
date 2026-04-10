@@ -439,20 +439,19 @@ exports.getNotifications = async (req, res) => {
             link:    'users.html'
         }));
 
-        /* ── 2. Nhà xe mới đăng ký (7 ngày) ── */
+        /* ── 2. Nhà xe mới đăng ký (10 gần nhất) ── */
         const [newOps] = await db.query(`
-            SELECT operator_id, name, email, status, created_at
+            SELECT operator_id, name, email, status
             FROM bus_operator
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            ORDER BY created_at DESC LIMIT 10
+            ORDER BY operator_id DESC LIMIT 10
         `);
         newOps.forEach(o => notifs.push({
             id:      'op_' + o.operator_id,
             type:    'new_operator',
             icon:    '🚌',
-            title:   'Nhà xe mới đăng ký',
+            title:   'Nhà xe đăng ký',
             message: o.name + ' — ' + (o.status === 'ACTIVE' ? 'Đang hoạt động' : 'Tạm dừng'),
-            time:    o.created_at,
+            time:    null,
             link:    'operators.html'
         }));
 
