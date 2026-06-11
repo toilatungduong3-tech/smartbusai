@@ -8,14 +8,16 @@ exports.getOperators = async (req, res) => {
         const sql = `
             SELECT
                 o.*,
-                COUNT(DISTINCT b.bus_id)   AS bus_count,
-                COUNT(DISTINCT t.trip_id)  AS trip_count,
-                IFNULL(AVG(rv.rating), 0)  AS avg_rating,
-                COUNT(DISTINCT rv.review_id) AS review_count
+                COUNT(DISTINCT b.bus_id)      AS bus_count,
+                COUNT(DISTINCT t.trip_id)     AS trip_count,
+                IFNULL(AVG(rv.rating), 0)     AS avg_rating,
+                COUNT(DISTINCT rv.review_id)  AS review_count,
+                COUNT(DISTINCT orv.review_id) AS op_review_count
             FROM bus_operator o
-            LEFT JOIN bus b  ON b.operator_id = o.operator_id
-            LEFT JOIN trip t ON t.bus_id = b.bus_id
-            LEFT JOIN review rv ON rv.trip_id = t.trip_id
+            LEFT JOIN bus b    ON b.operator_id = o.operator_id
+            LEFT JOIN trip t   ON t.bus_id = b.bus_id
+            LEFT JOIN review rv  ON rv.trip_id = t.trip_id
+            LEFT JOIN operator_review orv ON orv.operator_id = o.operator_id
             GROUP BY o.operator_id
             ORDER BY o.name ASC
         `;
@@ -50,10 +52,15 @@ exports.createOperator = async (req, res) => {
 exports.updateOperator = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, address, phone, email, status } = req.body;
+        const { name, address, phone, email, status, license_number, established_year } = req.body;
         await db.query(
-            "UPDATE bus_operator SET name=?,address=?,phone=?,email=?,status=IFNULL(?,status) WHERE operator_id=?",
-            [name, address, phone, email, status || null, id]
+            `UPDATE bus_operator SET
+                name=?, address=?, phone=?, email=?,
+                status=IFNULL(?,status),
+                license_number=IFNULL(?,license_number),
+                established_year=IFNULL(?,established_year)
+             WHERE operator_id=?`,
+            [name, address, phone, email, status||null, license_number||null, established_year||null, id]
         );
         res.json({ message: "Operator updated" });
     } catch (err) {

@@ -10,8 +10,27 @@ const { apiLimiter, loginLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 const server = http.createServer(app);
+const ALLOWED_ORIGINS = [
+    'http://localhost:2704',
+    'http://127.0.0.1:2704',
+    /^http:\/\/192\.168\.\d+\.\d+:2704$/,   // LAN
+    /^https?:\/\/.*\.smartbusai\.vn$/        // production domain
+];
+
+const corsOptions = {
+    origin: (origin, cb) => {
+        // allow same-origin / SSR / curl (no Origin header)
+        if (!origin) return cb(null, true);
+        const ok = ALLOWED_ORIGINS.some(o =>
+            typeof o === 'string' ? o === origin : o.test(origin)
+        );
+        cb(ok ? null : new Error('CORS blocked'), ok);
+    },
+    credentials: true
+};
+
 const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
+    cors: { origin: ALLOWED_ORIGINS, methods: ['GET', 'POST'], credentials: true }
 });
 
 /* ================= DATABASE ================= */
@@ -26,9 +45,17 @@ app.use(helmet({
 }));
 
 /* ================= MIDDLEWARE ================= */
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/* ================= DEBUG REQUEST LOG ================= */
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        console.log(`📥 ${req.method} ${req.url}`);
+        next();
+    });
+}
 
 /* ================= RATE LIMITING ================= */
 // Giới hạn 200 request/phút cho toàn bộ API
@@ -41,6 +68,15 @@ const setupSwagger = require('./swagger');
 setupSwagger(app);
 
 /* ================= STATIC FRONTEND ================= */
+// Không cache HTML — browser luôn fetch bản mới nhất khi F5
+app.use((req, res, next) => {
+    if (req.path.endsWith(".html") || req.path === "/") {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Expires", "0");
+    }
+    next();
+});
 app.use(express.static(path.join(__dirname, "../public"), { maxAge: 0, etag: false }));
 
 /* ================= ROUTES ================= */
@@ -83,12 +119,6 @@ app.get("/api/db-test", async (req, res) => {
 /* ================= ROOT ================= */
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../public/pages/auth/login.html"));
-});
-
-/* ================= DEBUG REQUEST LOG ================= */
-app.use((req, res, next) => {
-    console.log(`📥 ${req.method} ${req.url}`);
-    next();
 });
 
 /* ================= 404 HANDLER ================= */

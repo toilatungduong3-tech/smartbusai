@@ -28,8 +28,7 @@ const baseSelect = `
     JOIN bus b ON t.bus_id = b.bus_id
     JOIN bus_operator o ON b.operator_id = o.operator_id
     LEFT JOIN booking bk ON bk.trip_id = t.trip_id
-                         AND bk.status IN ('PAID','PENDING')
-                         AND DATE(bk.booking_time) = DATE(t.departure_time)
+                         AND bk.status IN ('PAID','PENDING','CONFIRMED')
     LEFT JOIN booking_detail bd ON bd.booking_id = bk.booking_id
     LEFT JOIN review rv ON rv.trip_id = t.trip_id
 `;

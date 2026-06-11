@@ -24,7 +24,7 @@
   "vipSurcharge": 20,
   "seatHold": 10,
   "autoFull": true,
-  "canceledBook": false,
+  "canceledBook": true,
   "aiMaxRec": 10,
   "aiMinScore": 0.6,
   "aiRefresh": 6,

@@ -300,6 +300,20 @@ select.form-control option{background:#0d1827;}
 /* Pulse animation on selected seat */
 @keyframes seatPulse{0%,100%{box-shadow:0 0 18px rgba(0,255,224,.3)}50%{box-shadow:0 0 28px rgba(0,255,224,.55)}}
 .seat.selected{animation:seatPulse 1.8s ease-in-out infinite;}
+/* Pending change */
+.seat.pending{outline:2px dashed #f9c858;outline-offset:1px;}
+.seat.pending .seat-type-tag{color:#f9c858 !important;}
+.seat-ico{font-size:15px;line-height:1;}
+/* Occupancy / type bars */
+.occ-bar-wrap{margin-top:14px;}
+.occ-bar-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.occ-bar-track{display:flex;height:8px;border-radius:6px;overflow:hidden;gap:2px;}
+.occ-bar-sublabel{display:flex;justify-content:space-between;margin-top:5px;}
+.occ-bar-sublabel span{font-size:10px;font-weight:700;}
+.occ-fill-bar{height:8px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:4px;}
+.occ-fill-inner{height:100%;border-radius:6px;transition:width .6s,background .4s;}
+/* Pending badge */
+.pending-badge{display:none;padding:10px 14px;border-radius:10px;background:rgba(249,200,88,.08);border:1px solid rgba(249,200,88,.25);margin-bottom:10px;font-size:12.5px;font-weight:700;color:#f9c858;text-align:center;}
 /* Left panel — sticky but no overflow clip (would cut off <select> dropdown) */
 .left-panel{position:sticky;top:80px;align-self:start;}
 </style>
@@ -393,6 +407,24 @@ select.form-control option{background:#0d1827;}
           <div class="stat-row"><span class="stat-lbl" style="color:#e74c3c;">🔴 Đã đặt (chuyến)</span><span class="stat-val" id="stBooked" style="color:#e74c3c;">—</span></div>
           <div class="stat-row"><span class="stat-lbl" style="color:#2ecc71;">🟢 Còn trống</span><span class="stat-val" id="stFree" style="color:#2ecc71;">—</span></div>
           <div class="stat-row"><span class="stat-lbl">📈 Lấp ghế</span><span class="stat-val" id="stRate" style="color:var(--amber);">—</span></div>
+          <!-- Type bar -->
+          <div class="occ-bar-wrap">
+            <div class="occ-bar-label">Tỉ lệ ghế</div>
+            <div class="occ-bar-track">
+              <div id="seatBarVip" style="background:linear-gradient(90deg,#fd79a8,#e84393);transition:width .5s;border-radius:4px 0 0 4px;height:8px;width:35%;"></div>
+              <div id="seatBarNormal" style="background:linear-gradient(90deg,#5dc8ff,#00a8ff);transition:width .5s;border-radius:0 4px 4px 0;flex:1;height:8px;"></div>
+            </div>
+            <div class="occ-bar-sublabel">
+              <span style="color:#fd79a8;" id="seatBarVipLbl">VIP 35%</span>
+              <span style="color:#5dc8ff;" id="seatBarNormalLbl">Thường 65%</span>
+            </div>
+          </div>
+          <!-- Occupancy bar (hiện khi chọn chuyến) -->
+          <div id="occupancyBarWrap" style="display:none;margin-top:10px;">
+            <div class="occ-bar-label">Lấp đầy chuyến</div>
+            <div class="occ-fill-bar"><div id="occupancyBarFill" class="occ-fill-inner" style="width:0%;"></div></div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;text-align:right;" id="occupancyBarLbl">0 / 0 ghế đã đặt</div>
+          </div>
         </div>
       </div>
 
@@ -414,6 +446,7 @@ select.form-control option{background:#0d1827;}
         <div class="panel-head"><h3>⚡ Thao tác</h3></div>
         <div class="panel-body">
           <div class="action-stack">
+            <div class="pending-badge" id="pendingBadge">⏳ <span id="pendingCount">0</span> thay đổi chờ lưu</div>
             <button class="btn btn-save-seats btn-full" onclick="saveChanges()">💾 Lưu thay đổi loại ghế</button>
             <button class="btn btn-toggle-all btn-full" onclick="toggleAllVip()">👑 Đổi tất cả → VIP</button>
             <button class="btn btn-toggle-all btn-full" onclick="toggleAllNormal()">🪑 Đổi tất cả → Thường</button>
@@ -430,7 +463,10 @@ select.form-control option{background:#0d1827;}
 
         <!-- Bus route bar -->
         <div class="bus-header-bar">
-          <span class="bh-route" id="shellRoute">Chọn xe để xem sơ đồ ghế</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="bh-route" id="shellRoute">Chọn xe để xem sơ đồ ghế</span>
+            <span id="shellBusType" style="display:none;font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(0,255,224,.10);border:1px solid rgba(0,255,224,.22);color:#00ffe0;font-weight:700;"></span>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;">
             <span class="bh-departure" id="shellDep"></span>
             <span class="bh-status" id="shellStatus" style="display:none;">OPEN</span>
@@ -594,6 +630,18 @@ let pendingChanges={}; // seatId -> new type
 function logout(){localStorage.clear();window.location.href="../auth/login.html";}
 function fmtDT(s){if(!s)return"—";try{const d=new Date(s);return d.toLocaleDateString("vi-VN")+` ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`;}catch{return s;}}
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
+function countUp(el,to,dur=400){
+  if(!el)return;
+  const from=parseInt(el.textContent)||0;
+  if(from===to){el.textContent=to;return;}
+  const s=performance.now();
+  const run=now=>{
+    const p=Math.min((now-s)/dur,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*e);
+    if(p<1)requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+}
 
 function toast(msg,type="info"){
   const w=document.getElementById("toastWrap");
@@ -788,7 +836,9 @@ function renderShell(){
     document.getElementById("shellDep").textContent="";
     return;
   }
-  document.getElementById("shellRoute").textContent=`${currentBus.plate_number} — ${currentBus.bus_type||""}`;
+  document.getElementById("shellRoute").textContent=currentBus.plate_number||"";
+  const btEl=document.getElementById("shellBusType");
+  if(btEl){btEl.style.display="inline-flex";btEl.textContent=currentBus.bus_type||"";}
   document.getElementById("seatCountBar").style.display="flex";
   renderSeatMap();
 }
@@ -814,6 +864,20 @@ function renderSeatMap(){
   html+=`</div>`;
   body.innerHTML=html;
   updateCountBar();
+  // Stagger animate seats in
+  setTimeout(()=>{
+    body.querySelectorAll('.seat').forEach((el,i)=>{
+      el.style.opacity='0';el.style.transform='scale(0.7)';
+      el.style.transition='opacity .18s,transform .18s';
+      setTimeout(()=>{el.style.opacity='';el.style.transform='';},i*8);
+    });
+  },0);
+  // Pending badge
+  const pc=Object.keys(pendingChanges).length;
+  const pb=document.getElementById("pendingBadge");
+  if(pb){pb.style.display=pc>0?"block":"none";}
+  const pcEl=document.getElementById("pendingCount");
+  if(pcEl)pcEl.textContent=pc;
 }
 
 function buildSeatHtml(s){
@@ -821,12 +885,15 @@ function buildSeatHtml(s){
   const isBooked=bookedSeatIds.has(s.seat_id);
   const isVip=curType==="VIP";
   const isSelected=s.seat_id===selectedSeatId;
-  let cls=`seat ${isVip?"vip":"normal"}${isBooked?" booked":""}${isSelected?" selected":""}`;
+  const isPending=s.seat_id in pendingChanges;
+  let cls=`seat ${isVip?"vip":"normal"}${isBooked?" booked":""}${isSelected?" selected":""}${isPending?" pending":""}`;
   const ico=isBooked?"✖":isSelected?"✓":(isVip?"👑":"🪑");
-  return`<div class="${cls}" onclick="onSeatClick(${s.seat_id})" title="${isBooked?'Đã đặt':''}">
-    <div class="seat-tooltip">${s.seat_number} · ${curType}${isBooked?" · Đã đặt":""}</div>
-    <span style="font-size:14px;">${ico}</span>
+  const typeLabel=isVip?"VIP":"STD";
+  return`<div class="${cls}" onclick="onSeatClick(${s.seat_id})" data-seat-id="${s.seat_id}">
+    <div class="seat-tooltip">${s.seat_number} · ${curType}${isBooked?" · Đã đặt":""}${isPending?" · Chờ lưu":""}</div>
+    <div class="seat-ico">${ico}</div>
     <div class="seat-num">${s.seat_number}</div>
+    <div class="seat-type-tag">${typeLabel}${isPending?" *":""}</div>
   </div>`;
 }
 
@@ -836,11 +903,11 @@ function updateCountBar(){
   const normal=total-vip;
   const booked=bookedSeatIds.size;
   const free=total-booked;
-  document.getElementById("cbTotal").textContent=total;
-  document.getElementById("cbVip").textContent=vip;
-  document.getElementById("cbNormal").textContent=normal;
-  document.getElementById("cbBooked").textContent=booked;
-  document.getElementById("cbFree").textContent=free;
+  countUp(document.getElementById("cbTotal"),total);
+  countUp(document.getElementById("cbVip"),vip);
+  countUp(document.getElementById("cbNormal"),normal);
+  countUp(document.getElementById("cbBooked"),booked);
+  countUp(document.getElementById("cbFree"),free);
 }
 
 /* ── Stats panel ── */
@@ -850,12 +917,30 @@ function updateStats(){
   const booked=bookedSeatIds.size;
   const free=total-booked;
   const rate=total?Math.round(booked/total*100):0;
-  document.getElementById("stTotal").textContent=total;
-  document.getElementById("stVip").textContent=vip;
-  document.getElementById("stNormal").textContent=total-vip;
+  countUp(document.getElementById("stTotal"),total);
+  countUp(document.getElementById("stVip"),vip);
+  countUp(document.getElementById("stNormal"),total-vip);
   document.getElementById("stBooked").textContent=currentTrip?booked:"—";
   document.getElementById("stFree").textContent=currentTrip?free:"—";
   document.getElementById("stRate").textContent=currentTrip?rate+"%":"— (chọn chuyến)";
+  // Type bar
+  const vipPct=total?Math.round(vip/total*100):0;
+  const vb=document.getElementById("seatBarVip");
+  const vl=document.getElementById("seatBarVipLbl");
+  const nl=document.getElementById("seatBarNormalLbl");
+  if(vb)vb.style.width=vipPct+"%";
+  if(vl)vl.textContent="VIP "+vipPct+"%";
+  if(nl)nl.textContent="Thường "+(100-vipPct)+"%";
+  // Occupancy bar
+  const obWrap=document.getElementById("occupancyBarWrap");
+  const obFill=document.getElementById("occupancyBarFill");
+  const obLbl=document.getElementById("occupancyBarLbl");
+  if(currentTrip&&obWrap){
+    obWrap.style.display="block";
+    const occ=total?Math.round(booked/total*100):0;
+    if(obFill){obFill.style.width=occ+"%";obFill.style.background=occ>80?"linear-gradient(90deg,#e74c3c,#ff7675)":occ>50?"linear-gradient(90deg,#f39c12,#fdcb6e)":"linear-gradient(90deg,#2ecc71,#00ffe0)";}
+    if(obLbl)obLbl.textContent=booked+" / "+total+" ghế đã đặt ("+occ+"%)";
+  }else if(obWrap)obWrap.style.display="none";
 }
 
 /* ── Seat click ── */
@@ -883,13 +968,16 @@ function openSeatDetail(seat,booked){
   document.getElementById("sdhBus").textContent=currentBus?.plate_number||"—";
   document.getElementById("sdhStatus").textContent=booked?"🔴 Đã có booking":"🟢 Còn trống";
   document.getElementById("sdhStatus").style.color=booked?"#e74c3c":"#2ecc71";
+  const isPendingDetail=seat.seat_id in pendingChanges;
   document.getElementById("seatDetailGrid").innerHTML=[
     ["🆔 Seat ID","#"+seat.seat_id],
     ["🔢 Số ghế",seat.seat_number],
-    ["🏷️ Loại ghế",curType],
-    ["🚌 Bus ID","#"+seat.bus_id],
-    ["Trạng thái",booked?"ĐÃ ĐẶT":"TRỐNG"],
-    ["💰 Loại vé",isVip?"VIP (BOOKING_DETAIL.price cao hơn)":"Thường"],
+    ["🏷️ Loại ghế",curType+(isPendingDetail?" ⏳ chờ lưu":"")],
+    ["🚌 Xe",currentBus?.plate_number||"—"],
+    ["📋 Loại xe",currentBus?.bus_type||"—"],
+    ["🎫 Trạng thái",booked?"🔴 Đã có booking":"🟢 Còn trống"],
+    ["⏳ Thay đổi chờ",isPendingDetail?"Có (chưa lưu)":"Không"],
+    ["🔖 Chuyến",currentTrip?`${currentTrip.origin||""}→${currentTrip.destination||""}`:"—"],
   ].map(([l,v])=>`<div class="dg-item"><div class="dg-label">${l}</div><div class="dg-val">${v}</div></div>`).join("");
   // Disable type change if booked
   document.getElementById("setVipBtn").disabled=booked;

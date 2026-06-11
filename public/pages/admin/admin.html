@@ -48,92 +48,218 @@ body{color:#fff;background:transparent;overflow-x:hidden;animation:fadeIn .38s e
 @keyframes twinkle{0%{opacity:.1;transform:scale(.8)}100%{opacity:.9;transform:scale(1.3)}}
 body.leaving{opacity:0;transition:opacity .22s;}
 
-/* ── HEADER ── */
+/* ════ HEADER — UNIFIED ADMIN NAV ════ */
 .hdr{
   position:sticky;top:0;z-index:3000;height:var(--hh);
-  display:flex;align-items:center;padding:0 32px;gap:16px;
-  background:rgba(2,5,12,0.88);
+  display:flex;align-items:center;padding:0 28px;gap:0;
+  background:rgba(2,5,12,0.92);
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-bottom:1px solid rgba(0,255,224,.12);
-  box-shadow:0 4px 28px rgba(0,0,0,.55),0 1px 0 rgba(0,255,224,.06);
+  border-bottom:1px solid rgba(0,255,224,.10);
+  box-shadow:0 4px 28px rgba(0,0,0,.60),0 1px 0 rgba(0,255,224,.06);
 }
+/* Logo */
 .hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
-.hdr-logo-icon{
-  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+.hdr-logo-ic{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
   background:linear-gradient(135deg,#00ffe0,#00a8ff);
   display:flex;align-items:center;justify-content:center;
-  font-size:18px;box-shadow:0 0 16px rgba(0,255,224,.38);}
-.hdr-logo-text{
-  font-size:16px;font-weight:800;letter-spacing:.3px;
+  font-size:17px;box-shadow:0 0 14px rgba(0,255,224,.38);}
+.hdr-logo-tx{
+  font-size:15.5px;font-weight:800;letter-spacing:.3px;
   background:linear-gradient(90deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
 .hdr-logo-badge{
-  font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;
-  background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.16));
-  border:1px solid rgba(0,255,224,.38);
-  color:#00ffe0;letter-spacing:.8px;
-  box-shadow:0 0 10px rgba(0,255,224,.20);
-  text-transform:uppercase;
+  font-size:8px;font-weight:900;padding:3px 7px;border-radius:5px;
+  background:linear-gradient(135deg,rgba(0,255,224,.22),rgba(0,168,255,.14));
+  border:1px solid rgba(0,255,224,.35);color:#00ffe0;letter-spacing:.8px;
+  box-shadow:0 0 10px rgba(0,255,224,.18);text-transform:uppercase;
 }
-.hdr-sep{width:1px;height:26px;background:var(--border);flex-shrink:0;}
-.hdr-space{flex:1;}
-
-/* 4 nav links */
-.hdr-nav{display:flex;align-items:center;gap:4px;}
+.hdr-sep{width:1px;height:24px;background:rgba(255,255,255,.10);flex-shrink:0;margin:0 20px;}
+/* Nav links */
+.hdr-nav{display:flex;align-items:center;gap:2px;}
 .hdr-nav a{
-  display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;
-  font-size:12.5px;font-weight:700;color:rgba(255,255,255,.50);
-  text-decoration:none;border:1px solid transparent;transition:all .22s;white-space:nowrap;
-  letter-spacing:.1px;
+  display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;
+  font-size:12.5px;font-weight:700;color:rgba(255,255,255,.48);
+  text-decoration:none;border:1px solid transparent;transition:all .20s;white-space:nowrap;
 }
-.hdr-nav a:hover{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.12);}
-.hdr-nav a.active{background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.28);color:#00ffe0;box-shadow:0 0 12px rgba(0,255,224,.10);}
-.nav-icon{font-size:13px;}
+.hdr-nav a:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.10);}
+.hdr-nav a.active{
+  background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.26);
+  color:#00ffe0;box-shadow:0 0 10px rgba(0,255,224,.08);
+}
+.hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#00ffe0;margin-left:4px;box-shadow:0 0 5px #00ffe0;}
 .nbadge{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:15px;height:15px;border-radius:8px;padding:0 3px;
-  font-size:9px;font-weight:800;
-  background:rgba(231,76,60,.22);border:1px solid rgba(231,76,60,.40);color:#e74c3c;
+  min-width:14px;height:14px;border-radius:7px;padding:0 3px;
+  font-size:8.5px;font-weight:900;
+  background:rgba(231,76,60,.22);border:1px solid rgba(231,76,60,.38);color:#e74c3c;
   margin-left:2px;}
-
-.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.notif-btn{
-  position:relative;width:34px;height:34px;border-radius:9px;cursor:pointer;
-  background:var(--glass);border:1px solid var(--border);
+/* Right section */
+.hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto;}
+/* Clock */
+.hdr-clock{
+  font-size:12px;font-weight:800;color:rgba(0,255,224,.60);
+  font-family:monospace;letter-spacing:1.2px;
+  background:rgba(0,255,224,.05);border:1px solid rgba(0,255,224,.12);
+  border-radius:8px;padding:5px 10px;flex-shrink:0;min-width:76px;text-align:center;
+}
+/* Tool buttons (cmd, etc.) */
+.hdr-tool-btn{
+  height:32px;padding:0 10px;border-radius:8px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.55);font-size:12.5px;
+  display:flex;align-items:center;gap:5px;transition:all .2s;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+.hdr-tool-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18);}
+.hdr-tool-key{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.28);font-family:monospace;letter-spacing:.3px;}
+/* AI button */
+.hdr-ai-btn{
+  height:32px;padding:0 12px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,rgba(124,92,231,.16),rgba(0,168,255,.08));
+  border:1px solid rgba(124,92,231,.30);
+  color:#a29bfe;font-size:12.5px;font-weight:800;
+  display:flex;align-items:center;gap:5px;transition:all .20s;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+.hdr-ai-btn:hover{background:linear-gradient(135deg,rgba(124,92,231,.28),rgba(0,168,255,.15));border-color:rgba(162,155,254,.50);color:#d0c8ff;transform:translateY(-1px);}
+.hdr-ai-btn.ai-active{background:linear-gradient(135deg,rgba(124,92,231,.32),rgba(0,168,255,.20));border-color:#a29bfe;color:#fff;box-shadow:0 0 16px rgba(124,92,231,.28);}
+/* Notification bell */
+.hdr-badge{
+  position:relative;width:32px;height:32px;border-radius:8px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
   display:flex;align-items:center;justify-content:center;
   transition:background .2s;font-size:14px;}
-.notif-btn:hover{background:var(--glass2);}
-.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;
-  border-radius:50%;background:#e74c3c;border:2px solid #020508;}
-.btn-export{
-  display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:11px;
-  border:none;cursor:pointer;font-size:12px;font-weight:800;
-  font-family:"Segoe UI",Arial,sans-serif;letter-spacing:.2px;
-  background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#030d18;
-  box-shadow:0 0 16px rgba(0,255,224,.32),0 4px 14px rgba(0,0,0,.25);
-  transition:all .22s;
+.hdr-badge:hover{background:rgba(255,255,255,.12);}
+.badge-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#e74c3c;border:2px solid #020508;}
+.notif-count{
+  position:absolute;top:-4px;right:-4px;
+  min-width:16px;height:16px;border-radius:8px;padding:0 3px;
+  background:#e74c3c;color:#fff;font-size:9px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #020508;
 }
-.btn-export:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(0,255,224,.55),0 6px 20px rgba(0,0,0,.30);}
+/* Admin chip */
 .admin-chip{
-  display:flex;align-items:center;gap:8px;padding:6px 12px;
-  border-radius:11px;
-  background:linear-gradient(145deg,rgba(8,18,44,.88),rgba(4,12,30,.84));
-  border:1px solid rgba(255,255,255,.10);
-  box-shadow:0 2px 10px rgba(0,0,0,.20);
+  display:flex;align-items:center;gap:7px;padding:5px 11px 5px 5px;
+  border-radius:20px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
 }
-.admin-avt{
-  width:28px;height:28px;border-radius:50%;
-  background:linear-gradient(135deg,#00ffe0,#7c5ce7);
-  display:flex;align-items:center;justify-content:center;font-size:13px;
-  box-shadow:0 0 10px rgba(0,255,224,.35);
+.admin-avatar{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#7c5ce7,#00ffe0);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  box-shadow:0 0 8px rgba(0,255,224,.30);flex-shrink:0;
 }
-.admin-label{font-size:12px;font-weight:800;color:#c8e4f0;letter-spacing:.1px;}
+.admin-chip-info{display:flex;flex-direction:column;gap:0;min-width:0;}
+.admin-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;}
+.admin-role-lbl{font-size:9px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.3px;margin-top:0;}
+/* Logout */
 .btn-logout{
-  display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:10px;
-  border:1px solid rgba(231,76,60,.28);cursor:pointer;font-size:12px;
+  display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;
+  border:1px solid rgba(231,76,60,.26);cursor:pointer;font-size:12px;
   font-weight:700;font-family:"Segoe UI",Arial,sans-serif;
-  background:rgba(231,76,60,.10);color:#e74c3c;transition:all .22s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
+  background:rgba(231,76,60,.09);color:#e74c3c;transition:all .20s;}
+.btn-logout:hover{background:rgba(231,76,60,.24);color:#fff;border-color:rgba(231,76,60,.50);}
+
+/* ════ COMMAND PALETTE ════ */
+.cmd-overlay{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:none;align-items:flex-start;justify-content:center;padding-top:11vh;
+}
+.cmd-overlay.open{display:flex;animation:cmdFadeIn .18s ease;}
+@keyframes cmdFadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.cmd-box{
+  width:min(580px,92vw);
+  background:linear-gradient(160deg,rgba(6,12,28,.98),rgba(4,9,22,.98));
+  border:1px solid rgba(0,255,224,.20);border-radius:16px;overflow:hidden;
+  box-shadow:0 28px 80px rgba(0,0,0,.80),0 0 50px rgba(0,255,224,.08);
+}
+.cmd-search-wrap{
+  display:flex;align-items:center;gap:10px;padding:13px 16px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.cmd-search-icon{color:rgba(255,255,255,.32);flex-shrink:0;}
+.cmd-input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:14.5px;font-weight:600;color:#fff;
+  font-family:"Segoe UI",Arial,sans-serif;caret-color:#00ffe0;
+}
+.cmd-input::placeholder{color:rgba(255,255,255,.25);}
+.cmd-kbd{font-size:10px;font-family:monospace;color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:5px;padding:2px 6px;flex-shrink:0;}
+.cmd-body{max-height:400px;overflow-y:auto;padding:6px 8px;}
+.cmd-body::-webkit-scrollbar{width:4px;}
+.cmd-body::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:3px;}
+.cmd-section-label{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:1.2px;text-transform:uppercase;padding:8px 10px 4px;}
+.cmd-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:10px;cursor:pointer;transition:background .13s;
+}
+.cmd-item:hover,.cmd-item.sel{background:rgba(0,255,224,.08);}
+.cmd-item-icon{font-size:15px;width:26px;text-align:center;flex-shrink:0;}
+.cmd-item-text{font-size:13px;font-weight:600;color:rgba(255,255,255,.78);}
+.cmd-item:hover .cmd-item-text,.cmd-item.sel .cmd-item-text{color:#00ffe0;}
+.cmd-item-sub{font-size:11px;color:rgba(255,255,255,.28);margin-top:1px;}
+.cmd-item-shortcut{font-size:10px;font-family:monospace;color:rgba(255,255,255,.22);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:4px;padding:2px 6px;margin-left:auto;flex-shrink:0;}
+.cmd-footer{padding:8px 14px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:14px;font-size:10px;color:rgba(255,255,255,.28);}
+.cmd-footer span{display:flex;align-items:center;gap:4px;}
+.cmd-footer kbd{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:1px 5px;font-family:monospace;}
+.cmd-empty{text-align:center;padding:28px;color:rgba(255,255,255,.28);font-size:13px;}
+
+/* ════ AI ASSISTANT PANEL ════ */
+.ai-panel{
+  position:fixed;top:calc(var(--hh) + 8px);right:16px;width:310px;
+  background:linear-gradient(160deg,rgba(7,12,28,.98),rgba(4,9,22,.98));
+  border:1px solid rgba(124,92,231,.26);border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 36px rgba(124,92,231,.10);
+  display:none;flex-direction:column;overflow:hidden;z-index:2800;
+  animation:aiPanelIn .24s cubic-bezier(.22,.61,.36,1);
+}
+.ai-panel.open{display:flex;}
+@keyframes aiPanelIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:none}}
+.ai-panel-header{
+  padding:12px 14px 11px;
+  background:linear-gradient(90deg,rgba(124,92,231,.12),transparent);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.ai-panel-title{font-size:13px;font-weight:800;color:#a29bfe;display:flex;align-items:center;gap:7px;}
+.ai-panel-close{width:24px;height:24px;border-radius:6px;cursor:pointer;border:none;background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.ai-panel-close:hover{background:rgba(231,76,60,.18);color:#e74c3c;}
+.ai-panel-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;}
+.ai-chat-history{display:flex;flex-direction:column;gap:7px;max-height:200px;overflow-y:auto;padding:0 1px;}
+.ai-chat-history::-webkit-scrollbar{width:3px;}
+.ai-chat-history::-webkit-scrollbar-thumb{background:rgba(124,92,231,.22);border-radius:3px;}
+.ai-msg{font-size:12px;line-height:1.55;padding:8px 11px;border-radius:10px;}
+.ai-msg.user{background:rgba(124,92,231,.18);color:#d0c8ff;border-bottom-right-radius:3px;text-align:right;}
+.ai-msg.ai-bot{background:rgba(0,255,224,.06);color:rgba(255,255,255,.78);border-bottom-left-radius:3px;}
+.ai-msg.ai-bot b{color:#00ffe0;}
+.ai-typing{display:flex;gap:4px;align-items:center;padding:8px 11px;background:rgba(0,255,224,.05);border-radius:10px;}
+.ai-typing span{width:5px;height:5px;border-radius:50%;background:#a29bfe;animation:aiTyping 1.1s ease-in-out infinite;}
+.ai-typing span:nth-child(2){animation-delay:.2s;}
+.ai-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes aiTyping{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+.ai-quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.ai-q-btn{
+  padding:8px 9px;border-radius:9px;cursor:pointer;
+  background:rgba(124,92,231,.09);border:1px solid rgba(124,92,231,.20);
+  color:rgba(162,155,254,.80);font-size:11px;font-weight:700;
+  font-family:"Segoe UI",Arial,sans-serif;transition:all .16s;text-align:left;
+  display:flex;align-items:flex-start;gap:5px;line-height:1.3;
+}
+.ai-q-btn:hover{background:rgba(124,92,231,.20);border-color:rgba(162,155,254,.40);color:#d0c8ff;}
+.ai-insight{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;cursor:default;transition:border .2s;}
+.ai-insight:hover{border-color:rgba(162,155,254,.24);}
+.ai-insight-label{font-size:9.5px;font-weight:800;color:rgba(162,155,254,.60);letter-spacing:.6px;text-transform:uppercase;margin-bottom:3px;}
+.ai-insight-text{font-size:12px;color:rgba(255,255,255,.72);line-height:1.5;}
+.ai-chat-input-wrap{padding:9px 12px 12px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:7px;align-items:center;flex-shrink:0;}
+.ai-chat-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:9px;padding:7px 10px;color:#fff;font-size:12.5px;font-family:"Segoe UI",Arial,sans-serif;outline:none;transition:border .2s;}
+.ai-chat-input::placeholder{color:rgba(255,255,255,.28);}
+.ai-chat-input:focus{border-color:rgba(162,155,254,.38);box-shadow:0 0 0 2px rgba(162,155,254,.06);}
+.ai-send-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;transition:transform .18s,box-shadow .18s;box-shadow:0 3px 10px rgba(108,92,231,.30);flex-shrink:0;}
+.ai-send-btn:hover{transform:scale(1.08);box-shadow:0 5px 16px rgba(108,92,231,.50);}
 
 /* ── CONTENT ── */
 .content{padding:28px 32px;max-width:1640px;margin:0 auto;}
@@ -389,6 +515,10 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
 
 /* Modal animation */
 @keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ── Dashboard time-range filter buttons ── */
+.dash-filter-btn{padding:7px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Segoe UI",Arial,sans-serif;}
+.dash-filter-btn.active,.dash-filter-btn:hover{background:rgba(0,255,224,.15);border-color:rgba(0,255,224,.35);color:#00ffe0;box-shadow:0 0 12px rgba(0,255,224,.15);}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -404,31 +534,80 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
 <!-- ═══ HEADER ═══ -->
 <header class="hdr">
   <a class="hdr-logo" href="admin.html">
-    <div class="hdr-logo-icon">🚌</div>
-    <div class="hdr-logo-text">SmartBusAI</div>
+    <div class="hdr-logo-ic">🚌</div>
+    <div class="hdr-logo-tx">SmartBusAI</div>
     <div class="hdr-logo-badge">ADMIN</div>
   </a>
   <div class="hdr-sep"></div>
-  <nav class="hdr-nav">
+  <div class="hdr-clock" id="hdrClock">00:00:00</div>
+  <nav class="hdr-nav" style="margin-left:auto;">
     <a href="admin.html" class="active">📊 Dashboard</a>
     <a href="users.html">👥 Người dùng</a>
     <a href="operators.html">🚌 Nhà xe</a>
     <a href="support.html">🆘 Hỗ trợ</a>
     <a href="settings.html">⚙️ Cài đặt</a>
   </nav>
-  <div class="hdr-right">
-    <div class="notif-btn" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo" style="position:relative;">
+  <div class="hdr-actions" style="margin-left:16px;">
+    <button class="hdr-tool-btn" id="cmdPaletteBtn" title="Command Palette (Ctrl+K)">🔍 <span class="hdr-tool-key">Ctrl K</span></button>
+    <button class="hdr-ai-btn" id="aiPanelBtn" title="AI Assistant">🤖 AI</button>
+    <div class="hdr-badge" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,.65)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-      <div class="notif-dot" id="notifDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#e74c3c;border:2px solid #020508;"></div>
+      <div class="badge-dot" id="notifDot" style="display:none;"></div>
       <span id="notifBadge" class="notif-count" style="display:none;"></span>
     </div>
     <div class="admin-chip">
-      <div class="admin-avt">👑</div>
-      <div class="admin-label" id="adminNameLabel">Admin</div>
+      <div class="admin-avatar">👑</div>
+      <div class="admin-chip-info">
+        <span class="admin-name" id="adminNameLabel">Admin</span>
+        <span class="admin-role-lbl">ADMIN</span>
+      </div>
     </div>
     <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
   </div>
 </header>
+
+<!-- ═══ COMMAND PALETTE ═══ -->
+<div class="cmd-overlay" id="cmdOverlay">
+  <div class="cmd-box" id="cmdBox">
+    <div class="cmd-search-wrap">
+      <span class="cmd-search-icon">🔍</span>
+      <input class="cmd-input" id="cmdInput" placeholder="Tìm kiếm trang, hành động, báo cáo…" autocomplete="off" />
+      <span class="cmd-kbd">Esc</span>
+    </div>
+    <div class="cmd-body" id="cmdBody"></div>
+    <div style="display:flex;gap:14px;padding:8px 16px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.20);">
+      <span style="font-size:10px;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:5px;"><span class="cmd-kbd">↑↓</span> Điều hướng</span>
+      <span style="font-size:10px;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:5px;"><span class="cmd-kbd">Enter</span> Mở</span>
+      <span style="font-size:10px;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:5px;"><span class="cmd-kbd">Esc</span> Đóng</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI ASSISTANT PANEL ═══ -->
+<div class="ai-panel" id="adminAIPanel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-title">🤖 AI Assistant <span style="font-size:9.5px;padding:2px 7px;border-radius:5px;background:rgba(124,92,231,.22);border:1px solid rgba(124,92,231,.38);color:#c4b5fd;font-weight:700;letter-spacing:.3px;">BETA</span></div>
+    <button class="ai-panel-close" id="aiPanelClose">✕</button>
+  </div>
+  <div class="ai-panel-body" id="aiPanelBody">
+    <div style="padding:10px 12px;border-radius:10px;background:rgba(0,255,224,.06);border:1px solid rgba(0,255,224,.14);font-size:11.5px;color:rgba(0,255,224,.75);line-height:1.5;" id="aiContextInsight">
+      <strong style="color:#00ffe0;">💡 Dashboard:</strong> Tôi có thể phân tích KPI, doanh thu, người dùng và đề xuất hành động tối ưu.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <button class="ai-q-btn" onclick="aiAsk('Tổng quan hệ thống hôm nay?')">📊 Tổng quan</button>
+      <button class="ai-q-btn" onclick="aiAsk('So sánh doanh thu tuần này?')">💰 Doanh thu</button>
+      <button class="ai-q-btn" onclick="aiAsk('Người dùng mới tháng này?')">👥 Người dùng mới</button>
+      <button class="ai-q-btn" onclick="aiAsk('Nhà xe hoạt động tốt nhất?')">🚌 Nhà xe top</button>
+      <button class="ai-q-btn" onclick="aiAsk('Hỗ trợ chưa xử lý?')">🆘 Hỗ trợ pending</button>
+      <button class="ai-q-btn" onclick="aiAsk('Dự đoán xu hướng tháng tới?')">🔮 Dự đoán</button>
+    </div>
+    <div class="ai-chat-history" id="aiChatHistory" style="display:flex;flex-direction:column;gap:8px;flex:1;"></div>
+  </div>
+  <div style="display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(124,92,231,.16);background:rgba(0,0,0,.20);flex-shrink:0;">
+    <input class="ai-chat-input" id="aiChatInput" placeholder="Hỏi AI về hệ thống…" />
+    <button class="ai-send-btn" id="aiSendBtn">➤</button>
+  </div>
+</div>
 
 <!-- ═══ CONTENT ═══ -->
 <div class="content">
@@ -465,6 +644,13 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
 
   <!-- ▌ PANEL OVERVIEW ▌ -->
   <div class="panel on" id="panel-overview">
+    <div id="dashFilterBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;padding:14px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;backdrop-filter:blur(10px);">
+      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;margin-right:4px;">Khoảng thời gian:</span>
+      <button class="dash-filter-btn active" data-range="7" onclick="setDashRange(7,this)">7 ngày</button>
+      <button class="dash-filter-btn" data-range="30" onclick="setDashRange(30,this)">30 ngày</button>
+      <button class="dash-filter-btn" data-range="90" onclick="setDashRange(90,this)">90 ngày</button>
+      <div id="dashInsightText" style="margin-left:auto;font-size:12px;color:rgba(0,255,224,.7);font-weight:700;font-style:italic;"></div>
+    </div>
     <div class="kpi4" style="margin-bottom:16px;">
       <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">💰</div><div class="kpi-lbl">Tổng doanh thu</div><div class="kpi-val sm" id="kRevenue">—</div><div class="kpi-trend nt">Tất cả thời gian</div></div>
       <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🎫</div><div class="kpi-lbl">Tổng đặt vé</div><div class="kpi-val" id="kBookings">—</div><div class="kpi-trend nt" id="kBkTrend">—</div></div>
@@ -478,7 +664,7 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
       <div class="kpi k-t"><div class="kpi-glow"></div><div class="kpi-ico">✅</div><div class="kpi-lbl">Thanh toán OK</div><div class="kpi-val" id="kPayOK">—</div><div class="kpi-trend nt" id="kPayRate">—</div></div>
     </div>
     <div class="cg31" style="margin-bottom:20px;">
-      <div class="gc cc tall"><div class="cc-head"><div><div class="cc-title">Doanh thu 6 tháng</div><div class="cc-sub">Biểu đồ theo tháng (VNĐ)</div></div><span class="cc-badge cb-g">Line chart</span></div><canvas id="revenueChart"></canvas></div>
+      <div class="gc cc tall"><div class="cc-head"><div><div class="cc-title">Doanh thu 6 tháng</div><div class="cc-sub">Biểu đồ theo tháng (VNĐ)</div></div><span class="cc-badge cb-g">Line chart</span></div><canvas id="revenueChart"></canvas><div id="revenueInsight" style="font-size:11.5px;color:rgba(0,255,224,.65);margin-top:8px;padding:6px 10px;background:rgba(0,255,224,.05);border-radius:8px;border-left:2px solid rgba(0,255,224,.3);display:none;"></div></div>
       <div class="gc cc tall"><div class="cc-head"><div><div class="cc-title">Trạng thái booking</div><div class="cc-sub">PAID / PENDING / CANCELED</div></div><span class="cc-badge cb-a">Doughnut</span></div><canvas id="bookingStatusChart"></canvas></div>
     </div>
     <div class="cg2" style="margin-bottom:20px;">
@@ -846,10 +1032,42 @@ function set(id,v){const e=$(id);if(e)e.textContent=v;}
 async function req(p){try{const r=await fetch("/api/"+p);return r.ok?r.json():null;}catch{return null;}}
 function mkg(ctx,c1,c2,h=260){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
 
+function countUp(el,from,to,duration=800){
+  if(!el)return;
+  const isNum=typeof to==="number";
+  if(!isNum){el.textContent=to;return;}
+  const start=performance.now();
+  const update=now=>{
+    const p=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*ease).toLocaleString("vi-VN");
+    if(p<1)requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
 function bBadge(s){return s==="PAID"?`<span class="b b-paid">✅ PAID</span>`:s==="PENDING"?`<span class="b b-pending">⏳ PENDING</span>`:`<span class="b b-canceled">❌ CANCELED</span>`;}
 function tBadge(s){return s==="OPEN"?`<span class="b b-open">🟢 OPEN</span>`:s==="FULL"?`<span class="b b-full">🟡 FULL</span>`:`<span class="b b-canceled">❌ CANCELED</span>`;}
 function uStatus(s){return s==="ACTIVE"?`<span class="b b-active">✅ ACTIVE</span>`:`<span class="b b-blocked">🚫 BLOCKED</span>`;}
 function uRole(r){return r==="ADMIN"?`<span class="b b-admin">👑 ADMIN</span>`:r==="OPERATOR"?`<span class="b b-operator">🏢 OP</span>`:`<span class="b b-passenger">👤 User</span>`;}
+
+/* GENERATE INSIGHT */
+function generateInsight(revData,bookData){
+  const el=document.getElementById("dashInsightText");
+  const ri=document.getElementById("revenueInsight");
+  if(!el||!revData||!revData.length)return;
+  const vals=revData.map(d=>Number(d.revenue)||0);
+  const last=vals[vals.length-1],prev=vals[vals.length-2]||0;
+  const pct=prev>0?Math.round((last-prev)/prev*100):0;
+  let text="";
+  if(pct>20)text="🚀 Doanh thu tăng mạnh "+pct+"% so với kỳ trước";
+  else if(pct>0)text="📈 Doanh thu tăng nhẹ "+pct+"% so với kỳ trước";
+  else if(pct<-20)text="⚠️ Doanh thu giảm "+Math.abs(pct)+"% — cần chú ý";
+  else if(pct<0)text="📉 Doanh thu giảm nhẹ "+Math.abs(pct)+"%";
+  else text="📊 Doanh thu ổn định so với kỳ trước";
+  el.textContent=text;
+  if(ri){ri.textContent=text;ri.style.display="block";}
+}
 
 /* TAB SYSTEM */
 const loaded={};
@@ -874,29 +1092,48 @@ async function loadOverview(){
     req("admin/top-routes"),req("admin/booking-status"),req("admin/payment-methods"),req("admin/peak-hours")
   ]);
   if(stats){
-    set("kRevenue",fmt(stats.totalRevenue));set("kBookings",(stats.totalBookings||0).toLocaleString());
-    set("kUsers",(stats.totalUsers||0).toLocaleString());set("kOperators",(stats.totalOperators||0).toLocaleString());
-    set("kTripsOpen",(stats.tripsOpen||0).toLocaleString());set("kCanceled",(stats.canceledBookings||0).toLocaleString());
-    set("kRating",stats.avgRating?(+stats.avgRating).toFixed(1)+"★":"—");set("kPayOK",(stats.paySuccess||0).toLocaleString());
+    set("kRevenue",fmt(stats.totalRevenue));
+    countUp($("kBookings"),0,stats.totalBookings||0);
+    countUp($("kUsers"),0,stats.totalUsers||0);
+    countUp($("kOperators"),0,stats.totalOperators||0);
+    countUp($("kTripsOpen"),0,stats.tripsOpen||0);
+    countUp($("kCanceled"),0,stats.canceledBookings||0);
+    set("kRating",stats.avgRating?(+stats.avgRating).toFixed(1)+"★":"—");
+    countUp($("kPayOK"),0,stats.paySuccess||0);
     set("pendingBadge",stats.pendingBookings||0);
     if(stats.totalBookings>0)set("kCancelRate","Huỷ: "+((stats.canceledBookings/stats.totalBookings)*100).toFixed(1)+"%");
     if(stats.totalPayments>0)set("kPayRate","OK: "+((stats.paySuccess/stats.totalPayments)*100).toFixed(1)+"%");
   }
   if(rev6?.length){
     const c=$("revenueChart").getContext("2d");
-    new Chart($("revenueChart"),{type:"line",data:{labels:rev6.map(d=>d.month),datasets:[{data:rev6.map(d=>d.revenue),borderColor:"#2ecc71",backgroundColor:mkg(c,"rgba(46,204,113,0.32)","rgba(46,204,113,0.02)"),borderWidth:2.5,tension:.42,pointRadius:4,pointBackgroundColor:"#2ecc71",fill:true}]},options:{...lineOpts(v=>v.toLocaleString("vi-VN")),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+fmt(c.raw)}}}}});
+    new Chart($("revenueChart"),{type:"line",data:{labels:rev6.map(d=>d.month),datasets:[{data:rev6.map(d=>d.revenue),borderColor:"#2ecc71",backgroundColor:mkg(c,"rgba(46,204,113,0.32)","rgba(46,204,113,0.02)"),borderWidth:2.5,tension:.42,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:"#2ecc71",pointBorderColor:"rgba(46,204,113,0.4)",pointBorderWidth:2,fill:true}]},options:{...lineOpts(v=>v.toLocaleString("vi-VN")),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{title:items=>items[0].label,label:c=>" Doanh thu: "+fmt(c.raw)}}}}});
+    const ri=$("revenueInsight");if(ri){ri.style.display="block";}
   }
-  if(bstat){new Chart($("bookingStatusChart"),{type:"doughnut",data:{labels:["PAID","PENDING","CANCELED"],datasets:[{data:[bstat.paid||0,bstat.pending||0,bstat.canceled||0],backgroundColor:["#2ecc71","#f39c12","#e74c3c"],borderWidth:0}]},options:dnutOpts()});}
+  if(bstat){
+    const bsTotal=(bstat.paid||0)+(bstat.pending||0)+(bstat.canceled||0);
+    const centerTextPlugin={id:"centerText",afterDraw(chart){if(chart.config.type!=="doughnut")return;const{ctx,chartArea:{top,bottom,left,right}}=chart;ctx.save();const cx=(left+right)/2,cy=(top+bottom)/2;ctx.fillStyle="rgba(255,255,255,.85)";ctx.font="bold 18px 'Segoe UI'";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(chart._centerTotal||"",cx,cy-8);ctx.fillStyle="rgba(255,255,255,.38)";ctx.font="700 10px 'Segoe UI'";ctx.fillText("tổng",cx,cy+10);ctx.restore();}};
+    const bsChart=new Chart($("bookingStatusChart"),{type:"doughnut",data:{labels:["PAID","PENDING","CANCELED"],datasets:[{data:[bstat.paid||0,bstat.pending||0,bstat.canceled||0],backgroundColor:["#2ecc71","#f39c12","#e74c3c"],borderWidth:0}]},options:{...dnutOpts(),cutout:"68%"},plugins:[centerTextPlugin]});
+    bsChart._centerTotal=bsTotal.toLocaleString("vi-VN");
+  }
   if(bpd?.length){
     const c=$("bookingChart").getContext("2d");
     new Chart($("bookingChart"),{type:"bar",data:{labels:bpd.map(d=>fmtD(d.date)),datasets:[{data:bpd.map(d=>d.count),backgroundColor:mkg(c,"rgba(124,92,231,0.85)","rgba(124,92,231,0.20)"),borderRadius:6,barThickness:20}]},options:{...barOpts(),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+c.raw+" vé"}}}}});
   }
-  if(routes?.length){new Chart($("routeChart"),{type:"doughnut",data:{labels:routes.map(d=>d.route),datasets:[{data:routes.map(d=>d.count),backgroundColor:PAL,borderWidth:0}]},options:dnutOpts()});}
+  if(routes?.length){
+    let rtData=routes.slice(0,5),rtOther=routes.slice(5);
+    let rtLabels=rtData.map(d=>d.route),rtVals=rtData.map(d=>d.count);
+    if(rtOther.length){rtLabels.push("Khác");rtVals.push(rtOther.reduce((s,d)=>s+(+d.count||0),0));}
+    const rtTotal=rtVals.reduce((s,v)=>s+v,0);
+    const rtCenterPlugin={id:"rtCenterText",afterDraw(chart){if(chart.config.type!=="doughnut"||!chart._rtCenter)return;const{ctx,chartArea:{top,bottom,left,right}}=chart;ctx.save();const cx=(left+right)/2,cy=(top+bottom)/2;ctx.fillStyle="rgba(255,255,255,.85)";ctx.font="bold 18px 'Segoe UI'";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(chart._rtCenter,cx,cy-8);ctx.fillStyle="rgba(255,255,255,.38)";ctx.font="700 10px 'Segoe UI'";ctx.fillText("tuyến",cx,cy+10);ctx.restore();}};
+    const rtChart=new Chart($("routeChart"),{type:"doughnut",data:{labels:rtLabels,datasets:[{data:rtVals,backgroundColor:PAL,borderWidth:0}]},options:{...dnutOpts(),cutout:"68%"},plugins:[rtCenterPlugin]});
+    rtChart._rtCenter=rtTotal.toLocaleString("vi-VN");
+  }
   if(paym?.length){new Chart($("payMethodChart"),{type:"polarArea",data:{labels:paym.map(d=>d.method),datasets:[{data:paym.map(d=>d.count),backgroundColor:["rgba(0,255,224,0.65)","rgba(253,121,168,0.65)","rgba(0,168,255,0.65)"],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:"bottom",labels:{padding:12,boxWidth:11}},tooltip:{...TTP}}}});}
   if(peak?.length){
     const c=$("hourChart").getContext("2d");
     new Chart($("hourChart"),{type:"line",data:{labels:peak.map(d=>d.hour+":00"),datasets:[{data:peak.map(d=>d.count),borderColor:"#00ffe0",backgroundColor:mkg(c,"rgba(0,255,224,0.24)","rgba(0,255,224,0.02)"),borderWidth:2,tension:.4,pointRadius:3,fill:true}]},options:{...lineOpts(),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+c.raw+" lượt"}}}}});
   }
+  generateInsight(rev6,bpd);
 }
 
 /* REVENUE */
@@ -907,7 +1144,11 @@ async function loadRevenue(){
     const c=$("rev12Chart").getContext("2d");
     new Chart($("rev12Chart"),{type:"line",data:{labels:rev12.map(d=>d.month),datasets:[{data:rev12.map(d=>d.revenue),borderColor:"#f39c12",backgroundColor:mkg(c,"rgba(243,156,18,0.30)","rgba(243,156,18,0.02)"),borderWidth:2.5,tension:.42,pointRadius:4,pointBackgroundColor:"#f39c12",fill:true}]},options:{...lineOpts(v=>v.toLocaleString("vi-VN")),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+fmt(c.raw)}}}}});
   }
-  if(revOp?.length){new Chart($("revOperatorChart"),{type:"bar",data:{labels:revOp.map(d=>d.name),datasets:[{data:revOp.map(d=>d.revenue),backgroundColor:PAL.map(c=>c+"bb"),borderRadius:6,barThickness:22}]},options:{...barOpts(v=>v.toLocaleString("vi-VN"),true),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+fmt(c.raw)}}}}});}
+  if(revOp?.length){
+    const sortedOp=[...revOp].sort((a,b)=>(b.revenue||0)-(a.revenue||0));
+    const opColors=sortedOp.map((d,i)=>i===0?"#00ffe0":"rgba(0,168,255,.60)");
+    new Chart($("revOperatorChart"),{type:"bar",data:{labels:sortedOp.map(d=>d.name),datasets:[{data:sortedOp.map(d=>d.revenue),backgroundColor:opColors,borderRadius:6,barThickness:22}]},options:{...barOpts(v=>v.toLocaleString("vi-VN"),true),plugins:{legend:{display:false},tooltip:{...TTP,callbacks:{label:c=>" "+fmt(c.raw)}}}}});
+  }
   if(revBT?.length){new Chart($("revBusTypeChart"),{type:"doughnut",data:{labels:revBT.map(d=>d.bus_type),datasets:[{data:revBT.map(d=>d.revenue),backgroundColor:PAL,borderWidth:0}]},options:dnutOpts()});}
   if(rev12?.length>1){
     const gL=[],gV=[],gC=[];
@@ -1336,6 +1577,21 @@ async function runPricePrediction() {
     </div>`;
 }
 
+/* DASH RANGE FILTER */
+let _currentDashRange=7;
+function setDashRange(days,btn){
+  _currentDashRange=days;
+  document.querySelectorAll(".dash-filter-btn").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  // Destroy existing overview charts so they can be re-created
+  Chart.helpers.each(Chart.instances,(chart)=>{
+    const id=chart.canvas&&chart.canvas.id;
+    if(["revenueChart","bookingStatusChart","bookingChart","routeChart","payMethodChart","hourChart"].includes(id)){chart.destroy();}
+  });
+  typeof showToast==="function"&&showToast("Đang cập nhật dữ liệu…","info");
+  loadOverview();
+}
+
 /* INIT */
 loaded["overview"]=true;
 loadOverview();
@@ -1345,13 +1601,52 @@ loadOverview();
   function tick(){
     const d=new Date();
     const e=document.getElementById("dateLabel");
-    if(e) e.textContent="Hôm nay, "+d.toLocaleDateString("vi-VN",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})
-      +" — "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
+    const t=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
+    if(e) e.textContent="Hôm nay, "+d.toLocaleDateString("vi-VN",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+" — "+t;
+    const clk=document.getElementById("hdrClock");
+    if(clk) clk.textContent=t;
   }
   tick();setInterval(tick,1000);
-  // Admin name
-  try{const u=JSON.parse(localStorage.getItem("user")||"{}");if(u.full_name){const el=document.querySelector(".admin-label");if(el)el.textContent=u.full_name;}}catch(e){}
+  try{const u=JSON.parse(localStorage.getItem("user")||"{}");if(u.full_name){const el=document.getElementById("adminNameLabel");if(el)el.textContent=u.full_name;}}catch(e){}
 })();
+
+/* ── COMMAND PALETTE ── */
+(function(){
+  const CMD_ITEMS=[
+    {section:"Điều hướng",items:[
+      {icon:"📊",title:"Dashboard",sub:"Trang chủ Admin",href:"admin.html"},
+      {icon:"👥",title:"Người dùng",sub:"Quản lý tài khoản",href:"users.html"},
+      {icon:"🚌",title:"Nhà xe",sub:"Quản lý nhà vận chuyển",href:"operators.html"},
+      {icon:"🆘",title:"Hỗ trợ",sub:"Yêu cầu hỗ trợ hành khách",href:"support.html"},
+      {icon:"⚙️",title:"Cài đặt",sub:"Cài đặt hệ thống",href:"settings.html"},
+    ]},
+    {section:"Hành động",items:[
+      {icon:"🔄",title:"Làm mới dữ liệu",sub:"Tải lại tất cả biểu đồ",action:()=>location.reload()},
+      {icon:"🤖",title:"Mở AI Assistant",sub:"Phân tích thông minh",action:openAIPanel},
+      {icon:"🚪",title:"Đăng xuất",sub:"Thoát khỏi hệ thống",action:()=>logout()},
+    ]},
+  ];
+  const overlay=document.getElementById("cmdOverlay"),input=document.getElementById("cmdInput"),body=document.getElementById("cmdBody");
+  let selIdx=0,flatItems=[];
+  function buildList(q){body.innerHTML="";flatItems=[];CMD_ITEMS.forEach(sec=>{const filtered=sec.items.filter(it=>!q||it.title.toLowerCase().includes(q.toLowerCase())||it.sub.toLowerCase().includes(q.toLowerCase()));if(!filtered.length)return;const lbl=document.createElement("div");lbl.className="cmd-section-label";lbl.textContent=sec.section;body.appendChild(lbl);filtered.forEach(it=>{const div=document.createElement("div");div.className="cmd-item";div.innerHTML=`<div class="cmd-item-icon">${it.icon}</div><div class="cmd-item-text"><div class="cmd-item-title">${it.title}</div><div class="cmd-item-sub">${it.sub}</div></div>`;div.addEventListener("click",()=>runItem(it));body.appendChild(div);flatItems.push({el:div,it});});});if(!flatItems.length)body.innerHTML=`<div style="text-align:center;padding:32px;color:rgba(255,255,255,.30);font-size:13px;">Không tìm thấy "<b>${q}</b>"</div>`;setSelected(0);}
+  function setSelected(i){flatItems.forEach((x,j)=>x.el.classList.toggle("sel",j===i));selIdx=i;if(flatItems[i])flatItems[i].el.scrollIntoView({block:"nearest"});}
+  function runItem(it){closeCmd();if(it.href){setTimeout(()=>{document.body.classList.add("leaving");setTimeout(()=>{location.href=it.href;},220);},80);}else if(it.action)setTimeout(it.action,80);}
+  function openCmd(){overlay.classList.add("open");input.value="";buildList("");setTimeout(()=>input.focus(),60);}
+  function closeCmd(){overlay.classList.remove("open");}
+  document.getElementById("cmdPaletteBtn").addEventListener("click",openCmd);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)closeCmd();});
+  input.addEventListener("input",()=>buildList(input.value.trim()));
+  input.addEventListener("keydown",e=>{if(e.key==="ArrowDown"){e.preventDefault();setSelected(Math.min(selIdx+1,flatItems.length-1));}else if(e.key==="ArrowUp"){e.preventDefault();setSelected(Math.max(selIdx-1,0));}else if(e.key==="Enter"){if(flatItems[selIdx])runItem(flatItems[selIdx].it);}else if(e.key==="Escape")closeCmd();});
+  document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="k"){e.preventDefault();overlay.classList.contains("open")?closeCmd():openCmd();}if(e.key==="Escape"&&overlay.classList.contains("open"))closeCmd();});
+})();
+
+/* ── AI PANEL ── */
+function openAIPanel(){document.getElementById("adminAIPanel").classList.add("open");document.getElementById("aiPanelBtn").classList.add("ai-active");}
+document.getElementById("aiPanelBtn").addEventListener("click",()=>{const p=document.getElementById("adminAIPanel"),b=document.getElementById("aiPanelBtn");if(p.classList.contains("open")){p.classList.remove("open");b.classList.remove("ai-active");}else openAIPanel();});
+document.getElementById("aiPanelClose").addEventListener("click",()=>{document.getElementById("adminAIPanel").classList.remove("open");document.getElementById("aiPanelBtn").classList.remove("ai-active");});
+const AI_RESP={"tổng quan":()=>"📊 Hệ thống đang hoạt động bình thường. Kiểm tra tab Tổng quan để xem KPI chi tiết và xu hướng theo thời gian.","doanh thu":()=>"💰 So sánh doanh thu tuần-tuần giúp phát hiện biến động. Áp dụng giá cao điểm cuối tuần và ngày lễ để tối ưu.","người dùng":()=>"👥 Người dùng mới tăng đầu tháng. Gửi email khuyến mãi cho user chưa đặt vé 30 ngày để tăng retention.","nhà xe":()=>"🚌 Nhà xe tốt nhất có tỷ lệ lấp đầy >75%. Hỗ trợ nhà xe thấp điều chỉnh lịch trình và giá vé.","hỗ trợ":()=>"🆘 Ticket hỗ trợ nên xử lý trong 24h. Ưu tiên phân loại theo khẩn cấp và gán nhân viên phụ trách.","dự đoán":()=>"🔮 Dịp lễ và cuối tuần tăng 30-50% lượng đặt vé. Chuẩn bị tăng năng lực vận tải trước 2 tuần."};
+function aiAsk(q){const hist=document.getElementById("aiChatHistory");const um=document.createElement("div");um.style.cssText="padding:10px 13px;border-radius:12px;font-size:12.5px;line-height:1.55;max-width:94%;background:rgba(0,168,255,.12);border:1px solid rgba(0,168,255,.22);color:#bde4ff;align-self:flex-end;border-radius:12px 12px 2px 12px;";um.textContent=q;hist.appendChild(um);const typing=document.createElement("div");typing.style.cssText="display:flex;gap:4px;padding:10px 13px;";typing.innerHTML="<span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s ease-in-out infinite;display:inline-block'></span><span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s .2s ease-in-out infinite;display:inline-block'></span><span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s .4s ease-in-out infinite;display:inline-block'></span>";hist.appendChild(typing);hist.scrollTop=hist.scrollHeight;setTimeout(()=>{typing.remove();const k=Object.keys(AI_RESP).find(x=>q.toLowerCase().includes(x));const bm=document.createElement("div");bm.style.cssText="padding:10px 13px;border-radius:12px 12px 12px 2px;font-size:12.5px;line-height:1.55;max-width:94%;background:rgba(124,92,231,.10);border:1px solid rgba(124,92,231,.22);color:#ddd6fe;align-self:flex-start;";bm.textContent=(k?AI_RESP[k]():"🤖 Hãy kiểm tra dữ liệu thực tế trong các tab Dashboard để có phân tích chính xác nhất.");hist.appendChild(bm);hist.scrollTop=hist.scrollHeight;},900+Math.random()*600);}
+(function(){const inp=document.getElementById("aiChatInput"),btn=document.getElementById("aiSendBtn");function send(){const v=inp.value.trim();if(!v)return;aiAsk(v);inp.value="";}btn.addEventListener("click",send);inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send();}});})();
 </script>
 <script src="/js/admin-notif.js"></script>
 </body>

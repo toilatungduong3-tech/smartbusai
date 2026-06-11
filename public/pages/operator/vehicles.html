@@ -81,7 +81,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .btn-export:hover{background:rgba(124,92,231,.28);}
 
 /* ── KPI ── */
-.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:22px;}
 .kpi-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;
   padding:18px 20px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
@@ -288,6 +288,18 @@ select.form-control option{background:#0d1827;}
 .vc-head{position:relative;}
 .vc-head.available::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ffe0,transparent);border-radius:18px 18px 0 0;}
 .vc-head.maintenance::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#e74c3c,transparent);border-radius:18px 18px 0 0;}
+
+/* ── Enhanced Vehicle Card ── */
+.vc { cursor:pointer; transition:transform .22s, box-shadow .22s, border-color .22s; }
+.vc:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.08); border-color:rgba(255,255,255,.15); }
+.vc-stripe { height:3px; margin:-1px -1px 0; border-radius:12px 12px 0 0; }
+.vc-seat-bar { display:flex; height:6px; border-radius:4px; overflow:hidden; margin:8px 0 3px; background:rgba(255,255,255,.06); }
+.vc-seat-bar-fill { height:100%; transition:width .5s; }
+.vc-seat-bar-fill.vip-fill { background:linear-gradient(90deg,#f9c858,#f39c12); }
+.vc-seat-bar-fill.normal-fill { background:linear-gradient(90deg,#00a8ff88,#00ffe055); }
+.vc-seat-bar-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
+.vc-note { font-size:11.5px; color:rgba(255,255,255,.4); padding:6px 10px; background:rgba(255,255,255,.03); border-radius:8px; border:1px solid rgba(255,255,255,.07); margin-top:4px; }
+.vc-info-grid { grid-template-columns:1fr 1fr; }
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -358,6 +370,16 @@ select.form-control option{background:#0d1827;}
       <div class="kpi-ico">💺</div>
       <div class="kpi-val" id="kSeats">—</div>
       <div class="kpi-label">Tổng số ghế</div>
+    </div>
+    <div class="kpi-card" style="--k-bg:rgba(46,204,113,.05);--k-col:#2ecc71;">
+      <div class="kpi-ico">🚀</div>
+      <div class="kpi-val" id="kUpcoming">—</div>
+      <div class="kpi-label">Chuyến sắp tới</div>
+    </div>
+    <div class="kpi-card" style="--k-bg:rgba(0,168,255,.05);--k-col:#00a8ff;">
+      <div class="kpi-ico">✅</div>
+      <div class="kpi-val" id="kCompleted">—</div>
+      <div class="kpi-label">Đã hoàn thành</div>
     </div>
   </div>
 
@@ -450,11 +472,33 @@ select.form-control option{background:#0d1827;}
         </div>
       </div>
       <div class="form-divider"></div>
+      <div class="form-sec-title">Thông tin kỹ thuật</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nhà sản xuất (manufacturer)</label>
+          <input class="form-control" id="fManufacturer" placeholder="VD: Thaco, Hyundai, Volvo...">
+        </div>
+        <div class="form-group">
+          <label>Năm sản xuất (manufacture_year)</label>
+          <input class="form-control" id="fYear" type="number" placeholder="VD: 2022" min="2000" max="2030">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Màu xe (color)</label>
+          <input class="form-control" id="fColor" placeholder="VD: Trắng, Xanh dương...">
+        </div>
+        <div class="form-group">
+          <label>Số km đã chạy (mileage)</label>
+          <input class="form-control" id="fMileage" type="number" placeholder="VD: 45000" min="0">
+        </div>
+      </div>
+      <div class="form-divider"></div>
       <div class="form-sec-title">Ghi chú thêm</div>
       <div class="form-row full">
         <div class="form-group">
-          <label>Mô tả / Ghi chú</label>
-          <input class="form-control" id="f_note" placeholder="VD: Xe mới mua, có Wifi, USB...">
+          <label>Mô tả / Ghi chú (description)</label>
+          <textarea class="form-control" id="fDesc" rows="3" placeholder="VD: Xe mới mua, có Wifi, USB, Điều hòa 2 chiều..." style="resize:vertical;"></textarea>
         </div>
       </div>
     </div>
@@ -585,12 +629,28 @@ async function loadVehicles(){
   updateKPI();
 }
 
+/* ── Count-up animation ── */
+function countUp(el,to,duration=600){
+  if(!el||isNaN(to))return;
+  const from=parseInt(el.textContent)||0;
+  const start=performance.now();
+  const run=now=>{
+    const p=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*ease).toLocaleString("vi-VN");
+    if(p<1)requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+}
+
 /* ── KPI ── */
 function updateKPI(){
-  document.getElementById("kTotal").textContent=allVehicles.length;
-  document.getElementById("kAvail").textContent=allVehicles.filter(v=>v.status==="AVAILABLE").length;
-  document.getElementById("kMaint").textContent=allVehicles.filter(v=>v.status==="MAINTENANCE").length;
-  document.getElementById("kSeats").textContent=allVehicles.reduce((s,v)=>s+Number(v.total_seats||0),0);
+  countUp(document.getElementById("kTotal"),allVehicles.length);
+  countUp(document.getElementById("kAvail"),allVehicles.filter(v=>v.status==="AVAILABLE").length);
+  countUp(document.getElementById("kMaint"),allVehicles.filter(v=>v.status==="MAINTENANCE").length);
+  countUp(document.getElementById("kSeats"),allVehicles.reduce((s,v)=>s+Number(v.total_seats||0),0));
+  countUp(document.getElementById("kUpcoming"),allVehicles.reduce((s,v)=>s+Number(v.upcoming_trips||0),0));
+  countUp(document.getElementById("kCompleted"),allVehicles.reduce((s,v)=>s+Number(v.completed_trips||0),0));
 }
 
 /* ── Filters ── */
@@ -643,45 +703,67 @@ function renderGrid(){
 
 function buildCard(v){
   const isAvail=v.status==="AVAILABLE";
-  const vipSeats=Math.round(Number(v.total_seats||0)*Number(v.vip_pct||35)/100);
+  const typeColors={
+    'Limousine':'#00ffe0','Sleeper':'#a78bfa','VIP':'#f9c858','Express':'#00a8ff'
+  };
+  const typeColor=typeColors[v.bus_type]||'#00ffe0';
+  const vipSeats=Math.round(Number(v.total_seats||0)*0.35);
   const normalSeats=Number(v.total_seats||0)-vipSeats;
-  const ico=isAvail?"":"🔧";
-  const statusCls=isAvail?"available":"maintenance";
-  return`<div class="vc">
+  const vipPct=v.total_seats?Math.round(vipSeats/v.total_seats*100):35;
+  const statusColor=isAvail?'#2ecc71':'#e74c3c';
+  const mileageFmt=v.mileage?Number(v.mileage).toLocaleString('vi-VN')+' km':'—';
+  return`<div class="vc" style="--type-color:${typeColor};--status-color:${statusColor};" onclick="viewVehicle(${v.bus_id})">
+    <div class="vc-stripe" style="background:linear-gradient(90deg,${typeColor},${typeColor}88,transparent)"></div>
     <div class="vc-head">
       <div class="vc-plate-wrap">
-        <div class="vc-plate-icon ${statusCls}">${ico}</div>
+        <div class="vc-plate-icon ${isAvail?'available':'maintenance'}">${v.bus_type==='Limousine'?'🚌':v.bus_type==='Sleeper'?'🛌':v.bus_type==='VIP'?'👑':'🚍'}</div>
         <div>
-          <div class="vc-plate">${v.plate_number||"—"}</div>
-          <div class="vc-type-tag">${v.bus_type||"—"}</div>
+          <div class="vc-plate">${v.plate_number||'—'}</div>
+          <div class="vc-type-tag" style="color:${typeColor}">${v.bus_type||'—'}${v.manufacturer?' · '+v.manufacturer:''}</div>
         </div>
       </div>
-      <span class="vc-status ${statusCls}">
-        <span class="sdot ${isAvail?"sdot-g":"sdot-r"}"></span>${v.status}
+      <span class="vc-status ${isAvail?'available':'maintenance'}">
+        <span class="sdot ${isAvail?'sdot-g':'sdot-r'}"></span>${isAvail?'Sẵn sàng':'Bảo trì'}
       </span>
     </div>
     <div class="vc-body">
       <div class="vc-info-grid">
         <div class="vc-info-box">
           <div class="vc-info-label">💺 Tổng ghế</div>
-          <div class="vc-info-val neon">${v.total_seats||0}</div>
+          <div class="vc-info-val" style="color:${typeColor}">${v.total_seats||0}</div>
         </div>
         <div class="vc-info-box">
-          <div class="vc-info-label">🆔 Bus ID</div>
-          <div class="vc-info-val" style="color:var(--text3);">#${v.bus_id}</div>
+          <div class="vc-info-label">📅 Năm SX</div>
+          <div class="vc-info-val">${v.manufacture_year||'—'}</div>
+        </div>
+        <div class="vc-info-box">
+          <div class="vc-info-label">🚀 Chuyến tới</div>
+          <div class="vc-info-val" style="color:#2ecc71">${v.upcoming_trips||0}</div>
+        </div>
+        <div class="vc-info-box">
+          <div class="vc-info-label">✅ Hoàn thành</div>
+          <div class="vc-info-val">${v.completed_trips||0}</div>
         </div>
       </div>
       <div class="vc-seats-row">
         <span class="seat-pill vip">👑 VIP · ${vipSeats}</span>
         <span class="seat-pill normal">🪑 Thường · ${normalSeats}</span>
+        ${v.color?`<span class="seat-pill" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.12);">🎨 ${v.color}</span>`:''}
       </div>
-      ${v.note?`<div style="font-size:11.5px;color:var(--text3);padding:6px 10px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);">📝 ${v.note}</div>`:""}
+      <div class="vc-seat-bar">
+        <div class="vc-seat-bar-fill vip-fill" style="width:${vipPct}%"></div>
+        <div class="vc-seat-bar-fill normal-fill" style="width:${100-vipPct}%"></div>
+      </div>
+      <div class="vc-seat-bar-labels">
+        <span style="color:#f9c858;font-size:10px;">👑 ${vipPct}% VIP</span>
+        <span style="color:rgba(255,255,255,.4);font-size:10px;">${v.mileage?'🛣 '+mileageFmt:''}</span>
+      </div>
+      ${v.description?`<div class="vc-note">📝 ${v.description}</div>`:''}
     </div>
-    <div class="vc-foot">
-      <button class="act-btn act-view" onclick="viewVehicle(${v.bus_id})">👁 Xem</button>
+    <div class="vc-foot" onclick="event.stopPropagation()">
       <button class="act-btn act-edit" onclick="openEdit(${v.bus_id})">✏️ Sửa</button>
-      <button class="act-btn ${isAvail?"act-toggle-maint":"act-toggle-avail"}" onclick="toggleStatus(${v.bus_id})">
-        ${isAvail?"🔧 Bảo trì":"✅ Hoạt động"}
+      <button class="act-btn ${isAvail?'act-toggle-maint':'act-toggle-avail'}" onclick="toggleStatus(${v.bus_id})">
+        ${isAvail?'🔧 Bảo trì':'✅ Hoạt động'}
       </button>
       <button class="act-btn act-del" onclick="confirmDelete(${v.bus_id})" style="flex:0;padding:7px 10px;">🗑</button>
     </div>
@@ -710,14 +792,30 @@ function goPage(p){const t=Math.ceil(filteredVehicles.length/PAGE_SIZE);if(p<1||
 function viewVehicle(id){
   const v=allVehicles.find(x=>x.bus_id==id);if(!v)return;
   const isAvail=v.status==="AVAILABLE";
+  const typeColors={'Limousine':'#00ffe0','Sleeper':'#a78bfa','VIP':'#f9c858','Express':'#00a8ff'};
+  const typeColor=typeColors[v.bus_type]||'#00ffe0';
   document.getElementById("vPlate").textContent=v.plate_number||"—";
-  document.getElementById("vSub").innerHTML=`${isAvail?"🟢":"🔴"} ${v.status} · ${v.bus_type||"—"}`;
-  const vipSeats=Math.round(Number(v.total_seats||0)*Number(v.vip_pct||35)/100);
+  document.getElementById("vPlate").style.color=typeColor;
+  document.getElementById("vSub").innerHTML=`${isAvail?"🟢":"🔴"} ${v.status} · ${v.bus_type||"—"}${v.manufacturer?' · '+v.manufacturer:''}`;
+  const vipSeats=Math.round(Number(v.total_seats||0)*0.35);
+  const normalSeats=Number(v.total_seats||0)-vipSeats;
+  const mileageFmt=v.mileage?Number(v.mileage).toLocaleString('vi-VN')+' km':'—';
   document.getElementById("vGrid").innerHTML=[
-    ["🆔 Bus ID","#"+v.bus_id],["🪪 Biển số",v.plate_number||"—"],
-    ["Loại xe",v.bus_type||"—"],["Trạng thái",v.status||"—"],
-    ["💺 Tổng ghế",v.total_seats||0],["👑 Ghế VIP",vipSeats],
-    ["🪑 Ghế thường",(Number(v.total_seats||0)-vipSeats)],["📝 Ghi chú",v.note||"—","full"],
+    ["🆔 Bus ID","#"+v.bus_id],
+    ["🪪 Biển số",v.plate_number||"—"],
+    ["🚌 Loại xe",v.bus_type||"—"],
+    ["⚡ Trạng thái",v.status||"—"],
+    ["💺 Tổng ghế",v.total_seats||0],
+    ["👑 Ghế VIP",vipSeats],
+    ["🪑 Ghế thường",normalSeats],
+    ["🏭 Nhà SX",v.manufacturer||"—"],
+    ["📅 Năm SX",v.manufacture_year||"—"],
+    ["🎨 Màu xe",v.color||"—"],
+    ["🛣 Số km",mileageFmt],
+    ["🚀 Chuyến tới",v.upcoming_trips||0],
+    ["✅ Đã hoàn thành",v.completed_trips||0],
+    ["📊 Tổng chuyến",v.trip_count||0],
+    ["📝 Mô tả",v.description||v.note||"—","full"],
   ].map(([l,val,c])=>`<div class="vg-item ${c||""}"><div class="vg-label">${l}</div><div class="vg-val">${val}</div></div>`).join("");
   document.getElementById("vEditBtn").onclick=()=>{closeModal("viewModal");openEdit(id);};
   document.getElementById("viewModal").classList.add("open");
@@ -729,10 +827,15 @@ function openAdd(){
   document.getElementById("formIco").textContent="➕";
   document.getElementById("formTitle").textContent="Thêm xe mới";
   document.getElementById("formSaveBtn").textContent="💾 Thêm xe";
-  ["f_plate","f_type","f_note"].forEach(id=>document.getElementById(id).value="");
+  ["f_plate","f_type"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("f_seats").value="";
   document.getElementById("f_vip_pct").value="35";
   document.getElementById("f_status").value="AVAILABLE";
+  document.getElementById("fManufacturer").value="";
+  document.getElementById("fYear").value="";
+  document.getElementById("fColor").value="";
+  document.getElementById("fMileage").value="";
+  document.getElementById("fDesc").value="";
   document.getElementById("formModal").classList.add("open");
 }
 
@@ -747,7 +850,11 @@ function openEdit(id){
   document.getElementById("f_seats").value=v.total_seats||"";
   document.getElementById("f_vip_pct").value=v.vip_pct||35;
   document.getElementById("f_status").value=v.status||"AVAILABLE";
-  document.getElementById("f_note").value=v.note||"";
+  document.getElementById("fManufacturer").value=v.manufacturer||"";
+  document.getElementById("fYear").value=v.manufacture_year||"";
+  document.getElementById("fColor").value=v.color||"";
+  document.getElementById("fMileage").value=v.mileage||"";
+  document.getElementById("fDesc").value=v.description||v.note||"";
   document.getElementById("formModal").classList.add("open");
 }
 
@@ -764,7 +871,11 @@ async function saveVehicle(){
     total_seats:newTotalSeats,
     status:document.getElementById("f_status").value,
     vip_pct:Number(document.getElementById("f_vip_pct").value)||35,
-    note:document.getElementById("f_note").value.trim(),
+    manufacturer:document.getElementById("fManufacturer")?.value.trim()||null,
+    manufacture_year:document.getElementById("fYear")?.value?parseInt(document.getElementById("fYear").value):null,
+    color:document.getElementById("fColor")?.value.trim()||null,
+    mileage:document.getElementById("fMileage")?.value?parseInt(document.getElementById("fMileage").value):null,
+    description:document.getElementById("fDesc")?.value.trim()||null,
   };
   try{
     const url=editingId?`${API}/${editingId}`:API;

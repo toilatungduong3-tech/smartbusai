@@ -440,9 +440,10 @@ header{
   70% { box-shadow:0 0 0 8px rgba(0,255,224,0); }
   100%{ box-shadow:0 0 0 0 rgba(0,255,224,0); }
 }
+@keyframes busFloat{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 .trip-card{
   display:grid; grid-template-columns:1fr 188px;
-  background:linear-gradient(145deg,rgba(5,14,32,.97) 0%,rgba(3,10,22,.95) 100%);
+  background:linear-gradient(135deg,rgba(6,14,28,.97) 0%,rgba(8,20,38,.95) 50%,rgba(5,12,24,.98) 100%);
   color:#fff; border-radius:24px; overflow:hidden;
   border:1px solid rgba(0,255,224,.12);
   box-shadow:0 16px 52px rgba(0,0,0,.65),0 0 32px rgba(0,255,224,.04),inset 0 1px 0 rgba(255,255,255,.04);
@@ -463,6 +464,7 @@ header{
 .trip-card.vip-card{
   border-color:rgba(108,92,231,.20);
   box-shadow:0 16px 52px rgba(0,0,0,.65),0 0 40px rgba(108,92,231,.14),inset 0 1px 0 rgba(108,92,231,.12);
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(108,92,231,.03) 10px,rgba(108,92,231,.03) 20px);
 }
 .trip-card.vip-card::before{
   background:linear-gradient(90deg,#c084fc 0%,#a855f7 40%,#00ffe0 100%);
@@ -533,7 +535,7 @@ header{
 .tc-route{ display:flex; align-items:center; gap:0; }
 .tc-city{ display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
 .tc-city.right{ text-align:right; }
-.tc-city-name{ font-size:26px; font-weight:900; letter-spacing:-.5px; line-height:1; }
+.tc-city-name{ font-size:28px; font-weight:900; letter-spacing:-.5px; line-height:1; text-shadow:0 0 20px rgba(0,255,224,.3); }
 .tc-city.left  .tc-city-name{
   background:linear-gradient(135deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
@@ -563,7 +565,7 @@ header{
   width:36px; height:36px; border-radius:50%; flex-shrink:0; margin:0 6px;
   background:rgba(0,255,224,.10); border:1px solid rgba(0,255,224,.26);
   display:flex; align-items:center; justify-content:center; font-size:17px;
-  animation:busRing 2.4s ease-out infinite;
+  animation:busRing 2.4s ease-out infinite, busFloat 2s ease-in-out infinite;
 }
 .tc-dur{
   font-size:11px; font-weight:700; color:#8fa8c0;
@@ -574,20 +576,24 @@ header{
 /* meta boxes — 8 items, 4 per row */
 .tc-meta{ display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
 .tc-meta-box{
-  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08);
-  border-radius:12px; padding:9px 11px; min-width:0;
-  transition:background .18s,border-color .18s,transform .18s;
+  background:rgba(0,255,224,0.05); border:1px solid rgba(0,255,224,0.12);
+  border-radius:9px; padding:8px 10px; min-width:0;
+  transition:background .2s,border .2s,transform .18s;
   position:relative; overflow:hidden;
+}
+.tc-meta-box:hover {
+  background:rgba(0,255,224,0.10);
+  border-color:rgba(0,255,224,0.28);
 }
 .tc-meta-box::before{
   content:""; position:absolute; top:0; left:0; right:0; height:2px;
   opacity:0; transition:opacity .18s;
 }
-.tc-meta-box:hover{ background:rgba(0,255,224,.07); border-color:rgba(0,255,224,.22); transform:translateY(-1px); }
+.tc-meta-box:hover{ transform:translateY(-1px); }
 .tc-meta-box:hover::before{ opacity:1; background:linear-gradient(90deg,#00ffe0,#00a8ff); }
 .tc-meta-ico{ font-size:13px; line-height:1; margin-bottom:4px; display:block; }
-.tc-meta-lbl{ font-size:9.5px; color:rgba(122,180,201,.75); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
-.tc-meta-val{ font-size:12.5px; font-weight:800; color:#d8f0ff; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tc-meta-lbl{ color:rgba(0,255,224,0.6); font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; }
+.tc-meta-val{ color:#e8f4ff; font-size:13px; font-weight:700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Color accents per meta type */
 .tc-meta-box.m-dur    .tc-meta-val{ color:#00ffe0; }
 .tc-meta-box.m-rating .tc-meta-val{ color:#f1c40f; }
@@ -613,7 +619,8 @@ header{
 @keyframes urgPulse{ from{color:#ff6b6b;border-color:rgba(255,107,107,.35);} to{color:#ff9f9f;border-color:rgba(255,107,107,.65);} }
 .tc-seat-bar{ width:100%; height:11px; background:rgba(255,255,255,.08); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
 .tc-seat-fill{ height:100%; border-radius:10px; transition:width .6s cubic-bezier(.4,0,.2,1); position:relative; }
-.tc-seat-fill.ok  { background:linear-gradient(90deg,#00ffe0,#00a8ff); box-shadow:0 0 12px rgba(0,255,224,.60),inset 0 1px 0 rgba(255,255,255,.25); }
+.tc-seat-fill.ok  { background:linear-gradient(90deg,#00ffe0,#00a8ff,#00ffe0); background-size:200% 100%; box-shadow:0 0 12px rgba(0,255,224,.60),inset 0 1px 0 rgba(255,255,255,.25); animation:seatFlow 2.4s linear infinite; }
+@keyframes seatFlow{ 0%{background-position:100% 0} 100%{background-position:-100% 0} }
 .tc-seat-fill.warn{ background:linear-gradient(90deg,#f39c12,#e67e22); box-shadow:0 0 12px rgba(243,156,18,.60),inset 0 1px 0 rgba(255,255,255,.20); }
 .tc-seat-fill.empty{ background:linear-gradient(90deg,#e74c3c,#c0392b); box-shadow:0 0 12px rgba(231,76,60,.60),inset 0 1px 0 rgba(255,255,255,.20); animation:seatUrgent 1.2s ease-in-out infinite alternate; }
 @keyframes seatUrgent{ from{box-shadow:0 0 8px rgba(231,76,60,.50);} to{box-shadow:0 0 18px rgba(231,76,60,.90);} }
@@ -663,7 +670,7 @@ header{
   font-size:23px; font-weight:900; line-height:1.1; text-align:center; word-break:break-word;
   background:linear-gradient(135deg,#00ffe0,#7eb8ff);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 12px rgba(0,255,224,.35));
+  filter:drop-shadow(0 0 12px rgba(0,255,224,0.4));
 }
 .tc-price small{ font-size:11px; color:#7ab4c9; -webkit-text-fill-color:#7ab4c9; }
 .tc-dp-wrap{ display:flex; flex-direction:column; align-items:center; gap:3px; }
@@ -678,13 +685,19 @@ header{
 .tc-book-now-lbl{ font-size:9.5px; font-weight:800; color:rgba(0,255,224,.65); letter-spacing:.8px; text-transform:uppercase; }
 .tc-book-btn{
   width:100%;
-  background:linear-gradient(135deg,#00ffe0 0%,#00c8d4 50%,#00a8ff 100%);
+  background:linear-gradient(135deg,#00ffe0 0%,#00c8ff 50%,#0099ff 100%);
   border:none; padding:12px 0; border-radius:14px; font-weight:900; color:#02101f;
-  cursor:pointer; font-size:13.5px; transition:transform .22s,box-shadow .22s,filter .22s;
+  cursor:pointer; font-size:15px; transition:transform .22s,box-shadow .22s,filter .22s;
   font-family:"Segoe UI",Arial,sans-serif;
-  box-shadow:0 6px 22px rgba(0,255,224,.32),inset 0 1px 0 rgba(255,255,255,.30);
-  letter-spacing:.2px;
+  box-shadow:0 4px 20px rgba(0,255,224,.5),0 0 40px rgba(0,200,255,.2),inset 0 1px 0 rgba(255,255,255,.30);
+  letter-spacing:.3px; font-size:15px; font-weight:900; position:relative; overflow:hidden;
 }
+.tc-book-btn::after{
+  content:''; position:absolute; inset:0; border-radius:inherit;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%);
+  transform:translateX(-100%); transition:transform 0.5s;
+}
+.tc-book-btn:hover::after{ transform:translateX(100%); }
 .tc-book-btn:hover:not(:disabled){
   transform:translateY(-3px) scale(1.03);
   box-shadow:0 10px 30px rgba(0,255,224,.50),inset 0 1px 0 rgba(255,255,255,.30);
@@ -1325,6 +1338,16 @@ nav a.ai-highlight{
 }
 .rte-tip.leaflet-tooltip::before{ border-top-color:rgba(0,255,224,.28)!important; }
 
+/* Coordinate popup */
+.rte-coord-popup .leaflet-popup-content-wrapper{
+  background:rgba(4,12,26,.96)!important; border:1px solid rgba(0,255,224,.30)!important;
+  border-radius:12px!important; padding:0!important;
+  box-shadow:0 6px 32px rgba(0,0,0,.65),0 0 0 1px rgba(0,255,224,.08)!important;
+}
+.rte-coord-popup .leaflet-popup-content{ margin:12px 16px!important; }
+.rte-coord-popup .leaflet-popup-tip-container{ filter:drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.rte-coord-popup .leaflet-popup-tip{ background:rgba(4,12,26,.96)!important; }
+
 /* Progress line glow */
 .leaflet-overlay-pane svg .rte-prog-path{
   filter:drop-shadow(0 0 5px rgba(0,255,224,.70)) drop-shadow(0 0 12px rgba(0,168,255,.40));
@@ -1347,11 +1370,11 @@ nav a.ai-highlight{
 .rte-box{
   width:min(1140px,98vw); height:min(760px,95vh);
   background:linear-gradient(145deg,rgba(4,10,24,.99) 0%,rgba(2,7,18,.98) 100%);
-  border:1px solid rgba(0,255,224,.20);
+  border:1px solid rgba(0,255,224,.25);
   border-radius:28px; overflow:hidden;
-  box-shadow:0 0 0 1px rgba(0,255,224,.06),
-             0 40px 120px rgba(0,0,0,.85),
-             0 0 80px rgba(0,255,224,.08),
+  box-shadow:0 0 80px rgba(0,255,224,.12),
+             0 30px 80px rgba(0,0,0,.8),
+             0 0 0 1px rgba(0,255,224,.06),
              inset 0 1px 0 rgba(255,255,255,.05);
   display:flex; flex-direction:column;
   animation:rteIn .32s cubic-bezier(.22,.61,.36,1);
@@ -1403,15 +1426,30 @@ nav a.ai-highlight{
 }
 .rte-close-btn:hover{ background:rgba(231,76,60,.35); color:#fff; }
 
+/* Speed slider */
 .rte-speed{
-  display:flex; gap:3px;
+  display:flex; align-items:center; gap:6px;
 }
-.rte-spd-btn{
-  padding:5px 9px; border-radius:8px; font-size:10.5px; font-weight:700;
-  cursor:pointer; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04);
-  color:rgba(255,255,255,.50); font-family:monospace; transition:all .18s;
+.rte-spd-ico{ font-size:12px; line-height:1; }
+.rte-speed-slider{
+  -webkit-appearance:none; appearance:none;
+  width:82px; height:4px; border-radius:3px; outline:none; cursor:pointer;
+  background:linear-gradient(90deg,rgba(0,255,224,.70) 0%,rgba(0,255,224,.18) 100%);
 }
-.rte-spd-btn.active{ background:rgba(0,255,224,.20); border-color:rgba(0,255,224,.45); color:#00ffe0; }
+.rte-speed-slider::-webkit-slider-thumb{
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:#00ffe0; border:2px solid #040d18;
+  box-shadow:0 0 8px rgba(0,255,224,.80); cursor:pointer; transition:box-shadow .15s;
+}
+.rte-speed-slider::-webkit-slider-thumb:hover{box-shadow:0 0 14px rgba(0,255,224,1);}
+.rte-speed-slider::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; background:#00ffe0;
+  border:2px solid #040d18; box-shadow:0 0 8px rgba(0,255,224,.80); cursor:pointer;
+}
+.rte-spd-val{
+  font-size:11px; font-weight:800; color:#00ffe0; font-family:monospace;
+  min-width:32px; text-align:left; letter-spacing:.3px;
+}
 
 /* Auto-replay */
 .rte-replay{ display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(255,255,255,.45); cursor:pointer; }
@@ -1442,8 +1480,9 @@ nav a.ai-highlight{
 .rte-stats-bar{
   display:grid; grid-template-columns:repeat(5,1fr);
   gap:0; border-bottom:1px solid rgba(255,255,255,.07);
-  background:rgba(0,0,0,.40); flex-shrink:0;
+  background:rgba(0,255,224,.04); flex-shrink:0;
   backdrop-filter:blur(10px);
+  border-top:1px solid rgba(0,255,224,.15);
 }
 .rte-stat{
   padding:11px 0; text-align:center;
@@ -1496,17 +1535,22 @@ nav a.ai-highlight{
 .rte-stop.active{ background:rgba(0,255,224,.08); }
 .rte-stop.passed{ opacity:.55; }
 .rte-stop-dot{
-  width:14px; height:14px; border-radius:50%; flex-shrink:0; margin-top:3px;
-  border:2px solid rgba(0,255,224,.28); transition:all .3s; background:rgba(0,255,224,.08);
+  width:14px; height:14px; border-radius:50%;
+  background:#00ffe0; box-shadow:0 0 8px #00ffe0;
+  flex-shrink:0; position:relative; z-index:1; margin-top:3px;
+  transition:all .3s;
 }
 .rte-stop.active .rte-stop-dot{
   background:#00ffe0!important; border-color:#00ffe0;
-  box-shadow:0 0 10px rgba(0,255,224,.70);
   animation:stopPulse 1s ease-in-out infinite;
 }
-.rte-stop.start-stop .rte-stop-dot{ background:rgba(0,168,255,.35); border-color:#00a8ff; }
-.rte-stop.end-stop   .rte-stop-dot{ background:rgba(0,255,224,.35); border-color:#00ffe0; }
-@keyframes stopPulse{ 0%,100%{box-shadow:0 0 8px rgba(0,255,224,.50)} 50%{box-shadow:0 0 18px rgba(0,255,224,.90)} }
+.rte-stop.start-stop .rte-stop-dot{ background:#00a8ff; box-shadow:0 0 8px #00a8ff; }
+.rte-stop.end-stop   .rte-stop-dot{ background:#00ffe0; box-shadow:0 0 8px #00ffe0; }
+.rte-stop.passed .rte-stop-dot{ background:rgba(0,255,224,.25); box-shadow:none; }
+@keyframes stopPulse{
+  0%,100% { box-shadow:0 0 8px #00ffe0; }
+  50% { box-shadow:0 0 20px #00ffe0, 0 0 35px rgba(0,255,224,.5); }
+}
 
 .rte-stop-info{ flex:1; min-width:0; }
 .rte-stop-name{ font-size:12.5px; font-weight:800; color:rgba(255,255,255,.80); }
@@ -1516,6 +1560,88 @@ nav a.ai-highlight{
 .rte-stop-meta{ font-size:10px; color:rgba(255,255,255,.35); margin-top:3px; font-weight:500; line-height:1.4; }
 .rte-stop-eta{ font-size:10.5px; color:rgba(0,255,224,.60); font-weight:700; margin-top:3px; }
 .rte-stop-weather{ font-size:14px; float:right; margin-top:-2px; }
+
+/* ── Reviews Modal ── */
+#viewReviewsModal {
+  position:fixed; inset:0; z-index:5000;
+  background:rgba(2,8,18,.85); backdrop-filter:blur(10px);
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+#viewReviewsModal.open { display:flex; }
+.rv-box {
+  background:linear-gradient(145deg,#0a1628,#0d1f38);
+  border:1px solid rgba(0,255,224,.2); border-radius:20px;
+  width:min(640px,96vw); max-height:88vh;
+  display:flex; flex-direction:column;
+  box-shadow:0 0 60px rgba(0,255,224,.1),0 30px 60px rgba(0,0,0,.8);
+  overflow:hidden;
+}
+.rv-head {
+  padding:20px 24px 16px; border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+}
+.rv-title { font-size:18px; font-weight:900; color:#fff; }
+.rv-route { font-size:13px; color:rgba(0,255,224,.7); margin-top:2px; }
+.rv-close {
+  width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06); color:#fff; font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background .2s;
+}
+.rv-close:hover { background:rgba(255,255,255,.14); }
+.rv-summary {
+  padding:16px 24px; border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; gap:24px; flex-shrink:0;
+}
+.rv-big-score {
+  font-size:52px; font-weight:900; line-height:1;
+  background:linear-gradient(135deg,#f9c858,#f39c12);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.rv-stars-wrap { display:flex; flex-direction:column; gap:6px; flex:1; }
+.rv-star-row { display:flex; align-items:center; gap:8px; }
+.rv-star-lbl { font-size:12px; color:#aaa; width:24px; text-align:right; }
+.rv-star-bar { flex:1; height:7px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden; }
+.rv-star-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#f9c858,#f39c12); transition:width .5s; }
+.rv-star-cnt { font-size:12px; color:#aaa; width:20px; }
+.rv-total-lbl { font-size:13px; color:rgba(255,255,255,.5); margin-top:4px; }
+.rv-list { overflow-y:auto; padding:12px 24px 20px; flex:1; display:flex; flex-direction:column; gap:10px; }
+.rv-list::-webkit-scrollbar { width:4px; }
+.rv-list::-webkit-scrollbar-thumb { background:rgba(0,255,224,.2); border-radius:2px; }
+.rv-item {
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+  border-radius:12px; padding:14px 16px;
+}
+.rv-item-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.rv-name { font-size:13px; font-weight:700; color:#d0eaf5; }
+.rv-stars { color:#f9c858; font-size:14px; letter-spacing:1px; }
+.rv-comment { font-size:13px; color:rgba(255,255,255,.65); line-height:1.55; }
+.rv-date { font-size:11px; color:rgba(255,255,255,.3); margin-top:5px; }
+.rv-empty { text-align:center; padding:40px 20px; color:rgba(255,255,255,.4); font-size:15px; }
+.rv-stars-yellow { color:#f9c858; font-size:15px; letter-spacing:2px; }
+.rv-item-foot { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+.rv-expand-hint { font-size:11px; color:rgba(0,255,224,.6); font-weight:700; transition:color .2s; }
+.rv-item:hover .rv-expand-hint { color:#00ffe0; }
+.rv-detail { display:none; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.07); }
+.rv-detail.open { display:block; }
+.rv-cats { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.rv-cat-row { display:flex; align-items:center; gap:8px; }
+.rv-cat-ico { font-size:13px; width:20px; }
+.rv-cat-name { font-size:12px; color:rgba(255,255,255,.55); flex:1; }
+.rv-cat-stars { color:#f9c858; font-size:13px; letter-spacing:1px; }
+.rv-tags-row { display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; }
+.rv-tag-chip { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(0,255,224,.08); border:1px solid rgba(0,255,224,.20); color:rgba(0,255,224,.8); }
+/* tabs */
+.rv-tabs { display:flex; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+.rv-tab {
+  flex:1; padding:13px 0; border:none; background:none; color:rgba(255,255,255,.45);
+  font-size:13.5px; font-weight:700; cursor:pointer; transition:all .2s;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+.rv-tab:hover { color:rgba(255,255,255,.75); }
+.rv-tab.active { color:#00ffe0; border-bottom-color:#00ffe0; }
+.rv-panel { display:none; flex:1; flex-direction:column; overflow:hidden; min-height:0; }
+.rv-panel.active { display:flex; }
 
 /* ── POPULAR ROUTES BAR ── */
 .popular-routes-bar{
@@ -1530,6 +1656,76 @@ nav a.ai-highlight{
   color:rgba(255,255,255,.65);cursor:pointer;transition:all .2s;white-space:nowrap;
 }
 .pop-route-chip:hover{background:rgba(0,255,224,.12);border-color:rgba(0,255,224,.30);color:#00ffe0;}
+
+/* ── Swap button ── */
+.swap-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(0,255,224,.10);border:1px solid rgba(0,255,224,.25);
+  color:#00ffe0;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .22s;flex-shrink:0;font-family:"Segoe UI",Arial,sans-serif;
+}
+.swap-btn:hover{background:rgba(0,255,224,.22);transform:rotate(180deg) scale(1.1);box-shadow:0 0 14px rgba(0,255,224,.40);}
+
+/* ── SORT FILTER BAR ── */
+.sort-filter-bar{
+  width:min(1100px,94vw);margin:14px auto 0;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:0 4px;
+}
+.sf-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.sf-sep{color:rgba(255,255,255,.15);font-size:16px;margin:0 2px;}
+.sf-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.55);cursor:pointer;transition:all .22s;white-space:nowrap;
+}
+.sf-chip:hover{background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.25);color:#00ffe0;}
+.sf-chip.active{background:rgba(0,255,224,.16);border-color:rgba(0,255,224,.45);color:#00ffe0;box-shadow:0 0 10px rgba(0,255,224,.15);}
+
+/* ── SKELETON LOADING ── */
+.skeleton-card{
+  background:linear-gradient(135deg,rgba(6,14,28,.97),rgba(8,20,38,.95));
+  border:1px solid rgba(255,255,255,.06);border-radius:24px;overflow:hidden;
+  padding:24px;display:grid;grid-template-columns:1fr 188px;gap:0;min-height:200px;
+}
+.skel{
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);
+  background-size:200% 100%;animation:skelShimmer 1.5s infinite;border-radius:6px;
+}
+@keyframes skelShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-line{height:12px;margin-bottom:10px;}
+.skel-title{height:20px;width:55%;margin-bottom:14px;}
+.skel-right{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px 16px;border-left:1px solid rgba(255,255,255,.05);}
+
+/* ── Social proof ── */
+.tc-social-proof{
+  font-size:10px;font-weight:700;color:rgba(46,204,113,.80);
+  background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.18);
+  padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;
+  animation:socialPulse 3s ease-in-out infinite;
+}
+@keyframes socialPulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+/* ── Price tier badge ── */
+.tc-price-tier{
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;
+}
+.tier-cheap{background:rgba(46,204,113,.12);color:#2ecc71;border:1px solid rgba(46,204,113,.22);}
+.tier-mid  {background:rgba(241,196,15,.10);color:#f1c40f;border:1px solid rgba(241,196,15,.22);}
+.tier-prem {background:rgba(108,92,231,.14);color:#a29bfe;border:1px solid rgba(108,92,231,.28);}
+
+/* ── Scroll to top button ── */
+#scrollTopBtn{
+  position:fixed;bottom:90px;right:26px;width:42px;height:42px;border-radius:50%;
+  background:rgba(0,255,224,.12);border:1px solid rgba(0,255,224,.25);
+  color:#00ffe0;font-size:18px;cursor:pointer;z-index:1100;
+  display:none;align-items:center;justify-content:center;
+  transition:all .22s;font-family:"Segoe UI",Arial,sans-serif;
+  box-shadow:0 4px 16px rgba(0,0,0,.35);
+}
+#scrollTopBtn:hover{background:rgba(0,255,224,.25);transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,255,224,.25);}
+#scrollTopBtn.visible{display:flex;}
 
 /* ── TIME FILTER BAR ── */
 .time-filter-bar{
@@ -1576,6 +1772,14 @@ nav a.ai-highlight{
 .tc-compare-btn:hover{background:rgba(108,92,231,.24);border-color:rgba(108,92,231,.50);}
 .tc-compare-btn.comparing{background:rgba(108,92,231,.30);border-color:rgba(108,92,231,.70);color:#fff;}
 
+/* ── Trip description strip ── */
+.tc-desc {
+  margin-top: 10px; padding: 10px 14px;
+  background: rgba(0,255,224,0.04); border-left: 3px solid rgba(0,255,224,0.4);
+  border-radius: 0 8px 8px 0; font-size: 12px; color: rgba(200,230,240,0.8);
+  line-height: 1.6;
+}
+
 /* Compare floating bar */
 .cmp-bar{
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:4000;
@@ -1617,6 +1821,64 @@ nav a.ai-highlight{
   color:rgba(255,255,255,.50);cursor:pointer;transition:all .2s;
 }
 .rs-chip:hover{background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.22);color:#00ffe0;}
+
+/* ── LIVE ACTIVITY TICKER ── */
+.live-ticker{
+  background:linear-gradient(90deg,rgba(0,10,20,.92) 0%,rgba(2,14,30,.90) 50%,rgba(0,10,20,.92) 100%);
+  border:1px solid rgba(0,255,224,.12);
+  border-radius:12px;
+  padding:9px 0; overflow:hidden; position:relative;
+  margin:36px auto 0;
+  width:min(1100px,94vw);
+}
+.live-ticker::before,.live-ticker::after{
+  content:""; position:absolute; top:0; bottom:0; width:120px; z-index:2; pointer-events:none;
+}
+.live-ticker::before{left:0; background:linear-gradient(90deg,rgba(0,10,20,.95),transparent);}
+.live-ticker::after {right:0;background:linear-gradient(270deg,rgba(0,10,20,.95),transparent);}
+.ticker-inner{
+  display:flex; align-items:center; gap:0;
+  animation:tickerScroll 40s linear infinite;
+  white-space:nowrap;
+}
+.ticker-inner:hover{animation-play-state:paused;}
+@keyframes tickerScroll{
+  0%  {transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+.ticker-dot{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0 28px; border-right:1px solid rgba(255,255,255,.08);
+  font-size:12.5px; font-weight:600; color:rgba(220,240,255,.60);
+}
+.ticker-dot .tik-live{width:7px;height:7px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71;flex-shrink:0;animation:tikPulse 1.5s ease-in-out infinite;}
+@keyframes tikPulse{0%,100%{opacity:.6;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+.ticker-dot .tik-name{color:#fff;font-weight:700;}
+.ticker-dot .tik-route{color:#00ffe0;font-weight:700;}
+.ticker-lbl{
+  position:absolute;left:20px;top:50%;transform:translateY(-50%);
+  font-size:10px;font-weight:800;color:#2ecc71;text-transform:uppercase;
+  letter-spacing:1px;z-index:3;display:flex;align-items:center;gap:5px;
+}
+.ticker-lbl-dot{width:6px;height:6px;border-radius:50%;background:#2ecc71;animation:tikPulse 1.2s ease-in-out infinite;}
+
+/* ── PAYMENT TRUST STRIP ── */
+.payment-trust-strip{
+  width:min(1100px,94vw); margin:36px auto 0;
+  display:flex; align-items:center; justify-content:center;
+  gap:0; flex-wrap:wrap;
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07);
+  border-radius:16px; overflow:hidden;
+}
+.pts-item{
+  display:flex; align-items:center; gap:8px;
+  padding:12px 22px; font-size:12px; font-weight:700;
+  color:rgba(255,255,255,.45); border-right:1px solid rgba(255,255,255,.06);
+  transition:background .2s,color .2s;
+}
+.pts-item:last-child{border-right:none;}
+.pts-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.70);}
+.pts-ico{font-size:16px;}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1648,7 +1910,7 @@ nav a.ai-highlight{
 </div>
 
 <!-- ═══ REVIEW MODAL PREMIUM ═══ -->
-<div id="reviewModal" class="rm-overlay" onclick="if(event.target===this)closeReview()">
+<div id="reviewModal" class="rm-overlay" style="display:none!important" onclick="if(event.target===this)closeReview()">
   <div class="rm-box">
     <!-- Animated gradient background that reacts to rating -->
     <div class="rm-bg-glow" id="rmBgGlow"></div>
@@ -1797,12 +2059,18 @@ nav a.ai-highlight{
         <!-- Messages appended by JS -->
       </div>
       <div class="ai-quick" id="aiQuickActions" style="padding:0 14px 10px;flex-shrink:0;">
-        <button class="ai-quick-btn" onclick="aiQuick('rẻ nhất')">Rẻ nhất</button>
-        <button class="ai-quick-btn" onclick="aiQuick('sắp khởi hành')">Sắp khởi hành</button>
-        <button class="ai-quick-btn" onclick="aiQuick('VIP')">Xe VIP</button>
-        <button class="ai-quick-btn" onclick="aiQuick('còn chỗ trống')">Còn chỗ</button>
-        <button class="ai-quick-btn" onclick="aiQuick('đánh giá cao nhất')">Đánh giá cao</button>
-        <button class="ai-quick-btn" onclick="aiQuick('tóm tắt tất cả chuyến')">Tóm tắt</button>
+        <button class="ai-quick-btn" onclick="aiQuick('chuyến rẻ nhất')">💸 Rẻ nhất</button>
+        <button class="ai-quick-btn" onclick="aiQuick('sắp khởi hành')">⏰ Sắp đi</button>
+        <button class="ai-quick-btn" onclick="aiQuick('xe VIP Limousine')">👑 VIP</button>
+        <button class="ai-quick-btn" onclick="aiQuick('còn chỗ trống')">🟢 Còn chỗ</button>
+        <button class="ai-quick-btn" onclick="aiQuick('đánh giá cao nhất')">⭐ Cao sao</button>
+        <button class="ai-quick-btn" onclick="aiQuick('tóm tắt tất cả chuyến')">📊 Tóm tắt</button>
+        <button class="ai-quick-btn" onclick="aiQuick('chuyến buổi sáng sớm')">🌅 Sáng sớm</button>
+        <button class="ai-quick-btn" onclick="aiQuick('chuyến đêm khuya')">🌙 Đêm khuya</button>
+        <button class="ai-quick-btn" onclick="aiQuick('chuyến sắp đầy chỗ')">🔥 Sắp đầy</button>
+        <button class="ai-quick-btn" onclick="aiQuick('gợi ý chuyến tốt nhất hôm nay')">🏆 Tốt nhất</button>
+        <button class="ai-quick-btn" onclick="aiQuick('tuyến đường xa nhất')">📏 Dài nhất</button>
+        <button class="ai-quick-btn" onclick="aiQuick('hủy vé hoàn tiền chính sách')">❓ Chính sách</button>
       </div>
       <div class="ai-drawer-input">
         <input id="aiInput" placeholder="Hỏi về chuyến đi..." onkeydown="if(event.key==='Enter')aiSend()">
@@ -1984,6 +2252,7 @@ nav a.ai-highlight{
     </div>
   </div>
   <input id="origin" type="hidden">
+  <button class="swap-btn" onclick="swapOriginDest()" title="Đổi chiều">⇄</button>
   <div class="prov-wrap" id="destWrap">
     <div class="prov-trigger" id="destTrigger" tabindex="0">📍 Điểm đến</div>
     <span class="prov-arrow">▼</span>
@@ -1994,17 +2263,51 @@ nav a.ai-highlight{
   </div>
   <input id="destination" type="hidden">
   <input id="date" type="date">
-  <select id="busType">
+  <select id="busType" style="display:none">
     <option value="">Loại xe</option>
     <option value="NORMAL">Thường</option>
     <option value="VIP">VIP</option>
   </select>
-  <select id="sortPrice">
+  <select id="sortPrice" style="display:none">
     <option value="">💰 Sắp xếp giá</option>
     <option value="asc">Giá tăng dần</option>
     <option value="desc">Giá giảm dần</option>
   </select>
   <button id="searchBtn">🔍 Tìm chuyến</button>
+</div>
+
+<!-- ═══ SORT + FILTER BAR ═══ -->
+<div class="sort-filter-bar" id="sortFilterBar">
+  <span class="sf-lbl">🔽 Sắp xếp:</span>
+  <span class="sf-chip active" onclick="setSortFilter('',this)" data-sort="" data-type="">🌐 Tất cả</span>
+  <span class="sf-chip" onclick="setSortFilter('asc',this)" data-sort="asc">💰 Giá thấp nhất</span>
+  <span class="sf-chip" onclick="setSortFilter('desc',this)" data-sort="desc">💎 Giá cao nhất</span>
+  <span class="sf-chip" onclick="setSortFilter('dep',this)" data-sort="dep">⏰ Khởi hành sớm</span>
+  <span class="sf-chip" onclick="setSortFilter('rating',this)" data-sort="rating">⭐ Đánh giá cao</span>
+  <span class="sf-sep">|</span>
+  <span class="sf-lbl">Loại xe:</span>
+  <span class="sf-chip" onclick="setBusTypeFilter('',this)" data-btype="">Tất cả</span>
+  <span class="sf-chip" onclick="setBusTypeFilter('NORMAL',this)" data-btype="NORMAL">🚌 Thường</span>
+  <span class="sf-chip" onclick="setBusTypeFilter('VIP',this)" data-btype="VIP">💎 VIP</span>
+  <span class="sf-chip" onclick="setBusTypeFilter('LIMOUSINE',this)" data-btype="LIMOUSINE">👑 Limousine</span>
+</div>
+
+<!-- ═══ LIVE ACTIVITY TICKER ═══ -->
+<div class="live-ticker" id="liveTicker">
+  <span class="ticker-lbl"><span class="ticker-lbl-dot"></span>LIVE</span>
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- ═══ PAYMENT / TRUST STRIP ═══ -->
+<div class="payment-trust-strip">
+  <div class="pts-item"><span class="pts-ico">🔒</span>SSL 256-bit</div>
+  <div class="pts-item"><span class="pts-ico">💳</span>MoMo</div>
+  <div class="pts-item"><span class="pts-ico">🏦</span>ZaloPay</div>
+  <div class="pts-item"><span class="pts-ico">🏧</span>Ngân hàng</div>
+  <div class="pts-item"><span class="pts-ico">💵</span>Tiền mặt</div>
+  <div class="pts-item"><span class="pts-ico">🛡️</span>Hoàn tiền 100%</div>
+  <div class="pts-item"><span class="pts-ico">⭐</span>Đánh giá 4.9/5</div>
+  <div class="pts-item"><span class="pts-ico">🤖</span>AI Powered</div>
 </div>
 
 <!-- ═══ STATS ═══ -->
@@ -2020,6 +2323,10 @@ nav a.ai-highlight{
   <div class="stat-box">
     <h2 class="counter" data-target="98" data-live="true" data-range="1">0</h2>
     <p>% Đánh giá 5 sao <span class="stat-live">● LIVE</span></p>
+  </div>
+  <div class="stat-box">
+    <h2 class="counter" data-target="120" data-live="true" data-range="2">0</h2>
+    <p>Nhà xe đối tác uy tín <span class="stat-live">● LIVE</span></p>
   </div>
 </div>
 
@@ -2161,8 +2468,76 @@ nav a.ai-highlight{
 </div>
 
 <!-- ═══ FOOTER ═══ -->
-<footer>
-  <p>SmartBusAI © 2026 · Hệ thống đặt vé xe thông minh · Powered by AI</p>
+<footer style="margin-top:80px;background:rgba(0,0,0,.45);border-top:1px solid rgba(255,255,255,.06);padding:0;">
+  <!-- Trust/payment row -->
+  <div style="border-bottom:1px solid rgba(255,255,255,.05);padding:18px 30px;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;">
+    <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;">Thanh toán an toàn:</span>
+    <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);">💳 MoMo</span>
+    <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);">🏦 ZaloPay</span>
+    <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);">🏧 ATM/Internet Banking</span>
+    <span style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);">💵 Tiền mặt</span>
+    <span style="margin-left:8px;display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:rgba(46,204,113,.65);">🔒 SSL 256-bit</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:rgba(46,204,113,.65);">🛡️ PCI DSS</span>
+  </div>
+  <!-- Main footer grid -->
+  <div style="max-width:1100px;margin:0 auto;padding:44px 30px 36px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#00ffe0,#00a8ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(0,255,224,.30);">🚌</div>
+        <span style="font-size:18px;font-weight:800;background:linear-gradient(90deg,#00ffe0,#7eb8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">SmartBusAI</span>
+      </div>
+      <p style="font-size:13px;color:rgba(255,255,255,.42);line-height:1.75;max-width:290px;margin-bottom:16px;">Nền tảng đặt vé xe khách thông minh hàng đầu Việt Nam — AI tư vấn lộ trình, đặt vé trong 60 giây, hoàn tiền 100%.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span style="background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.18);color:#00ffe0;padding:5px 12px;border-radius:20px;font-size:10.5px;font-weight:800;">🤖 AI Powered</span>
+        <span style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.18);color:#2ecc71;padding:5px 12px;border-radius:20px;font-size:10.5px;font-weight:800;">🔒 Bảo mật</span>
+        <span style="background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.18);color:#f39c12;padding:5px 12px;border-radius:20px;font-size:10.5px;font-weight:800;">⭐ 4.9/5 sao</span>
+      </div>
+      <div style="margin-top:20px;display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71;flex-shrink:0;animation:tikPulse 1.5s infinite;"></span>
+        <span style="font-size:12px;color:rgba(255,255,255,.38);font-weight:600;">Server đang hoạt động tốt</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.40);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;">Dịch vụ</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="index.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#00ffe0'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🏠 Trang chủ</a>
+        <a href="booking.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#00ffe0'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🎫 Đặt vé xe</a>
+        <a href="profile.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#00ffe0'" onmouseout="this.style.color='rgba(255,255,255,.52)'">👤 Tài khoản</a>
+        <a href="hotro.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#00ffe0'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🛟 Hỗ trợ</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.40);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;">Chính sách</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">📋 Điều khoản sử dụng</span>
+        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">🔒 Chính sách bảo mật</span>
+        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">💳 Hoàn vé & đổi vé</span>
+        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">🛡️ Bảo hiểm hành khách</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.40);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;">Liên hệ</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <span style="color:rgba(255,255,255,.55);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;">📞 1900 1234</span>
+        <span style="color:rgba(255,255,255,.55);font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;">✉️ support@smartbusai.vn</span>
+        <span style="color:rgba(255,255,255,.45);font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;">🕐 7:00 – 22:00 mỗi ngày</span>
+        <div style="margin-top:6px;display:flex;gap:8px;">
+          <span style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,255,224,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'" title="Facebook">📘</span>
+          <span style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,255,224,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'" title="YouTube">▶️</span>
+          <span style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(0,255,224,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'" title="Zalo">💬</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bottom bar -->
+  <div style="border-top:1px solid rgba(255,255,255,.05);padding:16px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <span style="font-size:12px;color:rgba(255,255,255,.22);">SmartBusAI © 2026 · Hệ thống đặt vé xe thông minh · Powered by AI</span>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:11px;color:rgba(255,255,255,.20);">🇻🇳 Việt Nam</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.20);">v2.6.0</span>
+      <span style="font-size:11px;color:rgba(46,204,113,.40);">● Tất cả hệ thống hoạt động bình thường</span>
+    </div>
+  </div>
 </footer>
 
 <!-- ===================================================
@@ -2333,17 +2708,18 @@ setInterval(nextRev,3800);
 
 /* ── SEARCH ── */
 async function searchTrips(){
-  const o=document.getElementById("origin").value.trim();
-  const d=document.getElementById("destination").value.trim();
+  const o=resolveSearchTerm(document.getElementById("origin").value.trim());
+  const d=resolveSearchTerm(document.getElementById("destination").value.trim());
   const dt=document.getElementById("date").value;
   const bt=document.getElementById("busType").value;
   const sp=document.getElementById("sortPrice").value;
-  if(!o||!d){ alert("Vui lòng nhập điểm đi và điểm đến"); return; }
+  if(!o||!d){ showToast("Vui lòng nhập điểm đi và điểm đến", "warning"); return; }
   _searchActive=true;
+  showSkeletonLoading();
   try{
     const res=await fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}`);
     renderTrips(await res.json());
-  }catch{ alert("Lỗi khi tìm chuyến"); }
+  }catch{ showToast("Không thể kết nối server. Vui lòng thử lại.", "error"); hideSkeletonLoading(); }
 }
 document.getElementById("searchBtn").addEventListener("click",searchTrips);
 document.addEventListener("keydown",e=>{ if(e.key==="Enter") searchTrips(); });
@@ -2352,6 +2728,43 @@ document.addEventListener("keydown",e=>{ if(e.key==="Enter") searchTrips(); });
 let allTripsData=[];
 let currentPage=1;
 const PAGE_SIZE=10;
+
+/* ── Build smart trip description ── */
+function buildTripDesc(t) {
+  const km = t.distance_km || 0;
+  const hrs = t.duration_hours || Math.round(km / 60) || '?';
+  const price = t.base_price || 0;
+  const type = (t.bus_type || '').toUpperCase();
+  const origin = t.origin || '';
+  const dest = t.destination || '';
+
+  let tips = [];
+
+  // Distance tip
+  if (km > 800) tips.push('🛣️ Hành trình dài — nên mang gối cổ và đồ ăn nhẹ');
+  else if (km > 400) tips.push('🛣️ Hành trình trung bình — thoải mái di chuyển');
+  else tips.push('🛣️ Tuyến ngắn — nhanh chóng và tiện lợi');
+
+  // Bus type tip
+  if (type.includes('VIP') || type.includes('LIMOUSINE')) tips.push('💺 Ghế VIP/Limousine — không gian riêng, có chăn gối');
+  else if (type.includes('GIƯỜNG') || type.includes('SLEEPER') || type.includes('NẰM')) tips.push('🛏️ Xe giường nằm — phù hợp ngủ đêm, tiết kiệm thời gian');
+  else tips.push('🪑 Ghế ngồi thoải mái — phù hợp mọi hành khách');
+
+  // Destination tip
+  const destLower = dest.toLowerCase();
+  if (destLower.includes('đà lạt')) tips.push('🌿 Đà Lạt mát mẻ — mang theo áo ấm');
+  else if (destLower.includes('hội an') || destLower.includes('đà nẵng')) tips.push('🏖️ Miền Trung nắng đẹp — mang kem chống nắng');
+  else if (destLower.includes('phú quốc') || destLower.includes('cần thơ')) tips.push('🌊 Miền Tây sông nước — thử đặc sản địa phương');
+  else if (destLower.includes('hồ chí minh') || destLower.includes('sài gòn')) tips.push('🏙️ TP.HCM sôi động — check-in trước 30 phút');
+  else if (destLower.includes('hà nội')) tips.push('🏛️ Thủ đô — nhiều điểm du lịch, đặt khách sạn sớm');
+  else if (destLower.includes('nha trang')) tips.push('🐚 Nha Trang biển xanh — mang đồ bơi');
+
+  // Price tip
+  if (price < 100000) tips.push('💰 Giá rẻ bất ngờ — đặt ngay kẻo hết!');
+  else if (price > 500000) tips.push('💎 Dịch vụ cao cấp — xứng đáng từng đồng');
+
+  return tips.slice(0, 3).join(' · ');
+}
 
 function renderTrips(trips){
   allTripsData=trips||[];
@@ -2367,10 +2780,16 @@ function renderPage(){
   const pgWrap=document.getElementById("pgWrap");
   list.innerHTML="";
   if(!allTripsData||allTripsData.length===0){
-    list.innerHTML=`<div style="text-align:center;padding:55px 20px;color:rgba(255,255,255,.38);">
-      <div style="font-size:52px;margin-bottom:12px;filter:opacity(.45);">🚌</div>
-      <p style="font-size:15px;font-weight:600;">Không tìm thấy chuyến nào phù hợp</p>
-      <p style="font-size:13px;margin-top:6px;color:rgba(255,255,255,.26);">Thử thay đổi điểm đi / đến hoặc ngày khởi hành</p>
+    list.innerHTML=`<div style="text-align:center;padding:55px 20px;">
+      <div style="font-size:64px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(0,255,224,.30));">🚌</div>
+      <p style="font-size:18px;font-weight:800;color:rgba(255,255,255,.75);margin-bottom:8px;">Không tìm thấy chuyến nào phù hợp</p>
+      <p style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:24px;">Thử thay đổi điểm đi / đến, ngày khởi hành hoặc loại xe</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+        <button onclick="fillSearch('Hà Nội','Đà Nẵng')" style="background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.22);color:#00ffe0;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🏙️ Hà Nội → Đà Nẵng</button>
+        <button onclick="fillSearch('Hồ Chí Minh','Đà Lạt')" style="background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.22);color:#00ffe0;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🌿 HCM → Đà Lạt</button>
+        <button onclick="fillSearch('Hà Nội','Hồ Chí Minh')" style="background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.22);color:#00ffe0;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🚌 HN → HCM</button>
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.22);">Hoặc dùng <b style="color:#00ffe0;">AI gợi ý</b> ở góc dưới trái màn hình</p>
     </div>`;
     pgWrap.style.display="none"; return;
   }
@@ -2382,6 +2801,11 @@ function renderPage(){
       return h>=h1&&h<h2;
     });
   }
+  if(_busTypeFilter) filtered=filtered.filter(t=>t.bus_type===_busTypeFilter);
+  if(_sortMode==="asc") filtered=[...filtered].sort((a,b)=>Number(a.base_price)-Number(b.base_price));
+  else if(_sortMode==="desc") filtered=[...filtered].sort((a,b)=>Number(b.base_price)-Number(a.base_price));
+  else if(_sortMode==="dep") filtered=[...filtered].sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time));
+  else if(_sortMode==="rating") filtered=[...filtered].sort((a,b)=>Number(b.avg_rating||0)-Number(a.avg_rating||0));
   const total=filtered.length;
   const totalPages=Math.ceil(total/PAGE_SIZE)||1;
   const start=(currentPage-1)*PAGE_SIZE;
@@ -2420,6 +2844,18 @@ function renderPage(){
     const btLabel = {VIP:"VIP Cao Cấp",LIMOUSINE:"Limousine",NORMAL:"Tiêu Chuẩn"}[t.bus_type] || t.bus_type || "Tiêu Chuẩn";
     const isVip   = ["VIP","LIMOUSINE"].includes(t.bus_type);
     const isLimo  = t.bus_type === "LIMOUSINE";
+
+    /* Social proof — seeded viewers count (stable per trip per minute, looks real) */
+    const _mSeed=Math.floor(Date.now()/60000); // changes every minute
+    const _vHash=(((t.trip_id||1)*31+_mSeed)*2654435761>>>0)%100;
+    const viewers=(_vHash%12)+2; // 2–13 viewers, deterministic for same trip+minute
+    const socialProof = avail>0 ? `<span class="tc-social-proof">👀 ${viewers} người đang xem</span>` : '';
+
+    /* Price tier */
+    const price = Number(t.base_price)||0;
+    const priceTier = price < 150000 ? {lbl:'💚 Giá rẻ', cls:'tier-cheap'}
+                    : price < 400000 ? {lbl:'🟡 Trung bình', cls:'tier-mid'}
+                    : {lbl:'💎 Cao cấp', cls:'tier-prem'};
 
     /* FOMO badges */
     const ratingNum  = Number(t.avg_rating||0);
@@ -2472,10 +2908,12 @@ function renderPage(){
       <div class="tc-left">
         <div class="tc-topbar">
           <span class="tc-badge ${isVip?'vip':'normal'}">${btLabel}</span>
+          <span class="tc-price-tier ${priceTier.cls}">${priceTier.lbl}</span>
           <span class="tc-rating">★ ${rat}
             <span style="font-weight:500;color:#8fa8c0;font-size:10.5px;">(${revCount} đánh giá)</span>
           </span>
           <span class="tc-cdwn" data-dep="${dep.getTime()}"></span>
+          ${socialProof}
           <span class="tc-status ${isOpen?'open':'full'}">${isOpen?'● Còn vé':'✕ Hết vé'}</span>
         </div>
 
@@ -2556,6 +2994,7 @@ function renderPage(){
             <div class="tc-seat-fill ${seatCls}" style="width:${pct}%"></div>
           </div>
         </div>
+        <div class="tc-desc">${buildTripDesc(t)}</div>
       </div>
 
       <div class="tc-right">
@@ -2570,7 +3009,7 @@ function renderPage(){
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
           Lộ trình
         </button>
-        <button class="tc-review-btn" onclick="openReview(${t.trip_id})">★ Đánh giá</button>
+        <button class="tc-review-btn" onclick="openReviewModal(${t.trip_id},'${escH(t.origin)}','${escH(t.destination)}')">★ Đánh giá</button>
         <button class="tc-compare-btn ${compareSet.has(t.trip_id)?'comparing':''}" onclick="event.stopPropagation();toggleCompare(${t.trip_id},this)">⚖️ So sánh</button>
       </div>`;
     frag.appendChild(card);
@@ -2581,7 +3020,7 @@ function renderPage(){
   renderPagination(totalPages,total,start,end);
 
   // Async: fetch dynamic prices for visible trip cards
-  _loadDynamicPrices(pageTrips.map(t=>t.trip_id));
+  _loadDynamicPrices(paginated.map(t=>t.trip_id));
 }
 
 /* ── Load & render dynamic prices for trip cards ── */
@@ -2659,7 +3098,40 @@ function goPage(page){
 let _showingTomorrow=false;
 let _noTripRetryTimer=null;
 
+function hideSkeletonLoading(){
+  const list=document.getElementById("tripList");
+  if(list && list.querySelector(".skeleton-card")) list.innerHTML="";
+}
+
+function showSkeletonLoading(n=3){
+  const list=document.getElementById("tripList");
+  list.innerHTML=Array(n).fill(0).map(()=>`
+    <div class="skeleton-card">
+      <div style="padding:0;display:flex;flex-direction:column;gap:12px;">
+        <div class="skel skel-line" style="width:30%"></div>
+        <div class="skel skel-title"></div>
+        <div style="display:flex;gap:16px;align-items:center;margin:8px 0;">
+          <div class="skel" style="height:28px;width:80px;border-radius:4px;"></div>
+          <div class="skel" style="height:2px;flex:1;border-radius:0;"></div>
+          <div class="skel" style="height:36px;width:36px;border-radius:50%;"></div>
+          <div class="skel" style="height:2px;flex:1;border-radius:0;"></div>
+          <div class="skel" style="height:28px;width:80px;border-radius:4px;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;">
+          ${Array(8).fill(0).map(()=>`<div class="skel" style="height:52px;border-radius:9px;"></div>`).join('')}
+        </div>
+        <div class="skel skel-line" style="width:80%;margin-top:4px;"></div>
+      </div>
+      <div class="skel-right">
+        <div class="skel" style="height:14px;width:60%;"></div>
+        <div class="skel" style="height:28px;width:85%;"></div>
+        <div class="skel" style="height:42px;width:100%;border-radius:14px;margin-top:8px;"></div>
+      </div>
+    </div>`).join('');
+}
+
 async function loadAllTrips(){
+  showSkeletonLoading();
   try{
     const r=await fetch("/api/trips?nocache="+Date.now());
     const raw=await r.json();
@@ -2752,6 +3224,18 @@ function _hideTomorrowBanner(){
 }
 function goBooking(id){ window.location.href=`booking.html?tripId=${id}`; }
 
+/* ── SWAP ORIGIN/DESTINATION ── */
+function swapOriginDest(){
+  const ov=document.getElementById("origin").value;
+  const dv=document.getElementById("destination").value;
+  const ot=document.getElementById("originTrigger");
+  const dt=document.getElementById("destTrigger");
+  document.getElementById("origin").value=dv;
+  document.getElementById("destination").value=ov;
+  const oText=ot.textContent; ot.textContent=dt.textContent; dt.textContent=oText;
+  if(ov||dv) searchTrips();
+}
+
 /* ── POPULAR ROUTE FILL ── */
 function fillSearch(from,to){
   document.getElementById("origin").value=from;
@@ -2770,6 +3254,12 @@ function fillSearch(from,to){
   try{
     const r=await fetch("/data/vietnam-location.json");
     provinces=Object.keys(await r.json());
+  // Enrich dropdown with common city names used by bus operators
+  const CITY_ALIASES=['Huế','Nha Trang','Đà Lạt','Vũng Tàu','Buôn Ma Thuột',
+    'Quy Nhơn','Tuy Hòa','Phan Rang','Phan Thiết','Biên Hòa',
+    'Mỹ Tho','Vinh','Đồng Hới','Pleiku','Hội An'];
+  CITY_ALIASES.forEach(c=>{if(!provinces.includes(c))provinces.push(c);});
+  provinces.sort((a,b)=>a.localeCompare(b,'vi'));
   }catch(e){ console.warn("vietnam-location.json load error",e); return; }
 
   function setup(wrapId, triggerId, searchId, listId, hiddenId){
@@ -2852,6 +3342,21 @@ function setTimeFilter(range,chip){
   renderPage();
 }
 
+/* ── SORT + BUS TYPE FILTER ── */
+let _sortMode="", _busTypeFilter="";
+function setSortFilter(mode,chip){
+  _sortMode=mode;
+  document.querySelectorAll('.sort-filter-bar .sf-chip[data-sort]').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  currentPage=1; renderPage();
+}
+function setBusTypeFilter(type,chip){
+  _busTypeFilter=type;
+  document.querySelectorAll('.sort-filter-bar .sf-chip[data-btype]').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  currentPage=1; renderPage();
+}
+
 /* ── WISHLIST ── */
 const WL_KEY="sb_wishlist";
 function getWishlist(){try{return new Set(JSON.parse(localStorage.getItem(WL_KEY)||"[]"));}catch{return new Set();}}
@@ -2869,7 +3374,7 @@ function toggleCompare(id,btn){
   if(compareSet.has(id)){
     compareSet.delete(id);btn.classList.remove("comparing");btn.textContent="⚖️ So sánh";
   }else{
-    if(compareSet.size>=2){alert("Chỉ được chọn tối đa 2 chuyến để so sánh.");return;}
+    if(compareSet.size>=2){showToast("Chỉ được chọn tối đa 2 chuyến để so sánh.", "warning");return;}
     compareSet.add(id);btn.classList.add("comparing");btn.textContent="✓ Đã chọn";
   }
   const bar=document.getElementById("cmpBar");
@@ -2882,7 +3387,7 @@ function clearCompare(){
   document.querySelectorAll(".tc-compare-btn").forEach(b=>{b.classList.remove("comparing");b.textContent="⚖️ So sánh";});
 }
 function openCompareModal(){
-  if(compareSet.size<2){alert("Hãy chọn đúng 2 chuyến để so sánh.");return;}
+  if(compareSet.size<2){showToast("Hãy chọn đúng 2 chuyến để so sánh.", "warning");return;}
   const ids=[...compareSet];
   const t1=allTripsData.find(t=>t.trip_id===ids[0]);
   const t2=allTripsData.find(t=>t.trip_id===ids[1]);
@@ -3056,22 +3561,11 @@ let selRating=0, curTrip=null;
 const RL_LABELS=["","😞 Rất tệ","😕 Tệ","😐 Bình thường","😊 Tốt","🤩 Tuyệt vời!"];
 
 function openReview(id){
-  curTrip=id; selRating=0;
-  document.getElementById("reviewComment").value="";
-  document.getElementById("rmCC").textContent="0";
-  document.getElementById("rmRatingLabel").textContent="Chạm vào sao để đánh giá";
-  document.getElementById("rmRatingLabel").className="rm-rating-label";
-  document.querySelectorAll("#starContainer span").forEach(s=>s.classList.remove("lit"));
-  document.querySelectorAll(".rm-tag").forEach(t=>t.classList.remove("selected"));
-  document.querySelectorAll(".rm-cat-stars span").forEach(s=>s.classList.remove("lit"));
-  const rmFill=document.getElementById("rmCharFill"); if(rmFill) rmFill.style.width="0%";
-  const rmGlow=document.getElementById("rmBgGlow"); if(rmGlow) rmGlow.style.background="radial-gradient(circle,rgba(0,255,224,.06) 0%,transparent 70%)";
-  const rmIcon=document.getElementById("rmHeadIcon"); if(rmIcon) rmIcon.textContent="⭐";
   const t=allTripsData.find(x=>x.trip_id==id);
-  if(t) document.getElementById("rmRouteLine").textContent=`${t.origin||''} → ${t.destination||''}`;
-  document.getElementById("reviewModal").style.display="flex";
+  const origin=t?t.origin:''; const dest=t?t.destination:'';
+  openReviewModal(id, origin, dest, 'write');
 }
-function closeReview(){ document.getElementById("reviewModal").style.display="none"; }
+function closeReview(){ closeReviewModal(); }
 function toggleTag(el){ el.classList.toggle("selected"); }
 function rmCharCount(){
   const len=document.getElementById("reviewComment").value.length;
@@ -3083,39 +3577,60 @@ function rmCharCount(){
   }
 }
 
-// Star interactions
-const starEls=document.querySelectorAll("#starContainer span");
-starEls.forEach((s,i)=>{
-  s.addEventListener("mouseover",()=>{
-    starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<=i));
-    document.getElementById("rmRatingLabel").textContent=RL_LABELS[i+1];
-    document.getElementById("rmRatingLabel").className="rm-rating-label has-rating";
-  });
-  s.addEventListener("click",()=>{
-    selRating=i+1;
-    starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
-    _rmUpdateGlow(selRating);
-  });
-});
-document.getElementById("starContainer").addEventListener("mouseleave",()=>{
-  starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
-  document.getElementById("rmRatingLabel").textContent=selRating?RL_LABELS[selRating]:"Chạm vào sao để đánh giá";
-  document.getElementById("rmRatingLabel").className="rm-rating-label"+(selRating?" has-rating":"");
-});
-
-// Category star interactions
-document.querySelectorAll('.rm-cat-stars').forEach(container=>{
-  const spans=container.querySelectorAll('span');
-  let catVal=0;
-  spans.forEach((s,i)=>{
-    s.addEventListener('mouseover',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<=i)));
-    s.addEventListener('mouseout',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal)));
-    s.addEventListener('click',()=>{
-      catVal=i+1;
-      spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal));
+// Star interactions — dùng container trong rvPanelWrite (tránh trùng với modal cũ ẩn)
+function _initStarInteractions(){
+  const container=document.querySelector("#rvPanelWrite #starContainer");
+  if(!container) return;
+  const starEls=[...container.querySelectorAll("span")];
+  starEls.forEach((s,i)=>{
+    s.addEventListener("mouseover",()=>{
+      starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<=i));
+      const lbl=document.getElementById("rmRatingLabel");
+      if(lbl){ lbl.textContent=RL_LABELS[i+1]; lbl.className="rm-rating-label has-rating"; }
+    });
+    s.addEventListener("click",()=>{
+      selRating=i+1;
+      starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
+      _rmUpdateGlow(selRating);
     });
   });
-});
+  container.addEventListener("mouseleave",()=>{
+    starEls.forEach((ss,ii)=>ss.classList.toggle("lit",ii<selRating));
+    const lbl=document.getElementById("rmRatingLabel");
+    if(lbl){ lbl.textContent=selRating?RL_LABELS[selRating]:"Chạm vào sao để đánh giá"; lbl.className="rm-rating-label"+(selRating?" has-rating":""); }
+  });
+}
+// _initStarInteractions() sẽ được gọi sau khi toàn bộ DOM load xong (xem cuối file)
+
+// Category star interactions — gắn sau khi DOM sẵn sàng (gọi ở cuối file)
+function _initCatStars(){
+  document.querySelectorAll('#rvPanelWrite .rm-cat-stars').forEach(container=>{
+    const spans=[...container.querySelectorAll('span')];
+    let catVal=0;
+    spans.forEach((s,i)=>{
+      s.addEventListener('mouseover',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<=i)));
+      s.addEventListener('mouseout',()=>spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal)));
+      s.addEventListener('click',()=>{
+        catVal=i+1;
+        spans.forEach((ss,ii)=>ss.classList.toggle('lit',ii<catVal));
+        container.dataset.val=catVal;
+      });
+    });
+  });
+}
+function _getCatRatings(){
+  const get=(cat)=>{
+    const el=document.querySelector(`#rvPanelWrite .rm-cat-stars[data-cat="${cat}"]`);
+    return el&&el.dataset.val ? parseInt(el.dataset.val) : null;
+  };
+  return { time:get('time'), clean:get('clean'), service:get('service'), comfort:get('comfort') };
+}
+function _resetCatStars(){
+  document.querySelectorAll('#rvPanelWrite .rm-cat-stars').forEach(c=>{
+    c.dataset.val='0';
+    c.querySelectorAll('span').forEach(s=>s.classList.remove('lit'));
+  });
+}
 
 // Rating-reactive background glow
 function _rmUpdateGlow(rating){
@@ -3136,19 +3651,35 @@ function _rmUpdateGlow(rating){
 }
 
 async function submitReview(){
-  const comment=document.getElementById("reviewComment").value;
+  const comment=document.getElementById("reviewComment").value.trim();
   const user=JSON.parse(localStorage.getItem("user")||"null");
   if(!user){ showToast("Bạn cần đăng nhập để đánh giá","error"); return; }
-  if(!selRating){ showToast("Vui lòng chọn số sao","error"); return; }
-  const tags=[...document.querySelectorAll(".rm-tag.selected")].map(t=>t.textContent.trim()).join(", ");
-  const fullComment=(tags?tags+(comment?"\n"+comment:""):comment)||"";
+  if(!selRating){ showToast("Vui lòng chọn số sao tổng thể","error"); return; }
+  const tags=[...document.querySelectorAll("#rvPanelWrite .rm-tag.selected")].map(t=>t.textContent.trim()).join(", ");
+  const cats=_getCatRatings();
   const btn=document.getElementById("rmSubmitBtn");
-  btn.disabled=true; btn.textContent="Đang gửi...";
+  btn.disabled=true;
+  btn.innerHTML='<span class="rm-submit-ico">⏳</span><span class="rm-submit-txt">Đang gửi...</span>';
   try{
-    await fetch("/api/reviews",{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ user_id:user.user_id, trip_id:curTrip, rating:Number(selRating), comment:fullComment }) });
-    showToast("🎉 Cảm ơn bạn đã đánh giá!","success"); closeReview(); loadAllTrips();
-  }catch{ showToast("Lỗi gửi đánh giá, thử lại!","error"); }
-  finally{ btn.disabled=false; btn.textContent="🚀 Gửi đánh giá"; }
+    const res=await fetch("/api/reviews",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        user_id:user.user_id, trip_id:curTrip,
+        rating:Number(selRating), comment:comment||null,
+        rating_time:cats.time, rating_clean:cats.clean,
+        rating_service:cats.service, rating_comfort:cats.comfort,
+        tags:tags||null
+      })
+    });
+    const data=await res.json();
+    if(!res.ok){ showToast(data.message||"Lỗi gửi đánh giá","error"); return; }
+    showToast("🎉 Cảm ơn bạn đã đánh giá!","success");
+    const t=allTripsData.find(x=>x.trip_id==curTrip);
+    if(t) openReviewModal(curTrip, t.origin, t.destination, 'view');
+    else closeReviewModal();
+    loadAllTrips();
+  }catch(e){ showToast("Lỗi gửi đánh giá, thử lại!","error"); }
+  finally{ btn.disabled=false; btn.innerHTML='<span class="rm-submit-ico">🚀</span><span class="rm-submit-txt">Gửi đánh giá</span>'; }
 }
 
 /* ── REVIEWS CARDS CAROUSEL ── */
@@ -3256,43 +3787,256 @@ async function aiSend(){
   }
 }
 
-/* Local fallback AI khi không có API — xử lý dữ liệu chuyến thực */
+/* ════════════════════════════════════════════════════════
+   LOCAL AI FALLBACK — Keyword engine (runs when no API)
+   Recognises 20+ intent categories from natural language
+════════════════════════════════════════════════════════ */
 function localAIFallback(query){
   if(!allTripsData.length) return "⚠️ Chưa có dữ liệu chuyến xe. Vui lòng thử lại sau.";
-  const q=query.toLowerCase();
+  const q=query.toLowerCase()
+    .replace(/tp\.?\s*hồ chí minh|tp\.?hcm|sài gòn|saigon/g,'hồ chí minh')
+    .replace(/thừa thiên huế/g,'huế')
+    .replace(/bà rịa.?vũng tàu/g,'vũng tàu');
+
   let results=[];
-  if(q.includes("rẻ")||q.includes("giá thấp")||q.includes("cheap")){
-    results=[...allTripsData].sort((a,b)=>Number(a.base_price)-Number(b.base_price)).slice(0,3);
-    return `💸 <b>Top 3 chuyến rẻ nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)} | ${t.plate_number||"—"}`).join("<br>");
+
+  // ── [1] ROUTE: detect 2 city names in query ──
+  const CITIES=['hà nội','hồ chí minh','đà nẵng','cần thơ','hải phòng','huế','nha trang',
+    'đà lạt','vũng tàu','quy nhơn','vinh','buôn ma thuột','phan thiết','pleiku','kon tum',
+    'quảng ninh','ninh bình','thanh hóa','nghệ an','hà tĩnh','quảng bình','quảng trị',
+    'quảng nam','quảng ngãi','bình định','phú yên','ninh thuận','bình thuận','đồng nai',
+    'bình dương','long an','tiền giang','bến tre','vĩnh long','trà vinh','sóc trăng',
+    'an giang','cà mau','đà lạt','lâm đồng','gia lai','bắc ninh','thái nguyên'];
+  const found=CITIES.filter(c=>q.includes(c));
+
+  if(found.length>=2){
+    const [fc,tc]=found;
+    results=allTripsData.filter(t=>(t.origin||'').toLowerCase().includes(fc)&&(t.destination||'').toLowerCase().includes(tc));
+    if(!results.length) results=allTripsData.filter(t=>(t.origin||'').toLowerCase().includes(tc)&&(t.destination||'').toLowerCase().includes(fc));
+    if(results.length){
+      return `🗺️ <b>Tuyến ${fc.toUpperCase()} → ${tc.toUpperCase()}:</b><br>`
+        +results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)} | Còn ${t.available_seats} ghế`).join('<br>')
+        +(results.length>4?`<br><small>+${results.length-4} chuyến khác trên tuyến này</small>`:'');
+    }
+    return `❌ Chưa có chuyến ${fc} ↔ ${tc} trong hệ thống. Thử tìm trực tiếp ở ô tìm kiếm bên trên nhé!`;
   }
-  if(q.includes("vip")||q.includes("limousine")){
-    results=allTripsData.filter(t=>(t.bus_type||"").toUpperCase().includes("VIP")||(t.bus_type||"").toLowerCase().includes("limousine")).slice(0,3);
-    if(!results.length) return "Hiện chưa có chuyến VIP/Limousine khả dụng.";
-    return `👑 <b>Chuyến VIP:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join("<br>");
+  if(found.length===1){
+    const city=found[0];
+    results=allTripsData.filter(t=>(t.origin||'').toLowerCase().includes(city)||(t.destination||'').toLowerCase().includes(city));
+    if(results.length) return `📍 <b>Chuyến liên quan ${city.toUpperCase()}:</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+    return `❌ Chưa có chuyến nào qua ${city} trong hệ thống.`;
   }
-  if(q.includes("sắp")||q.includes("gần nhất")||q.includes("sớm")){
+
+  // ── [2] PRICE RANGE: "từ Xk đến Yk" / "dưới Xk" / "khoảng Xk" ──
+  const rangeM=q.match(/(\d[\d.,]*)\s*k?\s*(?:đến|tới|đến khoảng|-)\s*(\d[\d.,]*)\s*k/);
+  const underM=q.match(/(?:dưới|không quá|tối đa)\s*(\d[\d.,]*)\s*k/);
+  const overM =q.match(/(?:trên|từ|hơn)\s*(\d[\d.,]*)\s*k/);
+  const aroundM=q.match(/(?:khoảng|tầm|cỡ)\s*(\d[\d.,]*)\s*k/);
+  if(rangeM){
+    const minP=parseFloat(rangeM[1].replace(',','.'))*1000, maxP=parseFloat(rangeM[2].replace(',','.'))*1000;
+    results=allTripsData.filter(t=>{const p=Number(t.base_price);return p>=minP&&p<=maxP;});
+    if(!results.length) return `💸 Không có chuyến nào trong khoảng giá đó. Giá hiện tại từ ${fmt(Math.min(...allTripsData.map(t=>Number(t.base_price)).filter(Boolean)))} đến ${fmt(Math.max(...allTripsData.map(t=>Number(t.base_price)).filter(Boolean)))}.`;
+    return `💸 <b>Chuyến giá ${rangeM[1]}k–${rangeM[2]}k:</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+  }
+  if(underM){
+    const maxP=parseFloat(underM[1].replace(',','.'))*1000;
+    results=[...allTripsData].filter(t=>Number(t.base_price)>0&&Number(t.base_price)<=maxP).sort((a,b)=>a.base_price-b.base_price);
+    if(!results.length) return `💸 Không có chuyến nào dưới ${underM[1]}k. Giá rẻ nhất hiện tại: ${fmt(Math.min(...allTripsData.map(t=>Number(t.base_price)).filter(Boolean)))}.`;
+    return `💸 <b>Chuyến dưới ${underM[1]}k:</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+  }
+  if(aroundM&&!overM){
+    const ctr=parseFloat(aroundM[1].replace(',','.'))*1000;
+    results=[...allTripsData].filter(t=>Number(t.base_price)>0).sort((a,b)=>Math.abs(Number(a.base_price)-ctr)-Math.abs(Number(b.base_price)-ctr));
+    return `💸 <b>Chuyến giá khoảng ${aroundM[1]}k:</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+  }
+
+  // ── [3] CHEAPEST / EXPENSIVE ──
+  if(q.match(/rẻ|giá thấp|tiết kiệm|cheap|bình dân|phổ thông/)){
+    results=[...allTripsData].filter(t=>Number(t.base_price)>0).sort((a,b)=>Number(a.base_price)-Number(b.base_price)).slice(0,4);
+    return `💸 <b>Top chuyến rẻ nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | <b>${fmt(t.base_price)}</b> | ${fmtT(t.departure_time)} | Còn ${t.available_seats} ghế`).join('<br>');
+  }
+  if(q.match(/đắt|cao cấp|sang|luxury|premium/)){
+    results=[...allTripsData].sort((a,b)=>Number(b.base_price)-Number(a.base_price)).slice(0,3);
+    return `💎 <b>Chuyến cao cấp nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${t.bus_type||'NORMAL'}`).join('<br>');
+  }
+
+  // ── [4] BUS TYPE: VIP / LIMOUSINE / NORMAL ──
+  if(q.match(/vip|limousine|giường nằm|nằm ngủ/)){
+    results=allTripsData.filter(t=>/VIP|LIMOUSINE/i.test(t.bus_type||'')).slice(0,4);
+    if(!results.length) return '👑 Hiện chưa có chuyến VIP/Limousine khả dụng.';
+    return `👑 <b>Chuyến VIP/Limousine:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${t.bus_type} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+  }
+  if(q.match(/thường|bình thường|ghế ngồi|normal|xe đò/)){
+    results=allTripsData.filter(t=>/NORMAL/i.test(t.bus_type||'')||!t.bus_type).slice(0,4);
+    return `🚌 <b>Xe ghế ngồi tiêu chuẩn:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>');
+  }
+
+  // ── [5] TIME OF DAY ──
+  if(q.match(/sáng sớm|rạng sáng|sáng|buổi sáng|5h|6h|7h|8h/)){
+    results=allTripsData.filter(t=>{const h=new Date(t.departure_time).getHours();return h>=4&&h<12;});
+    return results.length?`🌅 <b>Chuyến buổi sáng (4h–12h):</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmtT(t.departure_time)} | ${fmt(t.base_price)}`).join('<br>'):'Không có chuyến buổi sáng.';
+  }
+  if(q.match(/chiều|buổi chiều|trưa|12h|13h|14h|15h|16h|17h/)){
+    results=allTripsData.filter(t=>{const h=new Date(t.departure_time).getHours();return h>=12&&h<18;});
+    return results.length?`🌤 <b>Chuyến buổi chiều (12h–18h):</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmtT(t.departure_time)} | ${fmt(t.base_price)}`).join('<br>'):'Không có chuyến buổi chiều.';
+  }
+  if(q.match(/tối|đêm|khuya|ban đêm|22h|23h|0h|1h|2h|3h/)){
+    results=allTripsData.filter(t=>{const h=new Date(t.departure_time).getHours();return h>=20||h<5;});
+    return results.length?`🌙 <b>Chuyến tối/đêm (20h–5h):</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | ${fmtT(t.departure_time)} | ${fmt(t.base_price)}`).join('<br>'):'Không có chuyến đêm.';
+  }
+
+  // ── [6] COMING SOON / SOONEST ──
+  if(q.match(/sắp|gần nhất|sớm nhất|khởi hành sớm/)){
     const now=Date.now();
-    results=[...allTripsData].filter(t=>new Date(t.departure_time)>now).sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time)).slice(0,3);
-    if(!results.length) return "Không có chuyến sắp khởi hành.";
-    return `⏰ <b>Sắp khởi hành:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmtT(t.departure_time)} | ${fmt(t.base_price)}`).join("<br>");
+    results=[...allTripsData].filter(t=>new Date(t.departure_time)>now).sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time)).slice(0,4);
+    if(!results.length) return 'Không có chuyến nào sắp khởi hành.';
+    return `⏰ <b>Chuyến sắp khởi hành:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${fmtT(t.departure_time)} | ${fmt(t.base_price)}`).join('<br>');
   }
-  if(q.includes("còn chỗ")||q.includes("trống")){
-    results=allTripsData.filter(t=>Number(t.available_seats)>0&&t.status==="OPEN").slice(0,3);
-    return `🟢 <b>Còn ghế trống:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | Còn ${t.available_seats}/${t.total_seats} ghế | ${fmt(t.base_price)}`).join("<br>");
+
+  // ── [7] AVAILABILITY ──
+  if(q.match(/còn chỗ|còn ghế|trống|khả dụng|available/)){
+    results=allTripsData.filter(t=>Number(t.available_seats)>0&&t.status==='OPEN');
+    return `🟢 <b>Chuyến còn ghế trống (${results.length}):</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | Còn <b>${t.available_seats}</b>/${t.total_seats} ghế | ${fmt(t.base_price)}`).join('<br>');
   }
-  if(q.includes("đánh giá")||q.includes("rating")||q.includes("tốt nhất")){
-    results=[...allTripsData].filter(t=>t.avg_rating).sort((a,b)=>Number(b.avg_rating)-Number(a.avg_rating)).slice(0,3);
-    if(!results.length) results=allTripsData.slice(0,3);
-    return `⭐ <b>Đánh giá cao nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ⭐${t.avg_rating||"N/A"} | ${fmt(t.base_price)}`).join("<br>");
+  if(q.match(/sắp đầy|ít chỗ|ít ghế|gần hết|hết chỗ/)){
+    results=allTripsData.filter(t=>Number(t.available_seats)>0&&Number(t.available_seats)<=5&&t.status==='OPEN');
+    if(!results.length) return '✅ Hiện không có chuyến nào sắp hết chỗ.';
+    return `🔥 <b>Chuyến sắp đầy (≤5 ghế):</b><br>`+results.slice(0,4).map(t=>`• ${t.origin}→${t.destination} | Còn ${t.available_seats} ghế | ${fmt(t.base_price)}`).join('<br>');
   }
-  if(q.includes("tóm tắt")||q.includes("tổng")||q.includes("tất cả")){
-    const open=allTripsData.filter(t=>t.status==="OPEN").length;
+
+  // ── [8] RATING / QUALITY ──
+  if(q.match(/đánh giá|rating|sao|chất lượng|tốt nhất|uy tín/)){
+    results=[...allTripsData].filter(t=>t.avg_rating).sort((a,b)=>Number(b.avg_rating)-Number(a.avg_rating)).slice(0,4);
+    if(!results.length) results=allTripsData.slice(0,4);
+    return `⭐ <b>Đánh giá cao nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ⭐${Number(t.avg_rating||0).toFixed(1)} | ${fmt(t.base_price)} | ${t.bus_type||'NORMAL'}`).join('<br>');
+  }
+
+  // ── [9] RECOMMENDATION ──
+  if(q.match(/gợi ý|khuyên|nên chọn|nên đi|tốt|tư vấn|phù hợp|recommend/)){
+    results=[...allTripsData].filter(t=>t.status==='OPEN'&&Number(t.available_seats)>0)
+      .sort((a,b)=>(Number(b.avg_rating)||3.5)-(Number(a.avg_rating)||3.5)).slice(0,3);
+    return `🏆 <b>Gợi ý hôm nay:</b><br>`
+      +results.map((t,i)=>`${['🥇','🥈','🥉'][i]} ${t.origin}→${t.destination} | ⭐${Number(t.avg_rating||4).toFixed(1)} | ${fmt(t.base_price)} | Còn ${t.available_seats} ghế`).join('<br>')
+      +'<br><small>Xếp theo đánh giá & ghế còn lại.</small>';
+  }
+
+  // ── [10] DISTANCE ──
+  if(q.match(/xa nhất|dài nhất|dài|tuyến dài/)){
+    results=[...allTripsData].filter(t=>t.distance_km).sort((a,b)=>Number(b.distance_km)-Number(a.distance_km)).slice(0,4);
+    if(!results.length) return 'Không có thông tin cự ly.';
+    return `📏 <b>Tuyến xa nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${t.distance_km} km | ${fmt(t.base_price)}`).join('<br>');
+  }
+  if(q.match(/gần nhất|ngắn|nhanh nhất/)){
+    results=[...allTripsData].filter(t=>t.distance_km).sort((a,b)=>Number(a.distance_km)-Number(b.distance_km)).slice(0,4);
+    if(!results.length) return 'Không có thông tin cự ly.';
+    return `📏 <b>Tuyến gần nhất:</b><br>`+results.map(t=>`• ${t.origin}→${t.destination} | ${t.distance_km} km | ${fmt(t.base_price)}`).join('<br>');
+  }
+
+  // ── [11] OPERATOR / COMPANY ──
+  if(q.match(/nhà xe|hãng xe|công ty|operator|hãng/)){
+    const ops=[...new Set(allTripsData.map(t=>t.operator_name).filter(Boolean))];
+    return `🏢 <b>Nhà xe trên hệ thống (${ops.length}):</b><br>`+ops.slice(0,8).map(o=>`• ${o}`).join('<br>')+(ops.length>8?`<br><small>...và ${ops.length-8} nhà xe khác</small>`:'');
+  }
+
+  // ── [12] AMENITIES / WIFI ──
+  if(q.match(/wifi|wi-fi|internet|mạng|sạc|usb|điều hòa|tiện nghi|dịch vụ/)){
+    results=allTripsData.filter(t=>/VIP|LIMOUSINE/i.test(t.bus_type||'')).slice(0,3);
+    return `🛜 <b>Xe có đầy đủ tiện nghi (WiFi, sạc USB, điều hòa):</b><br>`
+      +(results.length?results.map(t=>`• ${t.origin}→${t.destination} | 👑${t.bus_type} | ${fmt(t.base_price)}`).join('<br>'):'Vui lòng liên hệ nhà xe.')
+      +'<br><small>Xe VIP/Limousine thường có WiFi, TV, ghế massage.</small>';
+  }
+
+  // ── [13] CANCEL / REFUND / POLICY ──
+  if(q.match(/hủy|hoàn tiền|hoàn vé|đổi vé|đổi chỗ|chính sách|refund|cancel|mất vé/)){
+    return `📋 <b>Chính sách hủy/đổi vé SmartBusAI:</b><br>
+      • Hủy trước <b>24h</b>: hoàn 90% tiền vé<br>
+      • Hủy trước <b>4h</b>: hoàn 50% tiền vé<br>
+      • Hủy dưới <b>4h</b> trước giờ đi: không hoàn tiền<br>
+      • <b>Đổi vé</b>: liên hệ hotline trước 2h khởi hành<br>
+      • Hỗ trợ trực tuyến tại mục <b>Hỗ trợ</b> trên trang cá nhân`;
+  }
+
+  // ── [14] BOOKING / HOW TO ──
+  if(q.match(/đặt vé|mua vé|book|cách đặt|làm sao đặt|hướng dẫn/)){
+    return `🎫 <b>Cách đặt vé SmartBusAI:</b><br>
+      1️⃣ Nhập điểm đi & điểm đến → chọn ngày<br>
+      2️⃣ Chọn chuyến phù hợp → nhấn <b>Đặt ngay</b><br>
+      3️⃣ Chọn ghế trên sơ đồ xe<br>
+      4️⃣ Thanh toán qua <b>MoMo / VNPay / Thẻ</b><br>
+      5️⃣ Nhận vé điện tử qua email & SMS<br>
+      <small>Bạn có thể xem vé trong mục <b>Lịch sử đặt vé</b>.</small>`;
+  }
+
+  // ── [15] PAYMENT ──
+  if(q.match(/thanh toán|trả tiền|payment|momo|vnpay|thẻ|chuyển khoản|tiền mặt/)){
+    return `💳 <b>Phương thức thanh toán:</b><br>
+      • 🟣 <b>MoMo</b> — quét QR, nhanh 30 giây<br>
+      • 🔵 <b>VNPay</b> — hỗ trợ toàn bộ ngân hàng Việt<br>
+      • 💳 <b>Thẻ tín dụng/ghi nợ</b> Visa, Mastercard<br>
+      • 🏦 <b>Chuyển khoản</b> ngân hàng (có thể chậm hơn)<br>
+      <small>Tất cả giao dịch được mã hóa SSL 256-bit.</small>`;
+  }
+
+  // ── [16] SEAT TYPES ──
+  if(q.match(/ghế vip|ghế thường|loại ghế|hạng ghế|ngồi|nằm|giường/)){
+    return `💺 <b>Loại ghế xe khách:</b><br>
+      • 🟢 <b>Ghế thường</b> — ghế ngồi tiêu chuẩn, giá rẻ nhất<br>
+      • 💜 <b>Ghế VIP</b> — ngả rộng, điều chỉnh điện, có gác chân<br>
+      • 👑 <b>Limousine</b> — giường nằm phẳng, TV riêng, sạc USB<br>
+      <small>Chọn ghế ngay trên sơ đồ xe khi đặt vé.</small>`;
+  }
+
+  // ── [17] TICKET CHECK / QR ──
+  if(q.match(/kiểm vé|qr|mã qr|check vé|soát vé/)){
+    return `📱 <b>Kiểm tra vé:</b><br>
+      • Vé điện tử có mã QR gửi qua email<br>
+      • Nhân viên soát bằng QR Code khi lên xe<br>
+      • Xem vé trong <b>Lịch sử đặt vé</b> → nhấn vào vé để hiện QR<br>
+      • Không cần in giấy — chỉ cần điện thoại`;
+  }
+
+  // ── [18] LUGGAGE ──
+  if(q.match(/hành lý|ba lô|túi|vali|hàng hoá|gửi đồ|ký gửi/)){
+    return `🧳 <b>Hành lý xe khách:</b><br>
+      • Mỗi hành khách được mang <b>≤20kg hành lý</b> miễn phí<br>
+      • Hàng vượt 20kg: phụ thu theo kg, liên hệ nhà xe<br>
+      • Không chở hàng cấm, hàng dễ cháy nổ<br>
+      • Giữ hành lý xách tay bên cạnh khi đi xe giường nằm`;
+  }
+
+  // ── [19] SUMMARY / OVERVIEW ──
+  if(q.match(/tóm tắt|tổng|tất cả|overview|toàn bộ|báo cáo/)){
+    const open=allTripsData.filter(t=>t.status==='OPEN').length;
+    const avSeats=allTripsData.reduce((s,t)=>s+Number(t.available_seats||0),0);
     const prices=allTripsData.map(t=>Number(t.base_price)).filter(Boolean);
-    const minP=Math.min(...prices), maxP=Math.max(...prices);
-    return `📊 <b>Tóm tắt ${allTripsData.length} chuyến:</b><br>• Đang mở: ${open} chuyến<br>• Giá thấp nhất: ${fmt(minP)}<br>• Giá cao nhất: ${fmt(maxP)}<br>• Tuyến phổ biến: ${allTripsData[0]?.origin||"—"} → ${allTripsData[0]?.destination||"—"}`;
+    const minP=prices.length?Math.min(...prices):0, maxP=prices.length?Math.max(...prices):0;
+    const avgP=prices.length?Math.round(prices.reduce((a,b)=>a+b,0)/prices.length):0;
+    const routes=[...new Set(allTripsData.map(t=>`${t.origin}→${t.destination}`))];
+    return `📊 <b>Tổng quan hệ thống:</b><br>
+      • Tổng chuyến: <b>${allTripsData.length}</b> &nbsp;·&nbsp; Đang mở: <b>${open}</b><br>
+      • Ghế trống tổng: <b>${avSeats}</b> ghế<br>
+      • Giá từ ${fmt(minP)} → ${fmt(maxP)} (trung bình ${fmt(avgP)})<br>
+      • Tuyến đang có: <b>${routes.length}</b> tuyến<br>
+      • Phổ biến nhất: ${routes[0]||'—'}`;
   }
-  // General: show first 3
-  return `🔍 Đây là một số chuyến xe hiện có:<br>`+allTripsData.slice(0,3).map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join("<br>")+`<br><small>Hỏi thêm: rẻ nhất, VIP, sắp khởi hành, còn chỗ...</small>`;
+
+  // ── [20] GREETING / HELP ──
+  if(q.match(/xin chào|hello|hi|chào|giúp|trợ giúp|help|có thể hỏi|hỏi gì/)){
+    return `👋 <b>Chào mừng đến với AI Trip Analyzer!</b><br>
+      Tôi có thể giúp bạn:<br>
+      🗺️ Tìm chuyến theo tuyến đường (VD: "Hà Nội đi Đà Nẵng")<br>
+      💸 Lọc theo giá (VD: "dưới 200k", "từ 300k đến 500k")<br>
+      ⏰ Lọc theo giờ (VD: "chuyến sáng", "chuyến đêm")<br>
+      👑 Chọn loại xe (VD: "xe VIP", "giường nằm")<br>
+      📋 Hỏi chính sách (VD: "hủy vé thế nào?")<br>
+      <small>Nhập câu hỏi tự nhiên — tôi hiểu tiếng Việt!</small>`;
+  }
+
+  // ── [21] DEFAULT: show top trips + tips ──
+  const topTrips=allTripsData.filter(t=>t.status==='OPEN'&&Number(t.available_seats)>0).slice(0,3);
+  return `🔍 <b>Một số chuyến nổi bật:</b><br>`
+    +topTrips.map(t=>`• ${t.origin}→${t.destination} | ${fmt(t.base_price)} | ${fmtT(t.departure_time)}`).join('<br>')
+    +`<br><small>💡 Gợi ý: hỏi "<i>chuyến rẻ nhất</i>", "<i>Hà Nội đi Đà Nẵng</i>", "<i>xe VIP còn chỗ</i>"...</small>`;
 }
 
 function buildTripsContext(){
@@ -3321,7 +4065,7 @@ let _sbSeats=1, _sbUser=null; // lưu từ smartBook để dùng trong confirmSm
 
 async function smartBook(){
   _sbUser=JSON.parse(localStorage.getItem("user")||"null");
-  if(!_sbUser){ alert("Bạn cần đăng nhập để đặt vé!"); return; }
+  if(!_sbUser){ showToast("Bạn cần đăng nhập để đặt vé!", "warning"); setTimeout(()=>window.location.href="/pages/auth/login.html",1500); return; }
 
   const origin=(document.getElementById("sbOrigin").value||"").trim();
   const dest  =(document.getElementById("sbDest").value||"").trim();
@@ -3605,6 +4349,81 @@ async function confirmSmartBook(){
 })();
 </script>
 
+<!-- ═══ REVIEWS MODAL (xem + viết) ═══ -->
+<div id="viewReviewsModal">
+  <div class="rv-box">
+    <!-- Header -->
+    <div class="rv-head">
+      <div>
+        <div class="rv-title">⭐ Đánh giá chuyến xe</div>
+        <div class="rv-route" id="rvRoute">—</div>
+      </div>
+      <button class="rv-close" onclick="closeReviewModal()">✕</button>
+    </div>
+    <!-- Tabs -->
+    <div class="rv-tabs">
+      <button class="rv-tab active" id="rvTabView" onclick="rvSwitchTab('view')">📖 Xem đánh giá</button>
+      <button class="rv-tab" id="rvTabWrite" onclick="rvSwitchTab('write')">✍️ Viết đánh giá</button>
+    </div>
+    <!-- Panel: Xem -->
+    <div class="rv-panel active" id="rvPanelView">
+      <div class="rv-summary">
+        <div>
+          <div class="rv-big-score" id="rvScore">—</div>
+          <div class="rv-total-lbl" id="rvTotal">0 đánh giá</div>
+        </div>
+        <div class="rv-stars-wrap" id="rvStarsWrap"></div>
+      </div>
+      <div class="rv-list" id="rvList"></div>
+    </div>
+    <!-- Panel: Viết -->
+    <div class="rv-panel" id="rvPanelWrite" style="overflow-y:auto;padding:0;">
+      <div class="rm-bg-glow" id="rmBgGlow"></div>
+      <div class="rm-body" style="position:relative;z-index:1;">
+        <div class="rm-stars-section">
+          <div class="rm-stars" id="starContainer">
+            <span data-v="1">★</span><span data-v="2">★</span>
+            <span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+          </div>
+          <div class="rm-rating-label" id="rmRatingLabel">Chạm vào sao để đánh giá</div>
+        </div>
+        <div class="rm-cats" id="rmCats">
+          <div class="rm-cat-row"><span class="rm-cat-ico">⏱️</span><span class="rm-cat-lbl">Đúng giờ</span><div class="rm-cat-stars" data-cat="time"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div></div>
+          <div class="rm-cat-row"><span class="rm-cat-ico">🧹</span><span class="rm-cat-lbl">Vệ sinh</span><div class="rm-cat-stars" data-cat="clean"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div></div>
+          <div class="rm-cat-row"><span class="rm-cat-ico">😊</span><span class="rm-cat-lbl">Phục vụ</span><div class="rm-cat-stars" data-cat="service"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div></div>
+          <div class="rm-cat-row"><span class="rm-cat-ico">💺</span><span class="rm-cat-lbl">Tiện nghi</span><div class="rm-cat-stars" data-cat="comfort"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div></div>
+        </div>
+        <div class="rm-section-label">✨ Điểm nổi bật</div>
+        <div class="rm-tags" id="rmTags">
+          <span class="rm-tag" onclick="toggleTag(this)">✅ Đúng giờ</span>
+          <span class="rm-tag" onclick="toggleTag(this)">🧹 Xe sạch sẽ</span>
+          <span class="rm-tag" onclick="toggleTag(this)">😊 Tài xế thân thiện</span>
+          <span class="rm-tag" onclick="toggleTag(this)">❄️ Điều hòa tốt</span>
+          <span class="rm-tag" onclick="toggleTag(this)">💺 Ghế êm ái</span>
+          <span class="rm-tag" onclick="toggleTag(this)">🔇 Yên tĩnh</span>
+          <span class="rm-tag" onclick="toggleTag(this)">📶 WiFi ổn</span>
+          <span class="rm-tag" onclick="toggleTag(this)">🏎️ Chạy êm</span>
+          <span class="rm-tag" onclick="toggleTag(this)">🎵 Nhạc hay</span>
+          <span class="rm-tag" onclick="toggleTag(this)">🛡️ An toàn</span>
+        </div>
+        <div class="rm-section-label">💬 Chia sẻ thêm</div>
+        <div class="rm-textarea-wrap">
+          <textarea id="reviewComment" class="rm-textarea" placeholder="Kể cho chúng tôi nghe về chuyến đi của bạn..." maxlength="500" oninput="rmCharCount()"></textarea>
+          <div class="rm-char-bar"><div class="rm-char-fill" id="rmCharFill"></div></div>
+          <span class="rm-char-count"><span id="rmCC">0</span>/500</span>
+        </div>
+        <div class="rm-footer">
+          <button class="rm-btn-cancel" onclick="closeReviewModal()">Hủy</button>
+          <button class="rm-btn-submit" onclick="submitReview()" id="rmSubmitBtn">
+            <span class="rm-submit-ico">🚀</span>
+            <span class="rm-submit-txt">Gửi đánh giá</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ ROUTE VISUALIZATION MODAL ═══ -->
 <div id="routeModal">
   <div class="rte-box">
@@ -3627,11 +4446,14 @@ async function confirmSmartBook(){
           <span id="rtePlayLbl">Pause</span>
         </button>
 
-        <!-- Speed -->
-        <div class="rte-speed">
-          <button class="rte-spd-btn" data-spd="0" onclick="rteSetSpeed(0)">0.3×</button>
-          <button class="rte-spd-btn active" data-spd="1" onclick="rteSetSpeed(1)">1×</button>
-          <button class="rte-spd-btn" data-spd="2" onclick="rteSetSpeed(2)">2.5×</button>
+        <!-- Speed slider -->
+        <div class="rte-speed" title="Kéo để điều chỉnh tốc độ hành trình">
+          <span class="rte-spd-ico">🐢</span>
+          <input type="range" id="rteSpeedSlider" class="rte-speed-slider"
+                 min="0.1" max="5" step="0.1" value="1"
+                 oninput="rteSetSpeedSlider(this.value)">
+          <span class="rte-spd-ico">🐇</span>
+          <span class="rte-spd-val" id="rteSpeedVal">1×</span>
         </div>
 
         <!-- Toggle 2D / 3D -->
@@ -3740,6 +4562,20 @@ const PROVINCE_GEO={
   'Buôn Ma Thuột':[12.667,108.050],'Đắk Lắk':[12.667,108.050],
   'Gia Lai':[13.983,108.001],'Pleiku':[13.983,108.001],
   'Kon Tum':[14.345,107.982],
+  // Missing provinces — complete coverage
+  'Hà Giang':[22.823,104.984],'Cao Bằng':[22.666,106.257],
+  'Bắc Kạn':[22.147,105.834],'Tuyên Quang':[21.823,105.212],
+  'Lạng Sơn':[21.853,106.762],'Lào Cai':[22.480,103.977],
+  'Yên Bái':[21.722,104.906],'Hòa Bình':[20.690,105.338],
+  'Sơn La':[21.327,103.914],'Điện Biên':[21.386,103.016],
+  'Lai Châu':[22.386,103.459],'Hậu Giang':[9.757,105.641],
+  'Đồng Tháp':[10.583,105.625],'Kiên Giang':[10.009,105.079],
+  'Tây Ninh':[11.310,106.099],'Bình Phước':[11.750,106.723],
+  'Bạc Liêu':[9.286,105.724],'Đắk Nông':[11.978,107.691],
+  'Phú Quốc':[10.224,103.964],'Vũng Tàu':[10.346,107.085],
+  'Điện Biên Phủ':[21.386,103.016],
+  // Islands — Chủ quyền Việt Nam
+  'Hoàng Sa':[16.500,112.000],'Trường Sa':[8.650,114.171],
 };
 
 /* ── Highway 1 spine (North→South) ── */
@@ -3780,6 +4616,27 @@ const ROUTE_DB={
 };
 
 function normP(s){ return (s||'').toLowerCase().trim().replace(/thành phố\s*/,'').replace(/tỉnh\s*/,'').replace(/tp\.\s*/,'tp.').replace(/hcm|hồ chí minh/,'tp.hcm'); }
+
+/* ── Search term normalization: official province → bus-industry name ── */
+const SEARCH_ALIAS={
+  'Thừa Thiên Huế':'Huế',
+  'TP Hồ Chí Minh':'Hồ Chí Minh',
+  'Bà Rịa - Vũng Tàu':'Vũng Tàu',
+  'Khánh Hòa':'Nha Trang',
+  'Lâm Đồng':'Đà Lạt',
+  'Đắk Lắk':'Buôn Ma Thuột',
+  'Đắk Nông':'Đắk Nông',
+  'Phú Yên':'Tuy Hòa',
+  'Ninh Thuận':'Phan Rang',
+  'Bình Thuận':'Phan Thiết',
+  'Bình Định':'Quy Nhơn',
+  'Đồng Nai':'Biên Hòa',
+  'Gia Lai':'Pleiku',
+  'Tiền Giang':'Mỹ Tho',
+  'Nghệ An':'Vinh',
+  'Quảng Bình':'Đồng Hới',
+};
+function resolveSearchTerm(name){return SEARCH_ALIAS[name]||name;}
 
 function findGeo(name){
   const n=normP(name);
@@ -3831,7 +4688,7 @@ function geo2c(lat,lng,W,H){
 }
 
 /* ── State ── */
-let RTE={open:false,trip:null,stops:[],progress:0,playing:true,speed:1,animId:null,mode:'2d',lastTs:0};
+let RTE={open:false,trip:null,stops:[],progress:0,playing:true,speed:1,speedVal:1,animId:null,mode:'2d',lastTs:0};
 
 /* ── Weather by region ── */
 function _regionWeather(lat){
@@ -3853,7 +4710,7 @@ function openRouteModal(tripId){
   const t=allTripsData.find(x=>x.trip_id===tripId);
   if(!t) return;
   RTE.trip=t;
-  RTE.progress=0; RTE.playing=true; RTE.speed=1;
+  RTE.progress=0; RTE.playing=true; RTE.speed=1; RTE.speedVal=1;
   const names=inferRoute(t.origin,t.destination);
   RTE.stops=names.map(name=>({name,geo:findGeo(name)||[0,0]}));
 
@@ -3882,7 +4739,10 @@ function openRouteModal(tripId){
 
   document.getElementById('routeModal').style.display='flex';
   document.getElementById('rtePlayLbl').textContent='Pause';
-  document.querySelectorAll('.rte-spd-btn').forEach(b=>b.classList.toggle('active',+b.dataset.spd===1));
+  const _sl=document.getElementById('rteSpeedSlider');
+  if(_sl){_sl.value=1;}
+  const _sv=document.getElementById('rteSpeedVal');
+  if(_sv){_sv.textContent='1×';}
   buildTimeline();
   if(RTE.animId) cancelAnimationFrame(RTE.animId);
   if(RTE.mode==='2d') _startLeafletMap(); else _startCanvas3D();
@@ -3905,9 +4765,12 @@ function rteTogglePlay(){
     :'<path d="M8 5v14l11-7z"/>';
 }
 
-function rteSetSpeed(v){
-  RTE.speed=v;
-  document.querySelectorAll('.rte-spd-btn').forEach(b=>b.classList.toggle('active',+b.dataset.spd===v));
+function rteSetSpeed(v){RTE.speed=v;} // kept for backward compat
+
+function rteSetSpeedSlider(val){
+  RTE.speedVal=parseFloat(val)||1;
+  const lbl=document.getElementById('rteSpeedVal');
+  if(lbl) lbl.textContent=(RTE.speedVal===Math.floor(RTE.speedVal)?RTE.speedVal:RTE.speedVal.toFixed(1))+'×';
 }
 
 function rteToggleMode(){
@@ -4004,57 +4867,156 @@ function _startLeafletMap(){
     preferCanvas:false, zoomSnap:0.5, zoomDelta:0.5
   });
 
-  // Custom dark tile with high contrast
+  // High-contrast dark tile
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    subdomains:'abcd', maxZoom:19, opacity:0.92
+    subdomains:'abcd', maxZoom:19, opacity:0.88
   }).addTo(_lfMap);
 
-  // Custom zoom control bottom-right
+  // Zoom control
   L.control.zoom({position:'bottomright'}).addTo(_lfMap);
 
-  // Fit bounds with padding
-  try{ _lfMap.fitBounds(L.latLngBounds(lls).pad(0.22)); }catch(e){}
+  // ── PROVINCE LABELS — all 63 provinces + islands ──
+  const routeStopNames=new Set(stops.map(s=>normP(s.name)));
+  Object.entries(PROVINCE_GEO).forEach(([name,[lat,lng]])=>{
+    if(lat===0&&lng===0) return;
+    const isIsland=name==='Hoàng Sa'||name==='Trường Sa';
+    const isOnRoute=routeStopNames.has(normP(name));
+    // Skip duplicate aliases (same lat/lng, show only canonical)
+    const dupKeys=['Vinh','Đồng Hới','Quy Nhơn','Tuy Hòa','Nha Trang','Phan Rang','Phan Thiết',
+      'Biên Hòa','Hội An','Mỹ Tho','Sài Gòn','TP.HCM','Pleiku','Buôn Ma Thuột',
+      'Đà Lạt','Vũng Tàu','Điện Biên Phủ','Phú Quốc'];
+    if(dupKeys.includes(name)&&!isOnRoute&&!isIsland) return;
 
-  // Shadow/halo line (thick, blurred behind)
-  L.polyline(lls,{color:'rgba(0,200,255,0.12)',weight:14,lineCap:'round',lineJoin:'round'}).addTo(_lfMap);
+    if(isIsland){
+      const ico=L.divIcon({
+        html:`<div style="display:flex;align-items:center;gap:4px;background:rgba(0,10,28,.92);border:1px solid rgba(255,200,0,.55);border-radius:8px;padding:3px 8px;white-space:nowrap;backdrop-filter:blur(6px);box-shadow:0 0 10px rgba(255,200,0,.3);">
+          <span style="font-size:13px;">🏝️</span>
+          <span style="font-size:10px;font-weight:700;color:#ffd966;letter-spacing:.3px;">${name}</span>
+          <span style="font-size:8px;color:rgba(255,200,0,.55);">🇻🇳</span>
+        </div>`,
+        iconSize:[0,0],iconAnchor:[0,8],className:''
+      });
+      L.marker([lat,lng],{icon:ico,interactive:true}).addTo(_lfMap)
+        .bindTooltip(`<b>🏝️ Quần đảo ${name}</b><br><span style="color:#ffd966">Lãnh thổ thiêng liêng của Việt Nam</span><br>📍 ${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`,{direction:'top',className:'rte-tip'});
+      return;
+    }
 
-  // Background dashed route line
-  const bgL=L.polyline(lls,{color:'rgba(0,255,224,0.18)',weight:2.5,dashArray:'8 6'}).addTo(_lfMap);
-  setTimeout(()=>{
-    const el=bgL.getElement();
-    if(el) el.querySelectorAll('path').forEach(p=>p.classList.add('rte-bg-dash'));
-  },300);
+    const opacity=isOnRoute?1:0.42;
+    const fontSize=isOnRoute?11:9;
+    const color=isOnRoute?'#00ffe0':'rgba(180,210,240,0.75)';
+    const weight=isOnRoute?700:500;
+    const ico=L.divIcon({
+      html:`<span style="font-size:${fontSize}px;font-weight:${weight};color:${color};white-space:nowrap;text-shadow:0 1px 4px #000,0 0 8px rgba(0,255,224,.4);pointer-events:none;">${name}</span>`,
+      iconSize:[0,0],iconAnchor:[0,6],className:''
+    });
+    L.marker([lat,lng],{icon:ico,interactive:false,zIndexOffset:isOnRoute?200:0}).addTo(_lfMap);
+  });
 
-  // Progress glow line (animated)
-  _lfProgLine=L.polyline([lls[0]],{color:'#00ffe0',weight:5,lineCap:'round',lineJoin:'round',opacity:0.95}).addTo(_lfMap);
-  setTimeout(()=>{
-    const el=_lfProgLine.getElement();
-    if(el) el.querySelectorAll('path').forEach(p=>p.classList.add('rte-prog-path'));
-  },300);
+  // ── SMOOTH ROUTE LINE via catmull-rom interpolation ──
+  function catmullRom(pts,tension,segments){
+    tension=tension===undefined?0.5:tension;
+    segments=segments===undefined?16:segments;
+    if(pts.length<2) return pts;
+    const out=[];
+    const ext=[pts[0],...pts,pts[pts.length-1]];
+    for(let i=1;i<ext.length-2;i++){
+      for(let t=0;t<segments;t++){
+        const tt=t/segments;
+        const t2=tt*tt, t3=t2*tt;
+        const p0=ext[i-1],p1=ext[i],p2=ext[i+1],p3=ext[i+2];
+        const lat=0.5*((2*p1[0])+((-p0[0]+p2[0])*tt)+(((2*p0[0])-(5*p1[0])+(4*p2[0])-p3[0])*t2)+(((-p0[0])+(3*p1[0])-(3*p2[0])+p3[0])*t3));
+        const lng=0.5*((2*p1[1])+((-p0[1]+p2[1])*tt)+(((2*p0[1])-(5*p1[1])+(4*p2[1])-p3[1])*t2)+(((-p0[1])+(3*p1[1])-(3*p2[1])+p3[1])*t3));
+        out.push([lat,lng]);
+      }
+    }
+    out.push(pts[pts.length-1]);
+    return out;
+  }
+  const smoothLls=catmullRom(lls,0.5,20);
 
-  // START marker — premium pulse
+  // ── Helper: find nearest stop to a lat/lng ──
+  function nearestStop(lat,lng){
+    let best=stops[0], bestD=Infinity;
+    stops.forEach(s=>{
+      if(!s.geo||(!s.geo[0]&&!s.geo[1])) return;
+      const d=Math.sqrt((lat-s.geo[0])**2+(lng-s.geo[1])**2);
+      if(d<bestD){bestD=d;best=s;}
+    });
+    return best;
+  }
+
+  // ── Route click handler: show coordinates popup ──
+  function onRoutClick(e){
+    L.DomEvent.stopPropagation(e);
+    const {lat,lng}=e.latlng;
+    const ns=nearestStop(lat,lng);
+    // Estimate progress ratio for this clicked point (closest smoothLls index)
+    let closestIdx=0,minD2=Infinity;
+    smoothLls.forEach(([slat,slng],i)=>{const d2=(lat-slat)**2+(lng-slng)**2;if(d2<minD2){minD2=d2;closestIdx=i;}});
+    const ratio=closestIdx/(smoothLls.length-1);
+    const depMs=new Date(RTE.trip.departure_time).getTime();
+    const arrMs=new Date(RTE.trip.arrival_time).getTime();
+    const estTime=depMs>0&&arrMs>depMs?new Date(depMs+(arrMs-depMs)*ratio).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'—';
+    const kmEst=Number(RTE.trip.distance_km)>0?Math.round(Number(RTE.trip.distance_km)*ratio)+' km':'—';
+    L.popup({className:'rte-coord-popup',maxWidth:240})
+      .setLatLng(e.latlng)
+      .setContent(`<div style="font-family:monospace;font-size:11.5px;line-height:1.9;padding:2px 0;">
+        <div style="color:#00ffe0;font-weight:800;font-size:12px;margin-bottom:5px;font-family:sans-serif;">📍 Tọa độ GPS</div>
+        <div>🔼 Vĩ độ:&nbsp; <b style="color:#fff;">${lat.toFixed(6)}°N</b></div>
+        <div>🔁 Kinh độ: <b style="color:#fff;">${lng.toFixed(6)}°E</b></div>
+        <div style="border-top:1px solid rgba(0,255,224,.18);margin-top:6px;padding-top:6px;font-family:sans-serif;font-size:10.5px;">
+          <span style="color:#94a3b8;">Gần nhất:</span> <b style="color:#7eb8ff;">${ns.name}</b><br>
+          <span style="color:#94a3b8;">Khoảng cách:</span> ${kmEst} &nbsp;·&nbsp; <span style="color:#94a3b8;">Est:</span> ${estTime}
+          <div style="margin-top:5px;">
+            <a href="https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}" target="_blank"
+               style="color:#00ffe0;text-decoration:none;font-size:10px;border:1px solid rgba(0,255,224,.3);border-radius:5px;padding:2px 7px;">
+              🗺️ Mở Google Maps
+            </a>
+          </div>
+        </div>
+      </div>`)
+      .openOn(_lfMap);
+  }
+
+  // Glow layers: outer wide (clickable) + inner medium + animated dashed top
+  const _rteGlow=L.polyline(smoothLls,{color:'rgba(0,255,224,0.12)',weight:22,opacity:1,lineCap:'round',smoothFactor:1}).addTo(_lfMap);
+  _rteGlow.on('click',onRoutClick);
+  const _rteMid=L.polyline(smoothLls,{color:'rgba(0,255,224,0.28)',weight:8,opacity:1,lineCap:'round',smoothFactor:1}).addTo(_lfMap);
+  _rteMid.on('click',onRoutClick);
+  L.polyline(smoothLls,{color:'#00ffe0',weight:3,opacity:0.85,lineCap:'round',smoothFactor:1,dashArray:'10 5'}).addTo(_lfMap);
+
+  // Progress line (animated)
+  _lfProgLine=L.polyline([smoothLls[0]],{color:'#00ffe0',weight:5,lineCap:'round',lineJoin:'round',opacity:0.95}).addTo(_lfMap);
+  setTimeout(()=>{const el=_lfProgLine.getElement();if(el)el.querySelectorAll('path').forEach(p=>p.classList.add('rte-prog-path'));},300);
+
+  // Fit bounds to route + some padding; if islands present, extend east
+  const hasIsland=stops.some(s=>s.name==='Hoàng Sa'||s.name==='Trường Sa');
+  const fitLls=hasIsland?[...lls,[16.5,112.0],[8.65,114.17]]:lls;
+  try{_lfMap.fitBounds(L.latLngBounds(fitLls).pad(0.20));}catch(e){}
+
+  // START marker
   const mkStart=L.divIcon({
     html:`<div style="position:relative;display:flex;align-items:center;gap:6px;">
-      <div style="width:14px;height:14px;border-radius:50%;background:#00a8ff;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,168,255,.25),0 0 16px rgba(0,168,255,.8);animation:stopPulse 1.2s ease infinite;flex-shrink:0;"></div>
-      <div style="background:rgba(0,10,28,.88);border:1px solid rgba(0,168,255,.45);border-radius:8px;padding:3px 9px;font-size:11px;font-weight:800;color:#7eb8ff;white-space:nowrap;backdrop-filter:blur(8px);">🟢 ${stops[0].name}</div>
+      <div style="width:14px;height:14px;border-radius:50%;background:#00a8ff;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,168,255,.25),0 0 16px rgba(0,168,255,.9);animation:stopPulse 1.2s ease infinite;flex-shrink:0;"></div>
+      <div style="background:rgba(0,10,28,.90);border:1px solid rgba(0,168,255,.55);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:800;color:#7eb8ff;white-space:nowrap;backdrop-filter:blur(8px);">🟢 ${stops[0].name}</div>
     </div>`,
     iconSize:[0,0],iconAnchor:[7,7],className:''
   });
   L.marker(lls[0],{icon:mkStart}).addTo(_lfMap)
-    .bindTooltip(`<b>🚀 Điểm xuất phát</b><br>${stops[0].name}`,{direction:'right',className:'rte-tip'});
+    .bindTooltip(`<b>🚀 Điểm xuất phát</b><br>${stops[0].name}<br><span style="color:#94a3b8;font-size:10px;">📍 ${(lls[0][0]).toFixed(4)}°N, ${(lls[0][1]).toFixed(4)}°E</span>`,{direction:'right',className:'rte-tip'});
 
   // END marker
   const mkEnd=L.divIcon({
     html:`<div style="position:relative;display:flex;align-items:center;gap:6px;">
-      <div style="width:14px;height:14px;border-radius:50%;background:#00ffe0;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,255,224,.25),0 0 16px rgba(0,255,224,.8);flex-shrink:0;"></div>
-      <div style="background:rgba(0,10,28,.88);border:1px solid rgba(0,255,224,.45);border-radius:8px;padding:3px 9px;font-size:11px;font-weight:800;color:#00ffe0;white-space:nowrap;backdrop-filter:blur(8px);">🏁 ${stops[stops.length-1].name}</div>
+      <div style="width:14px;height:14px;border-radius:50%;background:#00ffe0;border:2px solid #fff;box-shadow:0 0 0 4px rgba(0,255,224,.25),0 0 16px rgba(0,255,224,.9);flex-shrink:0;"></div>
+      <div style="background:rgba(0,10,28,.90);border:1px solid rgba(0,255,224,.55);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:800;color:#00ffe0;white-space:nowrap;backdrop-filter:blur(8px);">🏁 ${stops[stops.length-1].name}</div>
     </div>`,
     iconSize:[0,0],iconAnchor:[7,7],className:''
   });
   L.marker(lls[lls.length-1],{icon:mkEnd}).addTo(_lfMap)
-    .bindTooltip(`<b>🏁 Điểm đến</b><br>${stops[stops.length-1].name}`,{direction:'left',className:'rte-tip'});
+    .bindTooltip(`<b>🏁 Điểm đến</b><br>${stops[stops.length-1].name}<br><span style="color:#94a3b8;font-size:10px;">📍 ${(lls[lls.length-1][0]).toFixed(4)}°N, ${(lls[lls.length-1][1]).toFixed(4)}°E</span>`,{direction:'left',className:'rte-tip'});
 
-  // Intermediate stops with km tooltip
+  // Intermediate stops
   const totalDist=Number(RTE.trip.distance_km)||0;
   for(let i=1;i<stops.length-1&&i<lls.length-1;i++){
     const depMs=new Date(RTE.trip.departure_time).getTime();
@@ -4062,38 +5024,40 @@ function _startLeafletMap(){
     const ratio=i/(stops.length-1);
     const stopTime=new Date(depMs+durMs*ratio).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
     const kmEst=totalDist?Math.round(totalDist*ratio)+' km':'—';
-    const mkMid=L.divIcon({
-      html:`<div style="width:9px;height:9px;border-radius:50%;background:rgba(0,212,255,.7);border:1.5px solid rgba(0,255,224,.6);box-shadow:0 0 8px rgba(0,212,255,.5);"></div>`,
-      iconSize:[9,9],iconAnchor:[4.5,4.5],className:''
-    });
-    L.marker(lls[i],{icon:mkMid}).addTo(_lfMap)
+    L.circleMarker(lls[i],{radius:7,fillColor:'#00ffe0',color:'#040d18',weight:2,opacity:1,fillOpacity:1})
+      .bindPopup(`<b>📍 ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}<br><span style="color:#94a3b8;font-size:10px;">📍 ${lls[i][0].toFixed(4)}°N, ${lls[i][1].toFixed(4)}°E</span>`)
+      .addTo(_lfMap)
       .bindTooltip(`<b>📍 ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}`,{direction:'top',className:'rte-tip'});
   }
 
   // Animated bus marker
   const mkBus=L.divIcon({
-    html:`<div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(0,255,224,.9)) drop-shadow(0 2px 4px rgba(0,0,0,.8));transform:translateX(-50%) translateY(-50%);line-height:1;">🚌</div>`,
+    html:`<div style="font-size:22px;filter:drop-shadow(0 0 10px rgba(0,255,224,1)) drop-shadow(0 2px 4px rgba(0,0,0,.9));transform:translateX(-50%) translateY(-50%);line-height:1;">🚌</div>`,
     iconSize:[0,0],iconAnchor:[0,0],className:''
   });
-  _lfBusMk=L.marker(lls[0],{icon:mkBus,zIndexOffset:1000}).addTo(_lfMap);
+  _lfBusMk=L.marker(smoothLls[0],{icon:mkBus,zIndexOffset:1000}).addTo(_lfMap);
 
-  // Km scale ruler (custom control)
-  const ruler=L.control({position:'bottomleft'});
-  ruler.onAdd=()=>{
+  // Coord info bar (bottom left)
+  const coordBar=L.control({position:'bottomleft'});
+  coordBar.onAdd=()=>{
     const d=L.DomUtil.create('div');
-    d.style.cssText='background:rgba(0,10,24,.80);border:1px solid rgba(0,255,224,.18);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;color:#00ffe0;pointer-events:none;backdrop-filter:blur(6px);';
-    d.innerHTML=`📏 ${totalDist?totalDist+' km tổng':'—'} &nbsp;·&nbsp; ${stops.length} điểm dừng`;
+    d.style.cssText='background:rgba(0,10,24,.85);border:1px solid rgba(0,255,224,.18);border-radius:10px;padding:6px 12px;font-size:10px;font-weight:700;color:#00ffe0;pointer-events:none;backdrop-filter:blur(8px);line-height:1.7;';
+    const og=lls[0],dg=lls[lls.length-1];
+    d.innerHTML=`📏 ${totalDist?totalDist+' km':'—'} &nbsp;·&nbsp; ${stops.length} điểm dừng<br>
+      <span style="color:#7eb8ff">🟢 ${stops[0].name}</span> <span style="color:rgba(255,255,255,.4)">📍${og[0].toFixed(3)}°N,${og[1].toFixed(3)}°E</span><br>
+      <span style="color:#00ffe0">🏁 ${stops[stops.length-1].name}</span> <span style="color:rgba(255,255,255,.4)">📍${dg[0].toFixed(3)}°N,${dg[1].toFixed(3)}°E</span>`;
     return d;
   };
-  ruler.addTo(_lfMap);
+  coordBar.addTo(_lfMap);
 
-  // Animation loop
+  // Animation loop (on smooth interpolated points)
   const SPEED=[0.25,0.9,2.2];
   let lastTs=0;
+  const nSmooth=smoothLls.length-1;
   function frame(ts){
     const dt=Math.min(ts-lastTs,50); lastTs=ts;
     if(RTE.playing){
-      RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+      RTE.progress+=dt*0.000065*(RTE.speedVal||1);
       if(RTE.progress>=1){
         RTE.progress=1; RTE.playing=false;
         document.getElementById('rtePlayLbl').textContent='Play';
@@ -4102,21 +5066,19 @@ function _startLeafletMap(){
           setTimeout(()=>{if(RTE.animId){RTE.progress=0;RTE.playing=true;document.getElementById('rtePlayLbl').textContent='Pause';}},1600);
       }
     }
-    // Update progress line
-    const n=lls.length-1;
-    const fi=Math.min(RTE.progress*n,n);
-    const si=Math.floor(fi), ei=Math.min(si+1,n);
+    const fi=Math.min(RTE.progress*nSmooth,nSmooth);
+    const si=Math.floor(fi), ei=Math.min(si+1,nSmooth);
     const frac=fi-si;
     const interp=[
-      lls[si][0]+(lls[ei][0]-lls[si][0])*frac,
-      lls[si][1]+(lls[ei][1]-lls[si][1])*frac
+      smoothLls[si][0]+(smoothLls[ei][0]-smoothLls[si][0])*frac,
+      smoothLls[si][1]+(smoothLls[ei][1]-smoothLls[si][1])*frac
     ];
-    const progPts=lls.slice(0,si+1);
+    const progPts=smoothLls.slice(0,si+1);
     progPts.push(interp);
     _lfProgLine.setLatLngs(progPts);
     if(_lfBusMk) _lfBusMk.setLatLng(interp);
 
-    // Highlight active stop
+    // Timeline sync
     const activeIdx=Math.round(RTE.progress*(stops.length-1));
     document.querySelectorAll('.rte-stop').forEach((el,i)=>{
       el.classList.toggle('active',i===activeIdx);
@@ -4127,8 +5089,6 @@ function _startLeafletMap(){
       const activeEl=document.getElementById('rteStop'+activeIdx);
       if(activeEl) activeEl.scrollIntoView({behavior:'smooth',block:'nearest'});
     }
-
-    // Update progress pill
     const pct=Math.round(RTE.progress*100);
     const remMs=(new Date(RTE.trip.arrival_time).getTime()-new Date(RTE.trip.departure_time).getTime())*(1-RTE.progress);
     const remH=Math.floor(remMs/3600000), remM=Math.floor((remMs%3600000)/60000);
@@ -4157,7 +5117,7 @@ function _startCanvas2D(){
   function frame(ts){
     const dt=Math.min(ts-RTE.lastTs,50); RTE.lastTs=ts;
     if(RTE.playing){
-      RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+      RTE.progress+=dt*0.000065*(RTE.speedVal||1);
       if(RTE.progress>=1){
         RTE.progress=1; RTE.playing=false;
         document.getElementById('rtePlayLbl').textContent='Play';
@@ -4319,7 +5279,7 @@ function _startCanvas3D(){
       camera.position.y=8.5;
       camera.lookAt(0,0,0);
       if(RTE.playing){
-        RTE.progress+=dt*0.000065*(SPEED[RTE.speed]||1);
+        RTE.progress+=dt*0.000065*(RTE.speedVal||1);
         if(RTE.progress>=1){
           RTE.progress=1; RTE.playing=false;
           if(document.getElementById('rteAutoReplay').checked)
@@ -4346,7 +5306,208 @@ function _startCanvas3D(){
 
 /* close on backdrop click */
 document.getElementById('routeModal').addEventListener('click',function(e){if(e.target===this)closeRouteModal();});
+
+/* ── REVIEWS MODAL (view + write) ── */
+function rvSwitchTab(tab) {
+  document.getElementById("rvTabView").classList.toggle("active", tab==="view");
+  document.getElementById("rvTabWrite").classList.toggle("active", tab==="write");
+  document.getElementById("rvPanelView").classList.toggle("active", tab==="view");
+  document.getElementById("rvPanelWrite").classList.toggle("active", tab==="write");
+  if(tab==="write"){
+    _rvResetWriteForm();
+    // Scroll về đầu panel để thấy phần sao (setTimeout để chờ panel hiện ra)
+    setTimeout(()=>{
+      const panel=document.getElementById("rvPanelWrite");
+      if(panel) panel.scrollTop=0;
+    }, 0);
+  }
+}
+function _rvResetWriteForm(){
+  selRating=0;
+  const comment=document.getElementById("reviewComment"); if(comment) comment.value="";
+  const cc=document.getElementById("rmCC"); if(cc) cc.textContent="0";
+  const lbl=document.getElementById("rmRatingLabel");
+  if(lbl){ lbl.textContent="Chạm vào sao để đánh giá"; lbl.className="rm-rating-label"; }
+  document.querySelectorAll("#rvPanelWrite #starContainer span").forEach(s=>s.classList.remove("lit"));
+  document.querySelectorAll("#rvPanelWrite .rm-tag").forEach(t=>t.classList.remove("selected"));
+  _resetCatStars();
+  const f=document.getElementById("rmCharFill"); if(f) f.style.width="0%";
+  const g=document.getElementById("rmBgGlow"); if(g) g.style.background="radial-gradient(circle,rgba(0,255,224,.06) 0%,transparent 70%)";
+}
+
+async function openReviewModal(tripId, origin, dest, tab='view') {
+  curTrip = tripId;
+  document.getElementById("rvRoute").textContent = (origin||"") + " → " + (dest||"");
+  rvSwitchTab(tab);
+  document.getElementById("rvScore").textContent = "…";
+  document.getElementById("rvTotal").textContent = "Đang tải...";
+  document.getElementById("rvList").innerHTML = `<div class="rv-empty">⏳ Đang tải đánh giá...</div>`;
+  document.getElementById("rvStarsWrap").innerHTML = "";
+  document.getElementById("viewReviewsModal").classList.add("open");
+  document.body.style.overflow = "hidden";
+
+  try {
+    const res = await fetch(`/api/reviews/trip/${tripId}`);
+    const data = await res.json();
+
+    document.getElementById("rvScore").textContent = data.avg_rating ? data.avg_rating.toFixed(1) : "—";
+    document.getElementById("rvTotal").textContent = data.total + " đánh giá";
+
+    // Star distribution bars
+    const dist = data.distribution || {5:0,4:0,3:0,2:0,1:0};
+    document.getElementById("rvStarsWrap").innerHTML = [5,4,3,2,1].map(s => {
+      const pct = data.total ? Math.round((dist[s]||0)/data.total*100) : 0;
+      return `<div class="rv-star-row">
+        <span class="rv-star-lbl">${s}⭐</span>
+        <div class="rv-star-bar"><div class="rv-star-fill" style="width:${pct}%"></div></div>
+        <span class="rv-star-cnt">${dist[s]||0}</span>
+      </div>`;
+    }).join("");
+
+    if (!data.reviews || !data.reviews.length) {
+      document.getElementById("rvList").innerHTML = `<div class="rv-empty">😊 Chưa có đánh giá nào cho chuyến này<br><small>Hãy là người đầu tiên đánh giá!</small></div>`;
+      return;
+    }
+
+    document.getElementById("rvList").innerHTML = data.reviews.map((r,idx) => {
+      const starsFull = "★".repeat(Math.round(r.rating||0))+"☆".repeat(5-Math.round(r.rating||0));
+      const dt = r.created_at ? new Date(r.created_at).toLocaleDateString("vi-VN") : "";
+      const hasCats = r.rating_time||r.rating_clean||r.rating_service||r.rating_comfort;
+      const hasTags = r.tags && r.tags.trim();
+      const catHtml = hasCats ? `
+        <div class="rv-cats">
+          ${r.rating_time    ?`<div class="rv-cat-row"><span class="rv-cat-ico">⏱️</span><span class="rv-cat-name">Đúng giờ</span><span class="rv-cat-stars">${"★".repeat(r.rating_time)+"☆".repeat(5-r.rating_time)}</span></div>`:""}
+          ${r.rating_clean   ?`<div class="rv-cat-row"><span class="rv-cat-ico">🧹</span><span class="rv-cat-name">Vệ sinh</span><span class="rv-cat-stars">${"★".repeat(r.rating_clean)+"☆".repeat(5-r.rating_clean)}</span></div>`:""}
+          ${r.rating_service ?`<div class="rv-cat-row"><span class="rv-cat-ico">😊</span><span class="rv-cat-name">Phục vụ</span><span class="rv-cat-stars">${"★".repeat(r.rating_service)+"☆".repeat(5-r.rating_service)}</span></div>`:""}
+          ${r.rating_comfort ?`<div class="rv-cat-row"><span class="rv-cat-ico">💺</span><span class="rv-cat-name">Tiện nghi</span><span class="rv-cat-stars">${"★".repeat(r.rating_comfort)+"☆".repeat(5-r.rating_comfort)}</span></div>`:""}
+        </div>` : "";
+      const tagsHtml = hasTags ? `<div class="rv-tags-row">${r.tags.split(",").map(t=>`<span class="rv-tag-chip">${escH(t.trim())}</span>`).join("")}</div>` : "";
+      const detailId = `rvDetail_${idx}`;
+      return `<div class="rv-item" onclick="document.getElementById('${detailId}').classList.toggle('open')" style="cursor:pointer">
+        <div class="rv-item-top">
+          <span class="rv-name">👤 ${escH(r.full_name||"Ẩn danh")}</span>
+          <span class="rv-stars-yellow">${starsFull}</span>
+        </div>
+        ${r.comment?`<div class="rv-comment">"${escH(r.comment)}"</div>`:""}
+        <div class="rv-item-foot">
+          ${dt?`<span class="rv-date">📅 ${dt}</span>`:""}
+          ${(hasCats||hasTags)?`<span class="rv-expand-hint">Xem chi tiết ▾</span>`:""}
+        </div>
+        <div class="rv-detail" id="${detailId}">
+          ${catHtml}${tagsHtml}
+        </div>
+      </div>`;
+    }).join("");
+  } catch(e) {
+    document.getElementById("rvList").innerHTML = `<div class="rv-empty">❌ Không thể tải đánh giá</div>`;
+  }
+}
+
+function closeReviewModal() {
+  document.getElementById("viewReviewsModal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("viewReviewsModal").addEventListener("click", e => {
+  if (e.target === document.getElementById("viewReviewsModal")) closeReviewModal();
+});
+
+// Gọi sau khi toàn bộ DOM đã render xong (rvPanelWrite nằm ngoài script block đầu)
+_initStarInteractions();
+_initCatStars();
+
+/* ── SCROLL TO TOP ── */
+window.addEventListener('scroll',()=>{
+  const btn=document.getElementById('scrollTopBtn');
+  if(btn) btn.classList.toggle('visible',window.scrollY>400);
+});
+
+/* ── LIVE ACTIVITY TICKER — synced with backend bookings ── */
+(function(){
+  /* ── Mask full_name for privacy: "Nguyễn Minh Tú" → "Tú N." ── */
+  function maskName(name){
+    if(!name) return 'Khách hàng';
+    const p=name.trim().split(/\s+/);
+    if(p.length===1) return p[0][0]+'***';
+    return p[p.length-1]+' '+p[0][0]+'.';
+  }
+
+  /* ── Time-ago from booking_time ── */
+  function timeAgo(dateStr){
+    const diff=(Date.now()-new Date(dateStr))/1000;
+    if(diff<90)   return 'vừa xong';
+    if(diff<3600) return Math.floor(diff/60)+' phút trước';
+    if(diff<86400)return Math.floor(diff/3600)+' giờ trước';
+    return Math.floor(diff/86400)+' ngày trước';
+  }
+
+  /* ── Action label by status ── */
+  const ACT={PAID:'đã thanh toán vé',CONFIRMED:'đã đặt vé thành công',PENDING:'vừa đặt chuyến'};
+
+  /* ── Build HTML for one ticker item ── */
+  function makeItem(name,origin,dest,status,bookingTime){
+    const act=ACT[status]||'đã đặt vé';
+    const ago=timeAgo(bookingTime);
+    return `<span class="ticker-dot">
+      <span class="tik-live"></span>
+      <span class="tik-name">${maskName(name)}</span>
+      <span>${act}</span>
+      <span class="tik-route">${origin} → ${dest}</span>
+      <span style="color:rgba(255,255,255,.30);font-size:11px;">${ago}</span>
+    </span>`;
+  }
+
+  /* ── Fallback fake data if API unavailable ── */
+  function buildFallback(){
+    const fNames=["Minh T.","Lan A.","Hùng P.","Thu N.","Quang V.","Hoa L.","Dũng K.","Mai S.",
+                  "Tú B.","Linh H.","Phong R.","Yến M.","Khoa T.","Ngân Đ.","Bảo Q.","Trang C."];
+    const fRts=[["Hà Nội","Đà Nẵng"],["Hồ Chí Minh","Đà Lạt"],["Hà Nội","Hồ Chí Minh"],
+               ["Đà Nẵng","Nha Trang"],["HCM","Cần Thơ"],["Hà Nội","Vinh"],
+               ["HCM","Vũng Tàu"],["Đà Nẵng","Hội An"],["Hà Nội","Hải Phòng"],
+               ["HCM","Phú Quốc"],["Đà Lạt","Nha Trang"],["Hà Nội","Sapa"]];
+    const fTimes=["vừa xong","3 phút trước","7 phút trước","12 phút trước","20 phút trước"];
+    const fActs=["đã đặt vé","đã mua vé","vừa đặt chuyến","vừa chọn ghế VIP trên tuyến"];
+    const html=Array.from({length:16},(_,i)=>{
+      const n=fNames[i%fNames.length];
+      const r=fRts[i%fRts.length];
+      const t=fTimes[i%fTimes.length];
+      const a=fActs[i%fActs.length];
+      return `<span class="ticker-dot"><span class="tik-live"></span><span class="tik-name">${n}</span><span>${a}</span><span class="tik-route">${r[0]} → ${r[1]}</span><span style="color:rgba(255,255,255,.30);font-size:11px;">${t}</span></span>`;
+    }).join('');
+    return html;
+  }
+
+  /* ── Inject items into DOM (doubled for seamless loop) ── */
+  function injectTicker(html){
+    const inner=document.getElementById('tickerInner');
+    if(!inner) return;
+    inner.innerHTML=html+html; // double for seamless 40s scroll
+  }
+
+  /* ── Fetch real bookings from backend ── */
+  fetch('/api/bookings')
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(data=>{
+      // Filter recent non-cancelled bookings (up to 18 items for the ticker)
+      const valid=(Array.isArray(data)?data:[])
+        .filter(b=>b.status&&b.status!=='CANCELLED'&&b.origin&&b.destination&&b.full_name)
+        .slice(0,18);
+
+      if(valid.length<4){
+        // Too few real bookings — use fallback
+        injectTicker(buildFallback());
+        return;
+      }
+
+      // Build from real data
+      const html=valid.map(b=>makeItem(b.full_name,b.origin,b.destination,b.status,b.booking_time)).join('');
+      injectTicker(html);
+    })
+    .catch(()=>injectTicker(buildFallback())); // Network error — graceful fallback
+})();
 </script>
+
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</button>
 
 <!-- ── PWA: Service Worker Registration ── -->
 <script>

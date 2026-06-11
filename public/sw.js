@@ -5,8 +5,8 @@
 ═══════════════════════════════════════════════════════════ */
 'use strict';
 
-const CACHE_NAME    = 'smartbusai-v1';
-const API_CACHE     = 'smartbusai-api-v1';
+const CACHE_NAME    = 'smartbusai-v2';
+const API_CACHE     = 'smartbusai-api-v2';
 const OFFLINE_PAGE  = '/pages/passenger/index.html';
 
 /* Static assets to pre-cache on install */
@@ -64,9 +64,31 @@ self.addEventListener('fetch', event => {
   // Socket.io polling — never intercept
   if (url.pathname.startsWith('/socket.io/')) return;
 
-  // Static: Cache-first, fallback to network, then offline page
+  // HTML pages: Network-first (luôn lấy bản mới nhất)
+  if (request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+    event.respondWith(networkFirstHTML(request));
+    return;
+  }
+
+  // Static assets (JS, CSS, images): Cache-first
   event.respondWith(cacheFirstStatic(request));
 });
+
+/* HTML luôn lấy từ network, fallback cache nếu offline */
+async function networkFirstHTML(request) {
+  try {
+    const networkResp = await fetch(request.clone());
+    if (networkResp.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResp.clone());
+    }
+    return networkResp;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response('Offline', { status: 503 });
+  }
+}
 
 async function networkFirstAPI(request) {
   try {

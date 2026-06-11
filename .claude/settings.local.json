@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem D:\\\\smartbusai\\\\server -Recurse -Name)",
+      "Bash(Sort-Object)",
+      "Bash(Get-Content \"D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\profile.html\")",
+      "Bash(Measure-Object -Line)",
+      "Bash(powershell -command \"Get-Content 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' | Measure-Object -Line | Select-Object Lines\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern '</html>|</body>|</script>' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'panel-ai|tabAI|aiChatPanel|ai-ask|file-drop|sys-status|ticket-search|faqGoTo|sendChatMsg|AI_GREET|initAITab|loyalty|service' | Select-Object LineNumber,Line | Format-Table -AutoSize\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'panel-faq|<!-- TAB 3|keep original' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'id=\\\\\"panel-' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'id=\\\\\"tabSend|id=\\\\\"tabMine|id=\\\\\"tabFaq|id=\\\\\"tabAI' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"try{\\(New-Object Net.Sockets.TcpClient\\('localhost',2704\\)\\).Close\\(\\);Write-Host 'Server UP'}catch{Write-Host 'Server DOWN'}\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'toggleEmgSection|showEmgDetail|EMG_DATA|autoResize|_norm\\\\\\(|INTENTS|_buildReply|_aiBotReply|quickAction|emgBody|emg-section|emg-cat-btn|acp-act-btn|acp-actions' | Select-Object LineNumber,Line | Format-Table -AutoSize\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'headerUserName|nav-uname|nav-greeting' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern '^<script>' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\server\\\\controllers\\\\authController.js' -Pattern 'full_name|user_id|localStorage|token|user' | Select-Object LineNumber,Line | head -30\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\server\\\\controllers\\\\authController.js' -Pattern 'res\\\\.json|user_id.*full_name|full_name.*user_id|localStorage' -Context 2 | Select-Object Line,Context | Format-Table -AutoSize -Wrap\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\auth\\\\login.html' -Pattern 'localStorage|setItem|user' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern '_initUser|getUser|full_name|form-control|textarea.form-control|textarea-wrap' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'textarea-wrap|_initUser|getUser' | Select-Object LineNumber,Line\")",
+      "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'uiName|uiEmail|userInfoRow|headerUserName|Đang tải|Khách' | Select-Object LineNumber,Line\")",
+      "Bash(node --input-type=module)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

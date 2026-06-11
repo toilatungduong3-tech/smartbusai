@@ -71,13 +71,21 @@ exports.getBookingsByUser = async (req, res) => {
                 r.destination,
                 bus.bus_type,
                 bus.plate_number,
-                o.name AS operator_name
+                o.name AS operator_name,
+                GROUP_CONCAT(s.seat_number ORDER BY LENGTH(s.seat_number), s.seat_number SEPARATOR ', ')
+                             AS seat_numbers
             FROM booking b
             JOIN trip t ON b.trip_id = t.trip_id
             JOIN route r ON t.route_id = r.route_id
             JOIN bus ON t.bus_id = bus.bus_id
             JOIN bus_operator o ON bus.operator_id = o.operator_id
+            LEFT JOIN booking_detail bd ON bd.booking_id = b.booking_id
+            LEFT JOIN seat s           ON s.seat_id     = bd.seat_id
             WHERE b.user_id = ?
+            GROUP BY
+                b.booking_id, b.total_amount, b.status, b.booking_time, b.extras,
+                t.departure_time, t.arrival_time, r.origin, r.destination,
+                bus.bus_type, bus.plate_number, o.name
             ORDER BY b.booking_id DESC
         `;
         const [result] = await db.query(sql, [userId]);
@@ -136,16 +144,15 @@ exports.createBooking = async (req, res) => {
 
         const basePrice = trip.base_price;
 
-        // Check ghế chưa được đặt trong ngày hiện tại của chuyến
+        // Check ghế chưa được đặt cho chuyến này (bỏ điều kiện ngày đặt — sai logic)
         const [bookedSeats] = await conn.query(
             `SELECT bd.seat_id FROM booking_detail bd
              JOIN booking bk ON bd.booking_id = bk.booking_id
              WHERE bk.trip_id = ?
                AND bk.status IN ('CONFIRMED','PAID','PENDING')
-               AND DATE(bk.booking_time) = DATE((SELECT departure_time FROM trip WHERE trip_id = ?))
                AND bd.seat_id IN (?)
              FOR UPDATE`,
-            [trip_id, trip_id, seatIds]
+            [trip_id, seatIds]
         );
 
         if (bookedSeats.length > 0) {
