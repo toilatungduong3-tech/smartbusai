@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tài khoản - SmartBusAI</title>
 <link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <meta name="theme-color" content="#00ffe0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/icons/icon.svg">
@@ -1331,6 +1334,203 @@ header{
 .addr-suggest.show { display:block; }
 .addr-opt { padding:8px 13px; font-size:12.5px; color:#b8d8e8; cursor:pointer; transition:background .14s; }
 .addr-opt:hover { background:rgba(0,255,224,.10); color:#fff; }
+
+/* ═══════════════════════════════════════════════════
+   ★ PROFILE UPGRADE v2 — Parts 1–12
+═══════════════════════════════════════════════════ */
+
+/* ── HERO TRAVEL PROFILE ROW ── */
+.hero-travel-row{
+  display:flex;gap:20px;margin-top:12px;padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;
+}
+.htv-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(200,230,255,.60);}
+.htv-icon{font-size:15px;}
+.htv-val{font-weight:800;color:#00ffe0;font-size:12px;}
+
+/* ── DASHBOARD STAT CARDS ── */
+.dash-stat-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+}
+.dash-stat-card{
+  padding:18px 14px;border-radius:16px;
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 8px 28px rgba(0,0,0,.45);
+  text-align:center;cursor:default;
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+  position:relative;overflow:hidden;
+}
+.dash-stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 18px var(--cglow,rgba(0,255,224,.10));
+  border-color:var(--cborder,rgba(0,255,224,.22));
+}
+.dash-stat-card::before{
+  content:"";position:absolute;top:-28px;right:-28px;
+  width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle,var(--cglow,rgba(0,255,224,.10)),transparent 70%);
+  pointer-events:none;
+}
+.dsc-icon{font-size:24px;margin-bottom:7px;}
+.dsc-num{font-size:21px;font-weight:900;line-height:1;margin-bottom:4px;}
+.dsc-lbl{font-size:9.5px;color:rgba(255,255,255,.40);font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+
+/* ── CHARTS SECTION ── */
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:22px;}
+.chart-card{padding:20px;border-radius:18px;}
+.chart-card-title{font-size:12px;font-weight:800;color:rgba(255,255,255,.62);margin-bottom:14px;}
+.chart-wrap{position:relative;height:200px;}
+
+/* ── AI INSIGHTS ── */
+.insights-card{
+  padding:22px 24px;border-radius:18px;
+  background:linear-gradient(135deg,rgba(0,168,255,.06),rgba(0,255,224,.04) 50%,rgba(108,92,231,.06) 100%);
+  border:1px solid rgba(0,168,255,.16);
+  box-shadow:0 8px 28px rgba(0,0,0,.40),0 0 40px rgba(0,168,255,.05);
+  margin-bottom:22px;
+}
+.insights-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.insights-hdr-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,#00ffe0,#00a8ff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;box-shadow:0 0 18px rgba(0,255,224,.35);flex-shrink:0;
+}
+.insights-hdr-title{font-size:15px;font-weight:900;color:#fff;}
+.insights-hdr-sub{font-size:11px;color:rgba(255,255,255,.42);margin-top:2px;}
+.insight-items{display:flex;flex-direction:column;gap:9px;}
+.insight-item{
+  display:flex;align-items:flex-start;gap:10px;padding:11px 14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;transition:background .2s,border-color .2s;
+}
+.insight-item:hover{background:rgba(0,255,224,.06);border-color:rgba(0,255,224,.14);}
+.insight-ico{font-size:17px;flex-shrink:0;margin-top:1px;}
+.insight-text{flex:1;}
+.insight-main{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
+.insight-sub{font-size:11px;color:rgba(255,255,255,.42);}
+.insight-badge{
+  font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;
+  background:rgba(0,255,224,.12);border:1px solid rgba(0,255,224,.24);color:#00ffe0;flex-shrink:0;
+}
+
+/* ── AI SUGGESTIONS ── */
+.suggest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.suggest-card{
+  padding:16px;border-radius:16px;cursor:pointer;
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  border:1px solid rgba(255,255,255,.09);
+  transition:transform .22s,box-shadow .22s,border-color .22s;
+}
+.suggest-card:hover{
+  transform:translateY(-4px);border-color:rgba(0,255,224,.25);
+  box-shadow:0 12px 36px rgba(0,0,0,.55),0 0 18px rgba(0,255,224,.08);
+}
+.sug-route{font-size:13px;font-weight:900;color:#fff;margin-bottom:4px;}
+.sug-op{font-size:11px;color:rgba(255,255,255,.42);margin-bottom:8px;}
+.sug-price{font-size:15px;font-weight:900;color:#f39c12;}
+.sug-reason{font-size:10.5px;color:rgba(0,255,224,.60);margin-top:4px;}
+.sug-btn{
+  margin-top:10px;width:100%;padding:8px 0;
+  background:linear-gradient(135deg,rgba(0,255,224,.14),rgba(0,168,255,.10));
+  border:1px solid rgba(0,255,224,.24);border-radius:10px;
+  color:#00ffe0;font-size:11.5px;font-weight:700;cursor:pointer;
+  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;
+}
+.sug-btn:hover{background:linear-gradient(135deg,rgba(0,255,224,.26),rgba(0,168,255,.18));}
+
+/* ── ACHIEVEMENTS FULL GRID ── */
+.ach-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.ach-badge-card{
+  padding:16px 10px;border-radius:14px;text-align:center;
+  background:linear-gradient(145deg,rgba(8,18,44,.92),rgba(4,12,30,.88));
+  border:1px solid rgba(255,255,255,.08);
+  transition:transform .2s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.ach-badge-card.unlocked{
+  border-color:rgba(243,156,18,.38);
+  background:linear-gradient(145deg,rgba(243,156,18,.09),rgba(8,18,44,.92));
+  box-shadow:0 0 20px rgba(243,156,18,.12);
+}
+.ach-badge-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.50);}
+.ach-badge-icon{font-size:28px;margin-bottom:6px;filter:grayscale(100%) opacity(.30);}
+.ach-badge-card.unlocked .ach-badge-icon{filter:none;animation:badgePop .4s ease;}
+@keyframes badgePop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+@keyframes aiPulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.5)}50%{box-shadow:0 0 0 5px rgba(99,102,241,.0)}}
+@keyframes aiFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ach-badge-name{font-size:10.5px;font-weight:800;color:rgba(255,255,255,.45);}
+.ach-badge-card.unlocked .ach-badge-name{color:#f9c858;}
+.ach-badge-req{font-size:9.5px;color:rgba(255,255,255,.28);margin-top:2px;}
+.ach-badge-card.unlocked .ach-badge-req{color:rgba(243,156,18,.55);}
+
+/* ── JOURNEY MAP ── */
+.map-wrap{
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(0,255,224,.18);
+  box-shadow:0 8px 28px rgba(0,0,0,.50),0 0 28px rgba(0,255,224,.06);
+  height:360px;margin-bottom:22px;
+}
+#journeyMap{width:100%;height:100%;}
+
+/* ── NOTIFICATIONS ── */
+.notif-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.notif-item{
+  display:flex;align-items:center;gap:11px;
+  padding:12px 16px;border-radius:13px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  transition:background .2s;
+}
+.notif-item:hover{background:rgba(0,255,224,.05);border-color:rgba(0,255,224,.15);}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#00ffe0;flex-shrink:0;}
+.notif-dot.warn{background:#f39c12;}
+.notif-dot.info{background:#a29bfe;}
+.notif-text{flex:1;}
+.notif-title{font-size:12.5px;font-weight:700;color:#fff;}
+.notif-sub{font-size:11px;color:rgba(255,255,255,.42);margin-top:1px;}
+.notif-time{font-size:10px;color:rgba(255,255,255,.28);flex-shrink:0;}
+.notif-empty{text-align:center;padding:28px;color:rgba(255,255,255,.28);font-size:13px;}
+
+/* ── SECTION HEADER ROW ── */
+.sec-title-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sec-title-row h3{
+  font-size:15px;font-weight:900;flex:1;
+  background:linear-gradient(90deg,#fff,#9bb8ca);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.sec-badge{
+  font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;
+  background:rgba(0,255,224,.10);border:1px solid rgba(0,255,224,.24);color:#00ffe0;
+}
+
+/* ── SKELETON ── */
+.skel{
+  background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.10) 50%,rgba(255,255,255,.05) 75%);
+  background-size:200% 100%;animation:skSweep 1.4s infinite;border-radius:6px;display:inline-block;
+}
+@keyframes skSweep{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── BOOKING MONTH FILTER ── */
+.bk-month-filter{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center;}
+.bk-month-filter label{font-size:11px;color:rgba(255,255,255,.40);font-weight:700;}
+.bk-mchip{
+  font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.50);transition:all .18s;
+}
+.bk-mchip.on{background:rgba(0,168,255,.16);border-color:rgba(0,168,255,.40);color:#00a8ff;}
+
+/* responsive */
+@media(max-width:900px){
+  .dash-stat-grid{grid-template-columns:repeat(2,1fr);}
+  .charts-grid{grid-template-columns:1fr;}
+  .suggest-grid{grid-template-columns:1fr 1fr;}
+  .ach-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:600px){
+  .suggest-grid{grid-template-columns:1fr;}
+}
 </style>
 <script src="/js/api.js"></script>
 </head>
@@ -1395,6 +1595,24 @@ header{
       <div class="hstat"><span class="hstat-num" id="hStatPts">0</span><span class="hstat-lbl">Điểm tích lũy</span></div>
       <div class="hstat"><span id="heroTierBadge" class="tier-badge tier-bronze">🥉 Đồng</span><span class="hstat-lbl">Hạng thành viên</span></div>
     </div>
+    <!-- Travel profile row -->
+    <div class="hero-travel-row" id="heroTravelRow">
+      <div class="htv-item">
+        <span class="htv-icon">🗺️</span>
+        <span id="htvKm" class="htv-val">—</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.32);font-weight:600;">km đã đi</span>
+      </div>
+      <div class="htv-item">
+        <span class="htv-icon">🚌</span>
+        <span id="htvRoute" class="htv-val" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.32);font-weight:600;">tuyến hay đi</span>
+      </div>
+      <div class="htv-item">
+        <span class="htv-icon">🏢</span>
+        <span id="htvOp" class="htv-val">—</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.32);font-weight:600;">nhà xe yêu thích</span>
+      </div>
+    </div>
   </div>
   </div><!-- /hero-strip-inner -->
 </div>
@@ -1411,6 +1629,16 @@ header{
     <div class="tab-pip"></div>
     Vé đã đặt
     <span id="tabBadgeB" style="display:none;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;font-size:10px;font-weight:900;padding:1px 7px;border-radius:20px;min-width:18px;text-align:center;box-shadow:0 0 10px rgba(231,76,60,.45);"></span>
+  </button>
+  <button class="tab" id="tabBtnC" onclick="switchTab('C')">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+    <div class="tab-pip"></div>
+    Thống kê
+  </button>
+  <button class="tab" id="tabBtnD" onclick="switchTab('D')">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V15a1 1 0 0 0-2 0v1.93A8 8 0 0 1 4.07 11H6a1 1 0 0 0 0-2H4.07A8 8 0 0 1 11 4.07V6a1 1 0 0 0 2 0V4.07A8 8 0 0 1 19.93 11H18a1 1 0 0 0 0 2h1.93A8 8 0 0 1 13 16.93z"/></svg>
+    <div class="tab-pip"></div>
+    AI SmartBus
   </button>
 </div>
 
@@ -1717,6 +1945,23 @@ header{
       <div class="fchip" onclick="filterBk('CANCELED',this)">Đã huỷ</div>
     </div>
   </div>
+  <!-- Month filter -->
+  <div class="bk-month-filter">
+    <label>📅 Tháng:</label>
+    <div class="bk-mchip on" onclick="filterBkMonth(0,this)">Tất cả</div>
+    <div class="bk-mchip" onclick="filterBkMonth(1,this)">T1</div>
+    <div class="bk-mchip" onclick="filterBkMonth(2,this)">T2</div>
+    <div class="bk-mchip" onclick="filterBkMonth(3,this)">T3</div>
+    <div class="bk-mchip" onclick="filterBkMonth(4,this)">T4</div>
+    <div class="bk-mchip" onclick="filterBkMonth(5,this)">T5</div>
+    <div class="bk-mchip" onclick="filterBkMonth(6,this)">T6</div>
+    <div class="bk-mchip" onclick="filterBkMonth(7,this)">T7</div>
+    <div class="bk-mchip" onclick="filterBkMonth(8,this)">T8</div>
+    <div class="bk-mchip" onclick="filterBkMonth(9,this)">T9</div>
+    <div class="bk-mchip" onclick="filterBkMonth(10,this)">T10</div>
+    <div class="bk-mchip" onclick="filterBkMonth(11,this)">T11</div>
+    <div class="bk-mchip" onclick="filterBkMonth(12,this)">T12</div>
+  </div>
 
   <!-- Upcoming trips -->
   <div class="upcoming-section" id="upcomingSection" style="display:none;">
@@ -1726,6 +1971,156 @@ header{
 
   <div id="bookingList">
     <div class="empty"><div class="empty-ico">⏳</div><p>Đang tải vé…</p></div>
+  </div>
+
+</div>
+
+<!-- ══════════════ SCREEN C: THỐNG KÊ ══════════════ -->
+<div class="screen" id="screenC">
+
+  <!-- 8 stat cards -->
+  <div class="sec-title-row">
+    <h3>📊 Bảng thống kê cá nhân</h3>
+    <span class="sec-badge">Real-time</span>
+  </div>
+  <div class="dash-stat-grid">
+    <div class="dash-stat-card" style="--cglow:rgba(0,255,224,.12);--cborder:rgba(0,255,224,.28);">
+      <div class="dsc-icon">🎫</div>
+      <div class="dsc-num" id="dscTotalTrips" style="color:#00ffe0;">—</div>
+      <div class="dsc-lbl">Tổng chuyến đi</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(243,156,18,.12);--cborder:rgba(243,156,18,.28);">
+      <div class="dsc-icon">💰</div>
+      <div class="dsc-num" id="dscTotalSpent" style="color:#f39c12;font-size:15px;">—</div>
+      <div class="dsc-lbl">Tổng chi tiêu</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(108,92,231,.12);--cborder:rgba(108,92,231,.28);">
+      <div class="dsc-icon">⭐</div>
+      <div class="dsc-num" id="dscPoints" style="color:#a29bfe;">—</div>
+      <div class="dsc-lbl">Điểm tích lũy</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(46,204,113,.12);--cborder:rgba(46,204,113,.28);">
+      <div class="dsc-icon">✅</div>
+      <div class="dsc-num" id="dscCompleted" style="color:#2ecc71;">—</div>
+      <div class="dsc-lbl">Vé đã hoàn tất</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(231,76,60,.10);--cborder:rgba(231,76,60,.25);">
+      <div class="dsc-icon">❌</div>
+      <div class="dsc-num" id="dscCanceled" style="color:#e74c3c;">—</div>
+      <div class="dsc-lbl">Vé đã huỷ</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(0,168,255,.12);--cborder:rgba(0,168,255,.28);">
+      <div class="dsc-icon">📅</div>
+      <div class="dsc-num" id="dscMonthly" style="color:#00a8ff;">—</div>
+      <div class="dsc-lbl">Chuyến tháng này</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(0,255,224,.10);--cborder:rgba(0,255,224,.22);">
+      <div class="dsc-icon">📆</div>
+      <div class="dsc-num" id="dscYearly" style="color:#00ffe0;">—</div>
+      <div class="dsc-lbl">Chuyến năm nay</div>
+    </div>
+    <div class="dash-stat-card" style="--cglow:rgba(249,200,88,.10);--cborder:rgba(249,200,88,.25);">
+      <div class="dsc-icon">🏆</div>
+      <div class="dsc-num" id="dscSuccessRate" style="color:#f9c858;">—%</div>
+      <div class="dsc-lbl">Tỷ lệ hoàn thành</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="sec-title-row">
+    <h3>📈 Biểu đồ hành trình</h3>
+  </div>
+  <div class="charts-grid">
+    <div class="gc chart-card">
+      <div class="chart-card-title">🚌 Số chuyến theo tháng (năm nay)</div>
+      <div class="chart-wrap"><canvas id="chartTrips"></canvas></div>
+    </div>
+    <div class="gc chart-card">
+      <div class="chart-card-title">💰 Chi tiêu theo tháng (VNĐ)</div>
+      <div class="chart-wrap"><canvas id="chartSpending"></canvas></div>
+    </div>
+    <div class="gc chart-card">
+      <div class="chart-card-title">⭐ Điểm tích lũy theo tháng</div>
+      <div class="chart-wrap"><canvas id="chartPoints"></canvas></div>
+    </div>
+    <div class="gc chart-card">
+      <div class="chart-card-title">📊 Phân bổ trạng thái vé</div>
+      <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Enhanced Achievements -->
+  <div class="sec-title-row">
+    <h3>🏆 Thành tích & Huy hiệu</h3>
+  </div>
+  <div class="ach-grid" id="achGridFull"></div>
+
+</div>
+
+<!-- ══════════════ SCREEN D: AI SMARTBUS ══════════════ -->
+<div class="screen" id="screenD">
+
+  <!-- ── AI Live Banner ── -->
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(6,182,212,.07));border:1px solid rgba(99,102,241,.22);border-radius:14px;margin-bottom:18px">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 0 18px rgba(99,102,241,.45)">🤖</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:14px;font-weight:800;color:#e2e8f0">SmartBusAI · Explainable AI</div>
+      <div style="font-size:11px;color:#475569;margin-top:2px">Mọi gợi ý đều có giải thích rõ ràng · formula: 40% lịch sử tìm + 25% đặt vé + 20% độ phổ biến + 15% giá</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.30);border-radius:20px;padding:4px 12px;flex-shrink:0">
+      <span style="width:7px;height:7px;border-radius:50%;background:#6366f1;display:inline-block;animation:aiPulseGlow 1.8s ease-in-out infinite"></span>
+      <span style="font-size:10px;font-weight:800;color:#a5b4fc">AI LIVE</span>
+    </div>
+  </div>
+
+  <!-- ── Hồ sơ hành vi ── -->
+  <div class="sec-title-row" style="margin-bottom:10px">
+    <h3>📊 Hồ sơ hành vi di chuyển</h3>
+    <span class="sec-badge">Real-time data</span>
+  </div>
+  <div id="behaviorProfileGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:22px">
+    <div style="text-align:center;padding:20px;color:rgba(255,255,255,.28);font-size:12px;grid-column:1/-1">⏳ Đang tải hồ sơ hành vi…</div>
+  </div>
+
+  <!-- AI Insights -->
+  <div class="insights-card">
+    <div class="insights-hdr">
+      <div class="insights-hdr-icon">🧠</div>
+      <div>
+        <div class="insights-hdr-title">AI Insights — Phân tích cá nhân hóa</div>
+        <div class="insights-hdr-sub">Học từ lịch sử đặt vé · Collaborative Filtering · Pattern Recognition</div>
+      </div>
+    </div>
+    <div class="insight-items" id="insightList">
+      <div style="text-align:center;padding:20px;color:rgba(255,255,255,.30);font-size:13px;">⏳ Đang phân tích dữ liệu…</div>
+    </div>
+  </div>
+
+  <!-- AI Trip Suggestions -->
+  <div class="sec-title-row">
+    <h3>✨ Gợi ý chuyến đi cho bạn</h3>
+    <span class="sec-badge">AI powered</span>
+    <span id="aiRecoTimestamp" style="font-size:10px;color:#334155;margin-left:auto"></span>
+  </div>
+  <div class="suggest-grid" id="suggestGrid">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Journey Map -->
+  <div class="sec-title-row">
+    <h3>🗺️ Bản đồ hành trình</h3>
+  </div>
+  <div class="map-wrap">
+    <div id="journeyMap"></div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="sec-title-row" style="margin-top:22px;">
+    <h3>🔔 Thông báo</h3>
+    <span class="sec-badge" id="notifBadge">0</span>
+  </div>
+  <div class="notif-list" id="notifList">
+    <div class="notif-empty">Đang tải…</div>
   </div>
 
 </div>
@@ -3009,15 +3404,580 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   await loadLocations();
   await loadProfile();
   loadBookings();
-  loadLoyalty();  // Load real loyalty data from API
+  loadLoyalty();
   renderActivityLog();
   _initAvatarUpload();
   _initLastLoginInfo();
-  // Auto scroll to bookings if hash
+  // New v2 loaders
+  loadTravelProfile();
+  loadUserStats();
+  loadNotifications();
   if(location.hash==="bookings"||location.hash==="#bookings"){
     setTimeout(()=>switchTab("B"),300);
   }
 });
+
+/* ═══════════════════════════════════════════════
+   ★ PROFILE UPGRADE v2 — NEW FUNCTIONS
+═══════════════════════════════════════════════ */
+
+/* ── Switch tab: support C and D ── */
+const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const btn=document.getElementById('tabBtn'+t);
+  const scr=document.getElementById('screen'+t);
+  if(btn)btn.classList.add('active');
+  if(scr)scr.classList.add('active');
+  // AI tour buttons
+  const a1=document.getElementById('aiBtn1'),a2=document.getElementById('aiBtn2');
+  if(a1)a1.style.display=t==='A'?'':'none';
+  if(a2)a2.style.display=t==='B'?'':'none';
+  // Lazy-init screens
+  if(t==='C'&&!window._statsLoaded){ window._statsLoaded=true; initStatsScreen(); }
+  if(t==='D'&&!window._aiLoaded){ window._aiLoaded=true; initAIScreen(); }
+}
+
+/* ── Counter animation ── */
+function animateCounter(el, target, duration=800, formatter=null){
+  const start=performance.now();
+  const from=0;
+  function step(now){
+    const p=Math.min((now-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    const val=Math.round(from+ease*(target-from));
+    el.textContent=formatter?formatter(val):val;
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=formatter?formatter(target):target;
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── Load travel profile (hero row) ── */
+async function loadTravelProfile(){
+  const uid=getUserId();
+  if(!uid)return;
+  try{
+    const d=await api.get(`/users/${uid}/travel-profile`);
+    window._travelProfile=d;
+    const km=document.getElementById('htvKm');
+    const route=document.getElementById('htvRoute');
+    const op=document.getElementById('htvOp');
+    if(km)km.textContent=(d.km_traveled||0).toLocaleString('vi-VN')+'km';
+    if(route)route.textContent=d.favorite_route||'Chưa có';
+    if(op)op.textContent=d.favorite_operator||'Chưa có';
+  }catch(e){console.warn('travelProfile',e);}
+}
+
+/* ── Load user stats (Screen C cards) ── */
+async function loadUserStats(){
+  const uid=getUserId();
+  if(!uid)return;
+  try{
+    const d=await api.get(`/users/${uid}/stats`);
+    window._userStats=d;
+    // Update stat cards
+    const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+    set('dscTotalTrips',d.total_trips||0);
+    set('dscTotalSpent',(d.total_spent||0).toLocaleString('vi-VN')+'đ');
+    set('dscPoints',d.loyalty_points||0);
+    set('dscCompleted',d.completed||0);
+    set('dscCanceled',d.canceled||0);
+    set('dscMonthly',d.this_month||0);
+    set('dscYearly',d.this_year||0);
+    set('dscSuccessRate',(d.success_rate||0)+'%');
+  }catch(e){console.warn('userStats',e);}
+}
+
+/* ── Init Screen C (charts + achievements) ── */
+async function initStatsScreen(){
+  await loadUserStats();
+  await loadMonthlyStatsCharts();
+  renderAchievementsGrid();
+  // Animate counters
+  setTimeout(()=>{
+    document.querySelectorAll('.dsc-num').forEach(el=>{
+      const txt=el.textContent.replace(/[^\d]/g,'');
+      const num=parseInt(txt)||0;
+      if(num>0&&num<100000){
+        animateCounter(el,num,700);
+      }
+    });
+  },200);
+}
+
+/* ── Load monthly stats & render charts ── */
+async function loadMonthlyStatsCharts(){
+  const uid=getUserId();
+  if(!uid)return;
+  const months=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+  let tripsData=new Array(12).fill(0);
+  let spendData=new Array(12).fill(0);
+  let pointsData=new Array(12).fill(0);
+  try{
+    const rows=await api.get(`/users/${uid}/monthly-stats`);
+    rows.forEach(r=>{
+      const i=(r.month||1)-1;
+      tripsData[i]=r.trips||0;
+      spendData[i]=Math.round((r.spending||0)/1000); // in thousands
+      pointsData[i]=r.points||0;
+    });
+  }catch(e){console.warn('monthlyStats',e);}
+
+  const chartOpts=(label,color,data)=>({
+    type:'bar',
+    data:{labels:months,datasets:[{label,data,backgroundColor:color+'33',borderColor:color,borderWidth:2,borderRadius:6,tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y}}},scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.45)',font:{size:10}},beginAtZero:true}}}
+  });
+
+  const mkChart=(id,opts)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(window['_ch_'+id])window['_ch_'+id].destroy();
+    window['_ch_'+id]=new Chart(el,opts);
+  };
+
+  mkChart('chartTrips',chartOpts('Chuyến đi','#00ffe0',tripsData));
+  mkChart('chartSpending',chartOpts('Chi tiêu (nghìn đ)','#f39c12',spendData));
+  mkChart('chartPoints',chartOpts('Điểm tích lũy','#a29bfe',pointsData));
+
+  // Doughnut for status
+  const s=window._userStats||{};
+  const statusEl=document.getElementById('chartStatus');
+  if(statusEl){
+    if(window._ch_chartStatus)window._ch_chartStatus.destroy();
+    window._ch_chartStatus=new Chart(statusEl,{
+      type:'doughnut',
+      data:{
+        labels:['Đã thanh toán','Đang chờ','Đã huỷ'],
+        datasets:[{data:[s.completed||0,s.pending||0,s.canceled||0],backgroundColor:['rgba(46,204,113,.75)','rgba(243,156,18,.75)','rgba(231,76,60,.75)'],borderColor:['#2ecc71','#f39c12','#e74c3c'],borderWidth:2}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.55)',font:{size:11},padding:12}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}`}}}}
+    });
+  }
+}
+
+/* ── Render achievement badges (Screen C) ── */
+function renderAchievementsGrid(){
+  const container=document.getElementById('achGridFull');
+  if(!container)return;
+  const trips=window._userStats?.total_trips||0;
+  const pts=window._userStats?.loyalty_points||0;
+  const BADGES=[
+    {icon:'🎯',name:'Chuyến đầu tiên',req:'Đặt vé lần đầu',unlock:trips>=1},
+    {icon:'🥈',name:'10 chuyến đi',req:'Hoàn thành 10 chuyến',unlock:trips>=10},
+    {icon:'🥇',name:'50 chuyến đi',req:'Hoàn thành 50 chuyến',unlock:trips>=50},
+    {icon:'🚍',name:'Nhà thám hiểm',req:'Hoàn thành 20 chuyến',unlock:trips>=20},
+    {icon:'🌏',name:'Xuyên Việt',req:'Hoàn thành 100 chuyến',unlock:trips>=100},
+    {icon:'💎',name:'VIP Member',req:'Đạt 200 điểm tích lũy',unlock:pts>=200},
+    {icon:'🔥',name:'Khách trung thành',req:'Đạt 50 điểm tích lũy',unlock:pts>=50},
+    {icon:'⭐',name:'SmartBus Fan',req:'Đặt 5 chuyến trong tháng',unlock:(window._userStats?.this_month||0)>=5},
+  ];
+  container.innerHTML=BADGES.map(b=>`
+    <div class="ach-badge-card ${b.unlock?'unlocked':''}">
+      <div class="ach-badge-icon">${b.icon}</div>
+      <div class="ach-badge-name">${b.name}</div>
+      <div class="ach-badge-req">${b.req}</div>
+      ${b.unlock?'<div style="margin-top:6px;font-size:9px;font-weight:800;color:rgba(0,255,224,.55);text-transform:uppercase;letter-spacing:.4px;">✔ Đã mở khoá</div>':''}
+    </div>
+  `).join('');
+}
+
+/* ── Init Screen D (AI, map, notifications) ── */
+async function initAIScreen(){
+  const uid = getUserId();
+  const [behaviorData, recoData] = await Promise.allSettled([
+    fetch(`/api/ai/behavior/${uid}`).then(r=>r.json()).catch(()=>null),
+    fetch(`/api/recommendations/me?userId=${uid}`).then(r=>r.json()).catch(()=>null)
+  ]);
+  window._aiBehavior = behaviorData.status==='fulfilled' ? behaviorData.value : null;
+  window._aiReco     = recoData.status==='fulfilled'    ? recoData.value     : null;
+
+  renderBehaviorProfile();
+  renderAIInsights();
+  renderAISuggestions();
+  await loadNotifications();
+  initJourneyMap();
+}
+
+/* ── Behavior Profile Grid ── */
+function renderBehaviorProfile(){
+  const el  = document.getElementById('behaviorProfileGrid');
+  if(!el) return;
+  const bv  = window._aiBehavior || {};
+  const s   = window._userStats  || {};
+  const tp  = window._travelProfile || {};
+
+  if(!bv.top_routes && !s.total_trips){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:rgba(255,255,255,.28);font-size:12px;grid-column:1/-1">📊 Đặt vé lần đầu để xem hồ sơ hành vi</div>';
+    return;
+  }
+
+  const card=(ico,val,lbl,sub,clr='#a5b4fc')=>`
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;text-align:center;animation:aiFadeIn .4s ease both">
+      <div style="font-size:22px;margin-bottom:6px">${ico}</div>
+      <div style="font-size:15px;font-weight:900;color:${clr};line-height:1.1">${val}</div>
+      <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-top:4px">${lbl}</div>
+      ${sub?`<div style="font-size:10px;color:#475569;margin-top:3px">${sub}</div>`:''}
+    </div>`;
+
+  const topR  = bv.top_routes?.[0];
+  const favRoute = topR ? `${topR.origin} → ${topR.destination}` : (tp.favorite_route||'—');
+  const wkRatio  = bv.weekend_ratio != null ? bv.weekend_ratio+'%' : '—';
+  const prefH    = bv.preferred_hour != null ? bv.preferred_hour+'h' : '—';
+  const prefDow  = bv.preferred_dow || '—';
+  const prefBus  = bv.preferred_bus ? ({NORMAL:'Xe thường',VIP:'Xe VIP',LIMOUSINE:'Limousine'}[bv.preferred_bus]||bv.preferred_bus) : '—';
+  const totalBk  = s.total_trips || 0;
+  const kmTrav   = tp.km_traveled ? Math.round(tp.km_traveled).toLocaleString('vi-VN') : '—';
+  const saved    = window._aiReco?.meta?.total_saved;
+  const savedStr = saved>0 ? Math.round(saved/1000)*1000<=0?'0đ':(Math.round(saved/1000)*1000).toLocaleString('vi-VN')+'đ' : '0đ';
+
+  const searchCnt = (bv.search_patterns||[]).reduce((s,p)=>s+(p.cnt||0),0);
+
+  el.innerHTML=[
+    card('🚌', totalBk, 'Chuyến đã đặt', 'Tổng lịch sử đặt vé', '#34d399'),
+    card('🔍', searchCnt||'—', 'Lần tìm kiếm', '30 ngày gần nhất', '#60a5fa'),
+    card('🗺️', favRoute==='—'?'—':favRoute.split('→')[0].trim(), 'Tuyến hay đi', favRoute, '#a78bfa'),
+    card('📅', prefDow, 'Ngày hay đặt', wkRatio!=='—'?`${wkRatio} cuối tuần`:'', '#fbbf24'),
+    card('⏰', prefH, 'Giờ đặt vé', 'Giờ phổ biến nhất', '#fb923c'),
+    card('🚍', prefBus, 'Loại xe ưa thích', 'Dựa trên lịch sử', '#06b6d4'),
+    card('🗺️', kmTrav==='—'?'—':kmTrav+' km', 'Quãng đường đi', 'Tổng tất cả chuyến', '#4ade80'),
+    card('💰', savedStr, 'Đã tiết kiệm', 'So với giá TB', '#f472b6'),
+  ].join('');
+}
+
+/* ── AI Insights — real behavior data from /api/ai/behavior ── */
+function renderAIInsights(){
+  const container=document.getElementById('insightList');
+  if(!container) return;
+
+  const s  = window._userStats      || {};
+  const tp = window._travelProfile  || {};
+  const bv = window._aiBehavior     || {};
+  const total = s.total_trips || 0;
+
+  if(total === 0){
+    container.innerHTML='<div style="text-align:center;padding:24px;color:rgba(255,255,255,.30);">📊 Đặt vé lần đầu để SmartBusAI phân tích hành vi của bạn!</div>';
+    return;
+  }
+
+  // Merge insights: start with real behavior API data, then supplement from stats
+  const insights = [];
+
+  // From /api/ai/behavior — these are AI-generated sentences
+  if(bv.insights && bv.insights.length > 0){
+    bv.insights.forEach(ins => {
+      insights.push({ ico: ins.icon, main: ins.text,
+        sub: _aiInsightSub(ins.key, bv, s, tp), badge: _aiInsightBadge(ins.key, bv, s, tp) });
+    });
+  } else {
+    // Fallback: derive from stats like before
+    insights.push({ ico:'📅', main:'Thói quen đặt vé',
+      sub:`Bạn đã thực hiện ${total} chuyến đi. SmartBusAI đã ghi nhận lịch sử.`,
+      badge:`${total} chuyến` });
+    if(tp.favorite_route) insights.push({ ico:'🚌', main:`Tuyến yêu thích: ${tp.favorite_route}`,
+      sub:'SmartBusAI sẽ ưu tiên gợi ý tuyến này cho bạn.', badge:'Tuyến hay đi' });
+    if(tp.favorite_operator) insights.push({ ico:'🏢', main:`Nhà xe tin dùng: ${tp.favorite_operator}`,
+      sub:'Bạn thường chọn nhà xe này dựa trên lịch sử đặt vé.', badge:'Nhà xe yêu thích' });
+  }
+
+  // Always add: completion rate + km
+  const rate = s.success_rate || 0;
+  if(rate > 0) insights.push({ ico:'📊', main:`Tỷ lệ hoàn thành: ${rate}%`,
+    sub: rate >= 80 ? 'Tuyệt vời! Bạn rất nghiêm túc trong việc thực hiện chuyến đi.'
+                    : 'SmartBusAI gợi ý đặt vé sát ngày để tránh thay đổi kế hoạch.',
+    badge: rate >= 80 ? '⭐ Xuất sắc' : rate >= 50 ? 'Tốt' : 'Cần cải thiện' });
+  if(tp.km_traveled > 0) insights.push({ ico:'🗺️',
+    main:`Đã di chuyển ~${Number(tp.km_traveled).toLocaleString('vi-VN')} km`,
+    sub:'Khoảng cách tổng hợp từ tất cả chuyến xe đã hoàn thành.',
+    badge:`${Math.round(tp.km_traveled/1000*10)/10} nghìn km` });
+  if(s.this_month > 0) insights.push({ ico:'📆',
+    main:`Tháng này: ${s.this_month} chuyến đi`,
+    sub: s.this_month >= 3 ? 'Bạn di chuyển rất năng động tháng này!' : 'Bạn có kế hoạch di chuyển rõ ràng.',
+    badge:`${s.this_month}/tháng` });
+
+  // Savings from API
+  const saved = window._aiReco?.meta?.total_saved;
+  if(saved > 0) insights.push({ ico:'💰',
+    main:`Đã tiết kiệm ~${Number(Math.round(saved/1000)*1000).toLocaleString('vi-VN')}đ`,
+    sub:'So với giá trung bình khi đặt đúng thời điểm tốt nhất.',
+    badge:'Đặt sớm thông minh' });
+
+  container.innerHTML = insights.slice(0,7).map(i=>`
+    <div class="insight-item">
+      <div class="insight-ico">${i.ico}</div>
+      <div class="insight-text">
+        <div class="insight-main">${i.main}</div>
+        <div class="insight-sub">${i.sub}</div>
+      </div>
+      <div class="insight-badge">${i.badge}</div>
+    </div>`).join('');
+}
+
+function _aiInsightSub(key, bv, s, tp){
+  const m = {
+    weekend_habit:   'AI nhận diện mẫu hành vi cuối tuần từ lịch sử đặt vé của bạn.',
+    peak_hour:       'SmartBusAI ghi nhận giờ bạn hay đặt vé nhất dựa trên 90 ngày gần đây.',
+    bus_preference:  'Collaborative Filtering xác định loại xe bạn thường chọn nhất.',
+    fav_route:       'Tuyến được đặt nhiều nhất — AI sẽ ưu tiên hiển thị chuyến này.',
+    top_cities:      'Phân tích địa lý dựa trên lịch sử điểm đi / điểm đến của bạn.'
+  };
+  return m[key] || 'SmartBusAI phân tích từ lịch sử đặt vé thực tế của bạn.';
+}
+
+function _aiInsightBadge(key, bv, s, tp){
+  const m = {
+    weekend_habit:   `${bv.weekend_ratio || 0}% cuối tuần`,
+    peak_hour:       bv.preferred_hour !== undefined ? `${bv.preferred_hour}h phổ biến` : 'Giờ cao điểm',
+    bus_preference:  bv.preferred_bus || 'Loại xe ưa thích',
+    fav_route:       tp.favorite_route ? '✓ Xác nhận' : 'Tuyến chính',
+    top_cities:      '📍 Phân tích địa lý'
+  };
+  return m[key] || '🧠 AI';
+}
+
+/* ── AI Trip Suggestions — real data with full explainability ── */
+function renderAISuggestions(){
+  const container = document.getElementById('suggestGrid');
+  const ts = document.getElementById('aiRecoTimestamp');
+  if(!container) return;
+
+  const reco = window._aiReco;
+  const recs  = reco?.recommendations || [];
+
+  if(recs.length === 0){
+    container.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:32px;color:rgba(255,255,255,.30);">
+      🧠 SmartBusAI chưa đủ dữ liệu để gợi ý. Hãy tìm kiếm và đặt vé để AI học thêm về bạn!
+    </div>`;
+    return;
+  }
+
+  if(ts && reco?.meta?.generated_at){
+    ts.textContent='Cập nhật '+new Date(reco.meta.generated_at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  const ALGO_COLORS={
+    collaborative_filtering:{clr:'#00ffe0',lbl:'👥 Collaborative Filtering',bg:'rgba(0,255,224,.08)',bd:'rgba(0,255,224,.22)'},
+    search_based:           {clr:'#60a5fa',lbl:'🔍 Lịch sử tìm kiếm',      bg:'rgba(96,165,250,.08)',bd:'rgba(96,165,250,.22)'},
+    popularity_based:       {clr:'#f97316',lbl:'🔥 Xu hướng phổ biến',     bg:'rgba(249,115,22,.08)',bd:'rgba(249,115,22,.22)'},
+  };
+
+  container.innerHTML = recs.slice(0,6).map((rec,idx)=>{
+    const ac    = ALGO_COLORS[rec.algorithm] || {clr:'#a5b4fc',lbl:'🤖 AI Engine',bg:'rgba(99,102,241,.08)',bd:'rgba(99,102,241,.22)'};
+    const pct   = rec.score||0;
+    const price = rec.current_price ? Number(rec.current_price).toLocaleString('vi-VN')+'đ' : '—';
+    const bd    = rec.breakdown||{};
+    const parts = (rec.route||'').split(' → ');
+    const origin= parts[0]||rec.origin||'', dest=parts[1]||rec.destination||'';
+
+    // Parse price diff
+    const priceM   = (bd.price_attract?.basis||'').match(/([+\-]?\d+)%/);
+    const priceDiff= priceM?(parseInt(priceM[1])>0?'+':'')+priceM[1]+'%':null;
+
+    // Score breakdown bars
+    const bar=(lbl,sc,w,c)=>`
+      <div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#475569;margin-bottom:2px">
+          <span>${lbl}</span>
+          <span style="color:${c};font-weight:700">${w} · ${Math.round(sc)}pts</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${Math.min(100,Math.round(sc))}%;background:${c};border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1) ${idx*100}ms"></div>
+        </div>
+      </div>`;
+
+    // Reasons
+    const reasons = (rec.reasons||[]).filter(r=>r?.text).slice(0,4).map(r=>
+      `<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <span style="font-size:14px;flex-shrink:0">${r.icon||'•'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;color:#cbd5e1;font-weight:600">${r.text}</div>
+          ${r.score_contribution?`<div style="font-size:9px;color:#334155;margin-top:1px">${r.score_contribution}</div>`:''}
+        </div>
+      </div>`
+    ).join('');
+
+    return `
+    <div class="suggest-card" style="position:relative;overflow:hidden;border-color:${ac.bd};background:${ac.bg};display:flex;flex-direction:column;gap:0;padding:0;animation:aiFadeIn .4s ease ${idx*70}ms both">
+      <!-- Top accent line -->
+      <div style="height:3px;background:linear-gradient(90deg,${ac.clr},${ac.clr}44)"></div>
+
+      <div style="padding:14px 14px 10px">
+        <!-- Route + Score -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <div style="flex:1;min-width:0">
+            <div class="sug-route" style="color:#f1f5f9">${rec.origin||origin}</div>
+            <div style="font-size:9px;color:#334155;margin:2px 0">→ hành trình</div>
+            <div class="sug-route" style="color:#f1f5f9">${rec.destination||dest}</div>
+          </div>
+          <div style="text-align:center;flex-shrink:0;background:rgba(0,0,0,.3);border:1px solid ${ac.bd};border-radius:10px;padding:6px 10px">
+            <div style="font-size:22px;font-weight:900;color:${ac.clr};line-height:1">${pct}</div>
+            <div style="font-size:8px;color:${ac.clr};font-weight:800;letter-spacing:.5px">% FIT</div>
+          </div>
+        </div>
+
+        <!-- Algorithm badge -->
+        <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.25);border:1px solid ${ac.bd};border-radius:20px;padding:2px 9px;margin-bottom:10px">
+          <span style="font-size:10px;font-weight:700;color:${ac.clr}">${ac.lbl}</span>
+        </div>
+
+        <!-- Score breakdown -->
+        <div style="background:rgba(0,0,0,.20);border-radius:8px;padding:8px 10px;margin-bottom:10px">
+          <div style="font-size:9px;color:#334155;font-weight:800;margin-bottom:6px;letter-spacing:.3px">📊 CÔNG THỨC AI SCORE</div>
+          ${bar('Lịch sử tìm kiếm',bd.user_history?.score||0,'40%','#60a5fa')}
+          ${bar('Lịch sử đặt vé',bd.booking_history?.score||0,'25%','#34d399')}
+          ${bar('Độ phổ biến',bd.popularity?.score||0,'20%','#f59e0b')}
+          ${bar('Giá hấp dẫn',bd.price_attract?.score||0,'15%','#a78bfa')}
+        </div>
+
+        <!-- Why recommended -->
+        ${reasons?`<div style="background:rgba(0,0,0,.15);border-radius:8px;padding:8px 10px;margin-bottom:10px;border-left:3px solid ${ac.clr}55">
+          <div style="font-size:9px;color:#334155;font-weight:800;letter-spacing:.3px;margin-bottom:6px">🔍 TẠI SAO ĐƯỢC GỢI Ý</div>
+          ${reasons}
+        </div>`:''}
+
+        <!-- Price + CTA -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="sug-price" style="color:${ac.clr}">${price}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.30)">
+              ${rec.trip_count?rec.trip_count+' chuyến còn vé':''}
+              ${priceDiff?`· <span style="color:${priceDiff.startsWith('-')?'#34d399':'#f59e0b'}">${priceDiff} so TB</span>`:''}
+            </div>
+          </div>
+          <button class="sug-btn" style="border-color:${ac.bd};color:${ac.clr};flex-shrink:0;width:auto;padding:8px 16px"
+            onclick="window.location.href='index.html?o=${encodeURIComponent(origin)}&d=${encodeURIComponent(dest)}'">
+            Đặt vé ngay →
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(reco?.meta){
+    const m = reco.meta;
+    const metaDiv=document.createElement('div');
+    metaDiv.style.cssText='grid-column:1/-1;font-size:10px;color:#1e293b;text-align:center;padding-top:2px;';
+    metaDiv.innerHTML=`🧠 ${m.algorithm||'SmartBusAI v3'} · ${m.data_points||0} điểm dữ liệu học được`;
+    container.appendChild(metaDiv);
+  }
+}
+
+/* ── Load Notifications ── */
+async function loadNotifications(){
+  const uid=getUserId();
+  const container=document.getElementById('notifList');
+  const badge=document.getElementById('notifBadge');
+  if(!container)return;
+  try{
+    const notifs=await api.get(`/users/${uid}/notifications`);
+    if(badge)badge.textContent=notifs.length;
+    if(notifs.length===0){
+      container.innerHTML='<div class="notif-empty">🔔 Không có thông báo nào. Mọi thứ đang ổn!</div>';
+      return;
+    }
+    container.innerHTML=notifs.map(n=>`
+      <div class="notif-item">
+        <div class="notif-dot ${n.dot==='warn'?'warn':n.dot==='info'?'info':''}"></div>
+        <div class="notif-text">
+          <div class="notif-title">${n.title} — Mã: ${n.code||''}</div>
+          <div class="notif-sub">${n.message}</div>
+        </div>
+        <div class="notif-time">${n.time?new Date(n.time).toLocaleDateString('vi-VN'):''}</div>
+      </div>
+    `).join('');
+  }catch(e){
+    container.innerHTML='<div class="notif-empty">🔔 Không có thông báo nào.</div>';
+  }
+}
+
+/* ── Journey Map (Leaflet) ── */
+function initJourneyMap(){
+  const el=document.getElementById('journeyMap');
+  if(!el||window._mapInited)return;
+  window._mapInited=true;
+
+  const map=L.map('journeyMap',{zoomControl:true,scrollWheelZoom:false}).setView([16.5,107.5],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:18
+  }).addTo(map);
+
+  // City coordinates in Vietnam
+  const cities={
+    'Hà Nội':[21.0285,105.8542],'TP.HCM':[10.8231,106.6297],'Đà Nẵng':[16.0544,108.2022],
+    'Hải Phòng':[20.8449,106.6881],'Cần Thơ':[10.0452,105.7469],'Huế':[16.4637,107.5909],
+    'Nha Trang':[12.2388,109.1967],'Đà Lạt':[11.9404,108.4583],'Vũng Tàu':[10.4113,107.1365],
+    'Sapa':[22.3364,103.8440],'Quy Nhơn':[13.7830,109.2197],'Buôn Ma Thuột':[12.6796,108.0501],
+    'Vinh':[18.6794,105.6814],'Thanh Hóa':[19.8078,105.7764],'Phan Thiết':[10.9289,108.1021],
+  };
+
+  const icon=L.divIcon({className:'',html:'<div style="width:12px;height:12px;border-radius:50%;background:#00ffe0;border:2px solid #fff;box-shadow:0 0 8px rgba(0,255,224,.8);"></div>',iconSize:[12,12]});
+
+  const tp=window._travelProfile||{};
+  const topCities=tp.top_cities||[];
+
+  // Draw markers & lines for visited cities
+  const visited=topCities.slice(0,5);
+  const pts=[];
+  visited.forEach(city=>{
+    const coords=cities[city];
+    if(coords){
+      L.marker(coords,{icon}).addTo(map).bindPopup(`<b>${city}</b><br>Điểm đến của bạn`);
+      pts.push(coords);
+    }
+  });
+
+  // Draw route lines
+  if(pts.length>1){
+    L.polyline(pts,{color:'#00ffe0',weight:2,opacity:.6,dashArray:'5,8'}).addTo(map);
+  }
+
+  // Add major cities as dim markers
+  Object.entries(cities).forEach(([name,coords])=>{
+    if(!visited.includes(name)){
+      L.circleMarker(coords,{radius:4,color:'rgba(255,255,255,.3)',fillColor:'rgba(255,255,255,.1)',fillOpacity:.5,weight:1}).addTo(map).bindPopup(name);
+    }
+  });
+
+  // Custom map style
+  el.style.filter='hue-rotate(200deg) brightness(.8) saturate(.7)';
+}
+
+/* ── Month filter for bookings (DOM-based, safe) ── */
+let _bkMonthFilter=0;
+function filterBkMonth(m,el){
+  _bkMonthFilter=m;
+  document.querySelectorAll('.bk-mchip').forEach(c=>c.classList.remove('on'));
+  if(el)el.classList.add('on');
+  _applyBkMonthFilter();
+}
+function _applyBkMonthFilter(){
+  const cards=document.querySelectorAll('#bookingList .booking-card');
+  cards.forEach(card=>{
+    if(_bkMonthFilter===0){card.style.display='';return;}
+    // Try to read departure date from data attribute or text
+    const dateAttr=card.dataset.month;
+    if(dateAttr){
+      card.style.display=parseInt(dateAttr)===_bkMonthFilter?'':'none';
+    } else {
+      // fallback: parse any date string in card
+      const txt=card.textContent||'';
+      const m=txt.match(/(\d{2})\/(\d{2})\/\d{4}/);
+      const month=m?parseInt(m[2]):0;
+      card.style.display=(!month||month===_bkMonthFilter)?'':'none';
+    }
+  });
+}
+// Patch: re-apply month filter after any re-render
+const _rawRenderBk=window.renderBk;
+setTimeout(()=>{
+  // Observe bookingList for changes and re-apply filter
+  const bl=document.getElementById('bookingList');
+  if(bl){
+    new MutationObserver(()=>{if(_bkMonthFilter>0)_applyBkMonthFilter();}).observe(bl,{childList:true,subtree:true});
+  }
+},1000);
 </script>
 
 <!-- ════ PAYMENT MODAL ════ -->

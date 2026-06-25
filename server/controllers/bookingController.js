@@ -29,7 +29,7 @@ exports.getAllBookings = async (req, res) => {
                 GROUP_CONCAT(DISTINCT s.seat_type SEPARATOR '/')
                                  AS seat_types
             FROM booking b
-            JOIN users u   ON b.user_id  = u.user_id
+            LEFT JOIN users u   ON b.user_id  = u.user_id
             JOIN trip t    ON b.trip_id  = t.trip_id
             JOIN route r   ON t.route_id = r.route_id
             JOIN bus       ON t.bus_id   = bus.bus_id
@@ -111,12 +111,28 @@ const AMENITY_PRICES = {
 /* =====================================================
    CREATE BOOKING (Transaction)
 ===================================================== */
+/* ── Tạo mã đặt vé ngẫu nhiên (8 ký tự in hoa + số) ── */
+function generateBookingCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+}
+
 exports.createBooking = async (req, res) => {
-    const { user_id, trip_id, seats, status: reqStatus, payment_method, extras } = req.body;
+    const {
+        user_id, trip_id, seats, status: reqStatus, payment_method, extras,
+        guest_name, guest_phone, guest_email  // Guest booking fields
+    } = req.body;
     const bookingStatus = (reqStatus === "PENDING") ? "PENDING" : "PAID";
 
-    if (!user_id || !trip_id || !Array.isArray(seats) || seats.length === 0) {
+    // user_id is optional (guest booking). trip_id + seats are required.
+    if (!trip_id || !Array.isArray(seats) || seats.length === 0) {
         return res.status(400).json({ message: "Thiếu dữ liệu" });
+    }
+    // Guest must provide name + phone
+    if (!user_id && (!guest_name || !guest_phone)) {
+        return res.status(400).json({ message: "Khách vãng lai cần nhập họ tên và số điện thoại" });
     }
 
     const normalizedSeats = seats.map(s => {
@@ -172,10 +188,20 @@ exports.createBooking = async (req, res) => {
         });
         const extrasJson = extrasArr.length ? JSON.stringify(extrasArr) : null;
 
+        // Generate unique booking_code
+        let bookingCode;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const candidate = generateBookingCode();
+            const [[exists]] = await conn.query('SELECT booking_id FROM booking WHERE booking_code=?', [candidate]);
+            if (!exists) { bookingCode = candidate; break; }
+        }
+
         const [bookingResult] = await conn.query(
-            `INSERT INTO booking (user_id, trip_id, booking_time, total_amount, status, extras)
-             VALUES (?, ?, NOW(), ?, ?, ?)`,
-            [user_id, trip_id, total, bookingStatus, extrasJson]
+            `INSERT INTO booking (user_id, trip_id, booking_time, total_amount, status, extras,
+                                  guest_name, guest_phone, guest_email, booking_code)
+             VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?)`,
+            [user_id || null, trip_id, total, bookingStatus, extrasJson,
+             guest_name || null, guest_phone || null, guest_email || null, bookingCode]
         );
         const bookingId = bookingResult.insertId;
 
@@ -205,29 +231,56 @@ exports.createBooking = async (req, res) => {
         // ── Post-commit for immediate PAID bookings ──
         if (bookingStatus === "PAID") {
             try {
-                const earned = await awardPoints(db, user_id, bookingId, total);
-                const [bRows] = await db.query(
-                    `SELECT u.full_name, u.email, r.origin, r.destination,
-                            t.departure_time, t.arrival_time, bs.bus_type, bs.plate_number
-                     FROM booking b
-                     JOIN users u ON b.user_id = u.user_id
-                     JOIN trip t ON b.trip_id = t.trip_id
-                     JOIN route r ON t.route_id = r.route_id
-                     JOIN bus bs ON t.bus_id = bs.bus_id
-                     WHERE b.booking_id = ?`, [bookingId]
-                );
-                if (bRows.length) {
-                    await sendBookingConfirmation(bRows[0].email, {
-                        ...bRows[0], booking_id: bookingId,
-                        total_amount: total, loyalty_earned: earned
-                    });
+                let earned = 0;
+                if (user_id) {
+                    // Loyalty points only for registered users
+                    earned = await awardPoints(db, user_id, bookingId, total);
+                    const [bRows] = await db.query(
+                        `SELECT u.full_name, u.email, r.origin, r.destination,
+                                t.departure_time, t.arrival_time, bs.bus_type, bs.plate_number
+                         FROM booking b
+                         JOIN users u ON b.user_id = u.user_id
+                         JOIN trip t ON b.trip_id = t.trip_id
+                         JOIN route r ON t.route_id = r.route_id
+                         JOIN bus bs ON t.bus_id = bs.bus_id
+                         WHERE b.booking_id = ?`, [bookingId]
+                    );
+                    if (bRows.length) {
+                        await sendBookingConfirmation(bRows[0].email, {
+                            ...bRows[0], booking_id: bookingId,
+                            total_amount: total, loyalty_earned: earned
+                        });
+                    }
+                } else if (guest_email) {
+                    // Send basic confirmation to guest email
+                    const [bRows] = await db.query(
+                        `SELECT r.origin, r.destination, t.departure_time, t.arrival_time,
+                                bs.bus_type, bs.plate_number
+                         FROM booking b
+                         JOIN trip t ON b.trip_id = t.trip_id
+                         JOIN route r ON t.route_id = r.route_id
+                         JOIN bus bs ON t.bus_id = bs.bus_id
+                         WHERE b.booking_id = ?`, [bookingId]
+                    );
+                    if (bRows.length) {
+                        await sendBookingConfirmation(guest_email, {
+                            ...bRows[0], full_name: guest_name,
+                            booking_id: bookingId, total_amount: total, loyalty_earned: 0
+                        });
+                    }
                 }
             } catch (postErr) {
                 console.warn('[CreateBooking] Post-commit error (non-critical):', postErr.message);
             }
         }
 
-        res.status(201).json({ message: "Đặt vé thành công", booking_id: bookingId, total });
+        res.status(201).json({
+            message: "Đặt vé thành công",
+            booking_id: bookingId,
+            booking_code: bookingCode,
+            total,
+            is_guest: !user_id
+        });
 
     } catch (err) {
         await conn.rollback();
@@ -251,14 +304,16 @@ exports.updateBookingStatus = async (req, res) => {
         if (status === "CANCELED") {
             try {
                 const [bRows] = await db.query(
-                    `SELECT u.email, u.full_name, r.origin, r.destination, t.departure_time
+                    `SELECT COALESCE(u.email, b.guest_email) AS email,
+                            COALESCE(u.full_name, b.guest_name) AS full_name,
+                            r.origin, r.destination, t.departure_time
                      FROM booking b
-                     JOIN users u ON b.user_id = u.user_id
+                     LEFT JOIN users u ON b.user_id = u.user_id
                      JOIN trip t ON b.trip_id = t.trip_id
                      JOIN route r ON t.route_id = r.route_id
                      WHERE b.booking_id = ?`, [id]
                 );
-                if (bRows.length) {
+                if (bRows.length && bRows[0].email) {
                     await sendBookingCancellation(bRows[0].email, {
                         full_name: bRows[0].full_name,
                         booking_id: id,
@@ -370,7 +425,7 @@ exports.getBookingQR = async (req, res) => {
                     bs.plate_number, bs.bus_type,
                     GROUP_CONCAT(s.seat_number ORDER BY s.seat_number SEPARATOR ', ') AS seat_numbers
              FROM booking b
-             JOIN users u ON b.user_id = u.user_id
+             LEFT JOIN users u ON b.user_id = u.user_id
              JOIN trip t ON b.trip_id = t.trip_id
              JOIN route ro ON t.route_id = ro.route_id
              JOIN bus bs ON t.bus_id = bs.bus_id
@@ -384,7 +439,7 @@ exports.getBookingQR = async (req, res) => {
         const booking = rows[0];
         const { generateQRImage, generateChecksum } = require('../services/qrService');
         const qrImage = await generateQRImage(booking);
-        const checksum = generateChecksum(booking.booking_id, booking.user_id, booking.total_amount);
+        const checksum = generateChecksum(booking.booking_id, booking.user_id || 0, booking.total_amount);
 
         res.json({
             booking_id: booking.booking_id,
@@ -427,7 +482,7 @@ exports.verifyBookingQR = async (req, res) => {
                     t.departure_time,
                     GROUP_CONCAT(s.seat_number ORDER BY s.seat_number SEPARATOR ', ') AS seat_numbers
              FROM booking b
-             JOIN users u ON b.user_id = u.user_id
+             LEFT JOIN users u ON b.user_id = u.user_id
              JOIN trip t ON b.trip_id = t.trip_id
              JOIN route ro ON t.route_id = ro.route_id
              LEFT JOIN booking_detail bd ON bd.booking_id = b.booking_id
@@ -519,5 +574,74 @@ exports.addServiceOrder = async (req, res) => {
     } catch (err) {
         console.error("ADD SERVICE ORDER ERROR:", err);
         res.status(500).json({ message: "Lỗi server" });
+    }
+};
+
+/* =====================================================
+   GUEST LOOKUP — GET /api/bookings/lookup?code=X&phone=Y
+   Tra cứu vé bằng mã đặt vé + số điện thoại (không cần đăng nhập)
+===================================================== */
+exports.lookupBooking = async (req, res) => {
+    try {
+        const { code, phone } = req.query;
+        if (!code || !phone) {
+            return res.status(400).json({ message: "Cần nhập mã đặt vé và số điện thoại" });
+        }
+
+        const [rows] = await db.query(
+            `SELECT b.booking_id, b.booking_code, b.status, b.total_amount, b.booking_time,
+                    b.guest_name, b.guest_phone, b.guest_email,
+                    COALESCE(u.full_name, b.guest_name) AS full_name,
+                    COALESCE(u.email, b.guest_email) AS email,
+                    COALESCE(u.phone, b.guest_phone) AS phone,
+                    r.origin, r.destination,
+                    t.departure_time, t.arrival_time,
+                    bs.bus_type, bs.plate_number,
+                    o.name AS operator_name,
+                    GROUP_CONCAT(s.seat_number ORDER BY s.seat_number SEPARATOR ', ') AS seat_numbers
+             FROM booking b
+             LEFT JOIN users u ON b.user_id = u.user_id
+             JOIN trip t ON b.trip_id = t.trip_id
+             JOIN route r ON t.route_id = r.route_id
+             JOIN bus bs ON t.bus_id = bs.bus_id
+             JOIN bus_operator o ON bs.operator_id = o.operator_id
+             LEFT JOIN booking_detail bd ON bd.booking_id = b.booking_id
+             LEFT JOIN seat s ON s.seat_id = bd.seat_id
+             WHERE b.booking_code = ?
+             GROUP BY b.booking_id`,
+            [code.toUpperCase()]
+        );
+
+        if (!rows.length) {
+            return res.status(404).json({ message: "Không tìm thấy vé với mã này" });
+        }
+
+        const booking = rows[0];
+        // Verify phone matches (guest_phone or user phone_number)
+        const storedPhone = (booking.phone || '').replace(/\s/g, '');
+        const inputPhone  = phone.replace(/\s/g, '');
+        if (storedPhone !== inputPhone) {
+            return res.status(403).json({ message: "Số điện thoại không khớp với mã đặt vé" });
+        }
+
+        res.json({
+            booking_id:     booking.booking_id,
+            booking_code:   booking.booking_code,
+            status:         booking.status,
+            total_amount:   booking.total_amount,
+            booking_time:   booking.booking_time,
+            full_name:      booking.full_name,
+            origin:         booking.origin,
+            destination:    booking.destination,
+            departure_time: booking.departure_time,
+            arrival_time:   booking.arrival_time,
+            bus_type:       booking.bus_type,
+            plate_number:   booking.plate_number,
+            operator_name:  booking.operator_name,
+            seat_numbers:   booking.seat_numbers
+        });
+    } catch (err) {
+        console.error('LOOKUP BOOKING ERROR:', err);
+        res.status(500).json({ message: 'Lỗi server' });
     }
 };

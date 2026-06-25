@@ -188,6 +188,8 @@ header{
   backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   box-shadow:0 18px 50px rgba(0,0,0,.50),0 0 55px rgba(0,255,224,.16);
   display:flex; gap:12px; flex-wrap:wrap; justify-content:center; align-items:center;
+  /* Stacking context above geo panel & live ticker so dropdown is never clipped */
+  position:relative; z-index:200;
 }
 
 .search-box input,
@@ -1741,6 +1743,7 @@ nav a.ai-highlight{
 }
 .tf-chip:hover{background:rgba(0,168,255,.12);border-color:rgba(0,168,255,.28);color:#00a8ff;}
 .tf-chip.active{background:rgba(0,168,255,.18);border-color:rgba(0,168,255,.50);color:#00a8ff;box-shadow:0 0 12px rgba(0,168,255,.18);}
+.transit-sort-chip.active{background:rgba(99,102,241,.35)!important;border-color:#6366f1!important;color:#a5b4fc!important;box-shadow:0 0 10px rgba(99,102,241,.25);}
 
 /* ── HOT BADGE on trip card ── */
 .tc-hot-badge{
@@ -1880,8 +1883,11 @@ nav a.ai-highlight{
 .pts-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.70);}
 .pts-ico{font-size:16px;}
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet: non-blocking CSS load + deferred JS (only needed for transit map) -->
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script src="/js/api.js"></script>
 </head>
 <body>
@@ -2120,28 +2126,6 @@ nav a.ai-highlight{
   <div class="ai-panel-tab" onclick="toggleAIPanel()" title="AI Trip Analyzer">🤖</div>
 </div>
 
-<!-- ═══ HERO SLIDER ═══ -->
-<div class="hero-slider">
-  <div class="slide active">
-    <div class="hero-content">
-      <h1>Đặt vé xe thông minh</h1>
-      <p>Nhanh chóng · Tiện lợi · An toàn</p>
-    </div>
-  </div>
-  <div class="slide">
-    <div class="hero-content">
-      <h1>Công nghệ AI gợi ý chuyến đi</h1>
-      <p>Tối ưu hành trình — tiết kiệm tối đa</p>
-    </div>
-  </div>
-  <div class="slide">
-    <div class="hero-content">
-      <h1>Thanh toán đa nền tảng</h1>
-      <p>MoMo · VNPay · Tại quầy</p>
-    </div>
-  </div>
-</div>
-
 <!-- ═══ ABOUT ═══ -->
 <section class="about">
   <h2>SmartBusAI là gì?</h2>
@@ -2274,6 +2258,60 @@ nav a.ai-highlight{
     <option value="desc">Giá giảm dần</option>
   </select>
   <button id="searchBtn">🔍 Tìm chuyến</button>
+  <button id="geoBtn" onclick="findNearestPickup()" style="background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(5,150,105,.25));color:#34d399;border:1px solid rgba(52,211,153,.35);border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px" onmouseover="this.style.background='linear-gradient(135deg,rgba(16,185,129,.4),rgba(5,150,105,.4))';this.style.borderColor='rgba(52,211,153,.7)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(16,185,129,.25),rgba(5,150,105,.25))';this.style.borderColor='rgba(52,211,153,.35)'">📍 Điểm đón gần tôi</button>
+  <!-- ── Inline AI route suggestions — full-width row below inputs ── -->
+  <div id="searchInlineAI" style="display:none;width:100%;flex-basis:100%;padding:10px 4px 2px;border-top:1px solid rgba(99,102,241,.18);margin-top:6px;animation:aiInsightFade .3s ease">
+    <div style="display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;padding-top:3px">
+        <div id="sbAISpinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(99,102,241,.25);border-top-color:#a5b4fc;animation:aiSpin .7s linear infinite;display:none"></div>
+        <span style="font-size:9.5px;font-weight:800;color:#6366f1;letter-spacing:.5px;text-transform:uppercase;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.28);border-radius:20px;padding:2px 8px">🤖 AI</span>
+      </div>
+      <div id="sbAIItems" style="display:flex;flex-wrap:wrap;gap:5px;flex:1;align-items:center">
+        <span style="font-size:11px;color:rgba(255,255,255,.35);font-style:italic">Đang phân tích tuyến…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI SEARCH INSIGHT PANEL ═══ -->
+<div id="aiSearchInsightPanel" style="display:none;width:min(1100px,94vw);margin:8px auto 0;animation:aiInsightFade .35s ease">
+  <div style="background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(6,182,212,.08),rgba(16,185,129,.06));border:1px solid rgba(99,102,241,.28);border-radius:14px;padding:10px 16px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 4px 20px rgba(99,102,241,.15),0 0 0 1px rgba(99,102,241,.08)">
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;padding-top:1px">
+      <div id="aiInsightSpinner" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(99,102,241,.25);border-top-color:#a5b4fc;animation:aiSpin .8s linear infinite;display:none"></div>
+      <div id="aiInsightIcon" style="font-size:16px;display:none">💡</div>
+      <span style="font-size:11px;font-weight:800;color:#a5b4fc;letter-spacing:.4px;white-space:nowrap">AI INSIGHT</span>
+    </div>
+    <div id="aiSearchInsightItems" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+  </div>
+</div>
+<style>
+@keyframes aiInsightFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes aiSpin{to{transform:rotate(360deg)}}
+@keyframes aiPulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.4)}50%{box-shadow:0 0 0 6px rgba(99,102,241,.0)}}
+.ai-insight-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:20px;padding:5px 12px;font-size:11.5px;color:#cbd5e1;font-weight:600;transition:all .2s;cursor:default;animation:aiInsightFade .3s ease both}
+.ai-insight-pill.price{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.08);color:#34d399}
+.ai-insight-pill.history{border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.08);color:#93c5fd}
+.ai-insight-pill.demand{border-color:rgba(251,146,60,.35);background:rgba(251,146,60,.08);color:#fdba74}
+.ai-insight-pill.pattern{border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.08);color:#c4b5fd}
+.ai-insight-pill.avail{border-color:rgba(163,230,53,.30);background:rgba(163,230,53,.07);color:#bef264}
+</style>
+
+<!-- ═══ GEO STOPS PANEL ═══ -->
+<div id="geoStopsPanel" style="display:none;width:min(1100px,94vw);margin:10px auto;background:rgba(6,13,26,.92);border:1px solid rgba(52,211,153,.25);border-radius:16px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 1px rgba(52,211,153,.1)">
+  <div style="padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="color:#34d399;font-size:16px">📍</span>
+      <span style="font-size:14px;font-weight:700;color:#e2e8f0">Bến xe gần vị trí của bạn</span>
+      <span id="geoStopsCount" style="background:rgba(52,211,153,.2);color:#34d399;font-size:11px;padding:2px 10px;border-radius:20px;font-weight:700"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#64748b;font-weight:600">Sắp xếp:</span>
+      <button id="geoSortNear" onclick="_sortGeoStops('asc')" style="background:rgba(52,211,153,.22);color:#34d399;border:1px solid rgba(52,211,153,.40);border-radius:20px;padding:4px 13px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">📍 Gần → Xa</button>
+      <button id="geoSortFar" onclick="_sortGeoStops('desc')" style="background:rgba(255,255,255,.05);color:#94a3b8;border:1px solid rgba(255,255,255,.10);border-radius:20px;padding:4px 13px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">📍 Xa → Gần</button>
+      <button onclick="document.getElementById('geoStopsPanel').style.display='none'" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:#94a3b8;border-radius:8px;padding:4px 11px;cursor:pointer;font-size:13px;margin-left:4px">✕</button>
+    </div>
+  </div>
+  <div id="geoStopsList" style="padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px;max-height:340px;overflow-y:auto"></div>
 </div>
 
 <!-- ═══ SORT + FILTER BAR ═══ -->
@@ -2310,24 +2348,29 @@ nav a.ai-highlight{
   <div class="pts-item"><span class="pts-ico">🤖</span>AI Powered</div>
 </div>
 
-<!-- ═══ STATS ═══ -->
-<div class="stats">
-  <div class="stat-box">
-    <h2 class="counter" data-target="1200" data-live="true" data-range="15">0</h2>
-    <p>Chuyến xe mỗi ngày <span class="stat-live">● LIVE</span></p>
+<!-- ═══ AI RECOMMENDATION SECTION ═══ -->
+<div id="aiRecoSection" style="display:none;width:min(1100px,94vw);margin:18px auto">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 0 16px rgba(99,102,241,.4)">🤖</div>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:#e2e8f0">🧠 Gợi ý dành riêng cho bạn</div>
+      <div id="aiRecoSubtitle" style="font-size:11px;color:#475569;margin-top:1px">Đang phân tích…</div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span id="aiLiveIndicator" style="display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.30);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;color:#a5b4fc;letter-spacing:.3px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#6366f1;animation:aiPulseGlow 1.8s ease-in-out infinite;display:inline-block"></span>
+        AI LIVE
+      </span>
+      <span id="aiRecoAlgoLabel" style="display:none;font-size:10px;color:#334155;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:3px 10px">formula: 40% history + 25% booking + 20% popularity + 15% price</span>
+    </div>
   </div>
-  <div class="stat-box">
-    <h2 class="counter" data-target="50000" data-live="true" data-range="80">0</h2>
-    <p>Khách hàng hài lòng <span class="stat-live">● LIVE</span></p>
-  </div>
-  <div class="stat-box">
-    <h2 class="counter" data-target="98" data-live="true" data-range="1">0</h2>
-    <p>% Đánh giá 5 sao <span class="stat-live">● LIVE</span></p>
-  </div>
-  <div class="stat-box">
-    <h2 class="counter" data-target="120" data-live="true" data-range="2">0</h2>
-    <p>Nhà xe đối tác uy tín <span class="stat-live">● LIVE</span></p>
-  </div>
+  <!-- Category tabs -->
+  <div id="aiRecoCategoryBar" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+  <!-- Cards grid -->
+  <div id="aiRecoCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:10px"></div>
+  <!-- Meta footer -->
+  <div id="aiRecoMeta" style="margin-top:8px;font-size:10px;color:#1e293b;text-align:right"></div>
 </div>
 
 <!-- ═══ TIME FILTER ═══ -->
@@ -2348,6 +2391,32 @@ nav a.ai-highlight{
   </div>
   <div id="tripList"></div>
   <div id="pgWrap" class="pg-wrap" style="display:none;"></div>
+</div>
+
+<!-- ═══ TRANSIT RESULTS (inline, between trip list and features) ═══ -->
+<div id="transitResultsSection" style="display:none;width:min(1100px,94vw);margin:24px auto 0">
+  <div style="background:linear-gradient(135deg,rgba(6,13,26,.97),rgba(10,18,40,.97));border:1px solid rgba(99,102,241,.22);border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.55),0 0 0 1px rgba(99,102,241,.08)">
+    <!-- Header -->
+    <div style="padding:18px 22px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:linear-gradient(90deg,rgba(99,102,241,.14),rgba(6,182,212,.08),transparent)">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;flex:1">
+          <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔗</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#e2e8f0;line-height:1">Hành trình trung chuyển</div>
+            <div style="font-size:11px;color:#475569;margin-top:2px">Kết hợp nhiều chặng để đến đích</div>
+          </div>
+          <span style="background:linear-gradient(135deg,#6366f1,#06b6d4);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.3px">TRANSIT AI</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="transit-sort-chip active" onclick="setTransitSort('time',this)" style="background:rgba(99,102,241,.25);border:1px solid rgba(99,102,241,.5);color:#a5b4fc;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">⚡ Nhanh nhất</button>
+          <button class="transit-sort-chip" onclick="setTransitSort('cost',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">💰 Rẻ nhất</button>
+          <button class="transit-sort-chip" onclick="setTransitSort('hops',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">🔀 Ít chặng</button>
+        </div>
+      </div>
+    </div>
+    <!-- Cards -->
+    <div id="transitList" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px"></div>
+  </div>
 </div>
 
 <!-- ═══ FEATURES ═══ -->
@@ -2466,6 +2535,7 @@ nav a.ai-highlight{
   <button onclick="guideProfile()">👤 Tài khoản</button>
   <button onclick="closeAI()">✕ Đóng</button>
 </div>
+
 
 <!-- ═══ FOOTER ═══ -->
 <footer style="margin-top:80px;background:rgba(0,0,0,.45);border-top:1px solid rgba(255,255,255,.06);padding:0;">
@@ -2609,13 +2679,6 @@ function logout(){ localStorage.clear(); window.location.href="../auth/login.htm
   try{ const u=JSON.parse(localStorage.getItem("user")); if(u?.full_name) document.getElementById("headerUserName").textContent=u.full_name; }catch{}
 })();
 
-/* ── HERO SLIDER ── */
-const slides=[...document.querySelectorAll(".slide")];
-let slideIdx=0;
-function nextSlide(){ slides[slideIdx].classList.remove("active"); slideIdx=(slideIdx+1)%slides.length; slides[slideIdx].classList.add("active"); }
-setInterval(nextSlide,6000);
-slides[0].classList.add("active");
-
 /* ── COUNTER + LIVE FLUCTUATION ── */
 document.querySelectorAll(".counter").forEach(el=>{
   const target=+el.dataset.target;
@@ -2717,8 +2780,12 @@ async function searchTrips(){
   _searchActive=true;
   showSkeletonLoading();
   try{
-    const res=await fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}`);
-    renderTrips(await res.json());
+    const [tripsRes, transitRoutes] = await Promise.all([
+      fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}`),
+      searchTransit(o, d, dt)
+    ]);
+    renderTrips(await tripsRes.json());
+    renderTransitResults(transitRoutes, 'time');
   }catch{ showToast("Không thể kết nối server. Vui lòng thử lại.", "error"); hideSkeletonLoading(); }
 }
 document.getElementById("searchBtn").addEventListener("click",searchTrips);
@@ -3244,8 +3311,77 @@ function fillSearch(from,to){
   const dt=document.getElementById("destTrigger");
   if(ot) ot.textContent="📍 "+from;
   if(dt) dt.textContent="📍 "+to;
+  _triggerAISearchInsight(from,to);
   searchTrips();
   saveRecentSearch(from,to);
+}
+
+/* ═══════════════════════════════════════════════
+   AI SEARCH INSIGHT
+   Fires when both origin + destination are set.
+   Calls /api/ai/search-insight and shows pills.
+═══════════════════════════════════════════════ */
+let _insightDebounce = null;
+function _triggerAISearchInsight(origin, dest){
+  if(!origin || !dest){
+    const p=document.getElementById('searchInlineAI');
+    if(p) p.style.display='none';
+    return;
+  }
+  clearTimeout(_insightDebounce);
+  _insightDebounce = setTimeout(()=>_loadAISearchInsight(origin, dest), 280);
+}
+
+async function _loadAISearchInsight(origin, dest){
+  const panel   = document.getElementById('aiSearchInsightPanel');
+  const items   = document.getElementById('aiSearchInsightItems');
+  const spinner = document.getElementById('aiInsightSpinner');
+  const icon    = document.getElementById('aiInsightIcon');
+  // Inline panel inside search box
+  const sbPanel   = document.getElementById('searchInlineAI');
+  const sbItems   = document.getElementById('sbAIItems');
+  const sbSpinner = document.getElementById('sbAISpinner');
+
+  // Hide outer panel — inline panel inside search box is the primary display
+  if(panel) panel.style.display='none';
+  if(spinner) spinner.style.display='none';
+  if(icon) icon.style.display='none';
+  if(sbPanel) sbPanel.style.display='block';
+  if(sbSpinner) sbSpinner.style.display='block';
+  if(sbItems) sbItems.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,.35);font-style:italic">Đang phân tích tuyến…</span>';
+
+  try{
+    const uid = typeof getUserId==='function' ? getUserId() : null;
+    const url = `/api/ai/search-insight?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}${uid?'&userId='+uid:''}`;
+    const data = await fetch(url).then(r=>r.json());
+    const insights = data.insights||[];
+
+    if(spinner) spinner.style.display='none';
+    if(icon) icon.style.display='block';
+    if(sbSpinner) sbSpinner.style.display='none';
+
+    const clsMap={price_drop:'price',availability:'avail',user_history:'history',booking_pattern:'pattern',demand:'demand'};
+
+    if(!insights.length){
+      const fallback='<span class="ai-insight-pill">✅ Tuyến đang hoạt động bình thường</span>';
+      if(items) items.innerHTML=fallback;
+      if(sbItems) sbItems.innerHTML=fallback;
+      return;
+    }
+
+    const pillsHtml = insights.map((ins,idx)=>{
+      const cls=clsMap[ins.type]||'';
+      const delayStyle=`animation-delay:${idx*80}ms`;
+      const detail=ins.detail?`<span style="font-size:10px;opacity:.7;margin-left:4px">${ins.detail}</span>`:'';
+      return `<span class="ai-insight-pill ${cls}" style="${delayStyle}">${ins.icon||'💡'} ${ins.text}${detail}</span>`;
+    }).join('');
+
+    if(items) items.innerHTML=pillsHtml;
+    if(sbItems) sbItems.innerHTML=pillsHtml;
+  }catch(e){
+    if(panel) panel.style.display='none';
+    if(sbPanel) sbPanel.style.display='none';
+  }
 }
 
 /* ── PROVINCE SELECT DROPDOWN ── */
@@ -3280,6 +3416,10 @@ function fillSearch(from,to){
           trigger.textContent = "📍 " + el.dataset.val;
           trigger.classList.add("open");
           close();
+          // Fire AI insight when both origin + destination are set
+          const o=document.getElementById('origin').value;
+          const d=document.getElementById('destination').value;
+          if(o&&d) _triggerAISearchInsight(o,d);
         });
       });
     }
@@ -5444,66 +5584,77 @@ window.addEventListener('scroll',()=>{
   /* ── Action label by status ── */
   const ACT={PAID:'đã thanh toán vé',CONFIRMED:'đã đặt vé thành công',PENDING:'vừa đặt chuyến'};
 
+  /* ── Format currency VND ── */
+  function fmtVND(n){ return n?new Intl.NumberFormat('vi-VN').format(Number(n))+'đ':''; }
+
+  /* ── Bus type label ── */
+  function busLabel(t){
+    if(!t) return '';
+    if(t==='VIP') return '🌟 VIP';
+    if(t==='LIMOUSINE') return '💎 Limousine';
+    return t;
+  }
+
   /* ── Build HTML for one ticker item ── */
-  function makeItem(name,origin,dest,status,bookingTime){
-    const act=ACT[status]||'đã đặt vé';
-    const ago=timeAgo(bookingTime);
+  function makeItem(b){
+    const act=ACT[b.status]||'đã đặt vé';
+    const ago=timeAgo(b.booking_time);
+    const price=fmtVND(b.total_amount);
+    const bus=busLabel(b.bus_type);
+    const seats=b.seat_numbers?`ghế ${b.seat_numbers}`:'';
     return `<span class="ticker-dot">
       <span class="tik-live"></span>
-      <span class="tik-name">${maskName(name)}</span>
-      <span>${act}</span>
-      <span class="tik-route">${origin} → ${dest}</span>
-      <span style="color:rgba(255,255,255,.30);font-size:11px;">${ago}</span>
+      <span class="tik-name">${maskName(b.full_name)}</span>
+      <span style="color:rgba(220,240,255,.58)">${act}</span>
+      <span class="tik-route">${b.origin} → ${b.destination}</span>
+      ${bus?`<span style="background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.30);border-radius:20px;padding:1px 8px;font-size:10.5px;color:#a5b4fc;font-weight:700">${bus}</span>`:''}
+      ${price?`<span style="color:#34d399;font-weight:800;font-size:11.5px">${price}</span>`:''}
+      ${seats?`<span style="color:rgba(255,255,255,.35);font-size:11px">${seats}</span>`:''}
+      <span style="color:rgba(255,255,255,.28);font-size:11px">⏱ ${ago}</span>
     </span>`;
   }
 
   /* ── Fallback fake data if API unavailable ── */
   function buildFallback(){
-    const fNames=["Minh T.","Lan A.","Hùng P.","Thu N.","Quang V.","Hoa L.","Dũng K.","Mai S.",
-                  "Tú B.","Linh H.","Phong R.","Yến M.","Khoa T.","Ngân Đ.","Bảo Q.","Trang C."];
-    const fRts=[["Hà Nội","Đà Nẵng"],["Hồ Chí Minh","Đà Lạt"],["Hà Nội","Hồ Chí Minh"],
-               ["Đà Nẵng","Nha Trang"],["HCM","Cần Thơ"],["Hà Nội","Vinh"],
-               ["HCM","Vũng Tàu"],["Đà Nẵng","Hội An"],["Hà Nội","Hải Phòng"],
-               ["HCM","Phú Quốc"],["Đà Lạt","Nha Trang"],["Hà Nội","Sapa"]];
-    const fTimes=["vừa xong","3 phút trước","7 phút trước","12 phút trước","20 phút trước"];
-    const fActs=["đã đặt vé","đã mua vé","vừa đặt chuyến","vừa chọn ghế VIP trên tuyến"];
-    const html=Array.from({length:16},(_,i)=>{
-      const n=fNames[i%fNames.length];
-      const r=fRts[i%fRts.length];
-      const t=fTimes[i%fTimes.length];
-      const a=fActs[i%fActs.length];
-      return `<span class="ticker-dot"><span class="tik-live"></span><span class="tik-name">${n}</span><span>${a}</span><span class="tik-route">${r[0]} → ${r[1]}</span><span style="color:rgba(255,255,255,.30);font-size:11px;">${t}</span></span>`;
-    }).join('');
-    return html;
+    const fData=[
+      {full_name:"Nguyễn Minh Tuấn",origin:"Hà Nội",destination:"Đà Nẵng",status:"PAID",booking_time:new Date(Date.now()-5*60000).toISOString(),total_amount:280000,bus_type:"VIP",seat_numbers:"A3, A4"},
+      {full_name:"Trần Thị Lan Anh",origin:"Hồ Chí Minh",destination:"Đà Lạt",status:"CONFIRMED",booking_time:new Date(Date.now()-12*60000).toISOString(),total_amount:195000,bus_type:"NORMAL",seat_numbers:"B7"},
+      {full_name:"Lê Văn Hùng",origin:"Hà Nội",destination:"Hồ Chí Minh",status:"PAID",booking_time:new Date(Date.now()-28*60000).toISOString(),total_amount:650000,bus_type:"LIMOUSINE",seat_numbers:"2A"},
+      {full_name:"Phạm Thu Hà",origin:"Đà Nẵng",destination:"Nha Trang",status:"PAID",booking_time:new Date(Date.now()-45*60000).toISOString(),total_amount:230000,bus_type:"VIP",seat_numbers:"C5"},
+      {full_name:"Hoàng Quang Vinh",origin:"HCM",destination:"Cần Thơ",status:"CONFIRMED",booking_time:new Date(Date.now()-60*60000).toISOString(),total_amount:120000,bus_type:"NORMAL",seat_numbers:"D2"},
+      {full_name:"Ngô Thị Hoa",origin:"Hà Nội",destination:"Vinh",status:"PAID",booking_time:new Date(Date.now()-80*60000).toISOString(),total_amount:210000,bus_type:"VIP",seat_numbers:"A1"},
+      {full_name:"Bùi Văn Dũng",origin:"HCM",destination:"Vũng Tàu",status:"PAID",booking_time:new Date(Date.now()-95*60000).toISOString(),total_amount:85000,bus_type:"NORMAL",seat_numbers:"E8"},
+      {full_name:"Đặng Thị Mai",origin:"Đà Nẵng",destination:"Hội An",status:"CONFIRMED",booking_time:new Date(Date.now()-110*60000).toISOString(),total_amount:45000,bus_type:"NORMAL",seat_numbers:"B3"},
+      {full_name:"Vũ Thanh Tú",origin:"Hà Nội",destination:"Hải Phòng",status:"PAID",booking_time:new Date(Date.now()-130*60000).toISOString(),total_amount:95000,bus_type:"VIP",seat_numbers:"A6"},
+      {full_name:"Lý Thị Linh",origin:"HCM",destination:"Phú Quốc",status:"PAID",booking_time:new Date(Date.now()-155*60000).toISOString(),total_amount:380000,bus_type:"LIMOUSINE",seat_numbers:"1B"},
+    ];
+    return fData.map(b=>makeItem(b)).join('');
   }
 
   /* ── Inject items into DOM (doubled for seamless loop) ── */
   function injectTicker(html){
     const inner=document.getElementById('tickerInner');
     if(!inner) return;
-    inner.innerHTML=html+html; // double for seamless 40s scroll
+    inner.innerHTML=html+html;
   }
 
   /* ── Fetch real bookings from backend ── */
   fetch('/api/bookings')
     .then(r=>r.ok?r.json():Promise.reject(r.status))
     .then(data=>{
-      // Filter recent non-cancelled bookings (up to 18 items for the ticker)
       const valid=(Array.isArray(data)?data:[])
         .filter(b=>b.status&&b.status!=='CANCELLED'&&b.origin&&b.destination&&b.full_name)
-        .slice(0,18);
+        .sort((a,b)=>new Date(b.booking_time)-new Date(a.booking_time))
+        .slice(0,20);
 
       if(valid.length<4){
-        // Too few real bookings — use fallback
         injectTicker(buildFallback());
         return;
       }
-
-      // Build from real data
-      const html=valid.map(b=>makeItem(b.full_name,b.origin,b.destination,b.status,b.booking_time)).join('');
+      const html=valid.map(b=>makeItem(b)).join('');
       injectTicker(html);
     })
-    .catch(()=>injectTicker(buildFallback())); // Network error — graceful fallback
+    .catch(()=>injectTicker(buildFallback()));
 })();
 </script>
 
@@ -5529,6 +5680,740 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('[PWA] SW registration failed:', err));
   });
 }
+
+/* ── AI RECOMMENDATIONS ── */
+/* ══════════════════════════════════════════════════════════
+   AI RECOMMENDATION ENGINE — Homepage
+   Loads personalized + trending in parallel.
+   Shows category labels, score breakdown, explainable reasons.
+══════════════════════════════════════════════════════════ */
+async function loadAIRecommendations(){
+  const uid = getUserId();
+  const section  = document.getElementById('aiRecoSection');
+  const cardsEl  = document.getElementById('aiRecoCards');
+  const subtitle = document.getElementById('aiRecoSubtitle');
+  const metaEl   = document.getElementById('aiRecoMeta');
+  const algoLbl  = document.getElementById('aiRecoAlgoLabel');
+  if(!cardsEl) return;
+
+  // Show skeleton while loading
+  section.style.display='block';
+  cardsEl.innerHTML=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:20px;color:#334155;font-size:13px">
+    <div style="width:18px;height:18px;border-radius:50%;border:2px solid rgba(99,102,241,.25);border-top-color:#a5b4fc;animation:aiSpin .8s linear infinite;flex-shrink:0"></div>
+    🤖 SmartBusAI đang phân tích lịch sử của bạn…
+  </div>`;
+
+  try{
+    // Fetch personalized (requires login) + trending in parallel
+    const [recoRes, trendRes] = await Promise.allSettled([
+      uid ? fetch(`/api/recommendations/me?userId=${uid}`).then(r=>r.json()) : Promise.resolve(null),
+      fetch(`/api/recommendations/trending`).then(r=>r.json())
+    ]);
+
+    const recoData  = recoRes.status==='fulfilled'  ? recoRes.value  : null;
+    const trendData = trendRes.status==='fulfilled' ? trendRes.value : null;
+
+    const personal  = recoData?.recommendations  || [];
+    const trending  = trendData?.recommendations || [];
+    const meta      = recoData?.meta || null;
+    const totalSaved= meta?.total_saved || 0;
+
+    // Decide which cards to show (personalized first, fill with trending)
+    const seen = new Set();
+    const allCards = [];
+    personal.forEach(r=>{ seen.add(r.route_id); allCards.push({...r,_cat:_categorizeReco(r)}); });
+    if(allCards.length<4){
+      trending.forEach(r=>{ if(!seen.has(r.route_id)){ seen.add(r.route_id); allCards.push({...r,_cat:'trending'}); } });
+    }
+
+    if(!allCards.length){
+      section.style.display='none'; return;
+    }
+
+    const display = allCards.slice(0,4);
+
+    // Update subtitle + meta
+    if(subtitle){
+      if(personal.length>0){
+        subtitle.textContent=`${personal.length} tuyến cá nhân hóa · dựa trên ${meta?.data_points||0} điểm dữ liệu của bạn`;
+      } else {
+        subtitle.textContent='Tuyến phổ biến tuần này · Đăng nhập để nhận gợi ý cá nhân hóa';
+      }
+    }
+    if(algoLbl){ algoLbl.style.display='block'; }
+    if(metaEl && meta){
+      const t=new Date(meta.generated_at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+      metaEl.innerHTML=`🧠 ${meta.algorithm} · Cập nhật ${t}`
+        +(totalSaved>0?` · <span style="color:#34d399">💰 Bạn đã tiết kiệm ~${Math.round(totalSaved/1000)*1000<=0?0:Math.round(totalSaved/1000)*1000}đ</span>`:'');
+    }
+
+    // Render cards
+    cardsEl.innerHTML = display.map((r,idx)=>_renderRecoCard(r,idx)).join('');
+    section.style.display='block';
+  }catch(e){
+    console.warn('AI reco error', e);
+    section.style.display='none';
+  }
+}
+
+/* Map recommendation → human-readable category */
+function _categorizeReco(r){
+  const reasons = (r.reasons||[]).map(x=>x.key||'');
+  const algo = r.algorithm||'';
+  const bd   = r.breakdown||{};
+  if((bd.booking_history?.score||0)>=50)  return 'booked';
+  if((bd.user_history?.score||0)>=50)     return 'searched';
+  if(reasons.includes('great_price')||reasons.includes('good_price')) return 'price';
+  if(reasons.includes('trending')||algo==='popularity_based')        return 'trending';
+  if(algo==='collaborative_filtering') return 'cf';
+  return 'ai';
+}
+
+const _CAT_META = {
+  booked:   {label:'🎫 Tuyến hay đi', color:'#34d399', bg:'rgba(52,211,153,.12)', border:'rgba(52,211,153,.30)'},
+  searched: {label:'🔍 Bạn đã tìm', color:'#60a5fa', bg:'rgba(96,165,250,.10)', border:'rgba(96,165,250,.28)'},
+  price:    {label:'💰 Giá tốt nhất', color:'#fbbf24', bg:'rgba(251,191,36,.10)', border:'rgba(251,191,36,.28)'},
+  trending: {label:'🔥 Đang nóng', color:'#f97316', bg:'rgba(249,115,22,.09)', border:'rgba(249,115,22,.26)'},
+  cf:       {label:'👥 Người dùng tương tự', color:'#a78bfa', bg:'rgba(167,139,250,.10)', border:'rgba(167,139,250,.26)'},
+  ai:       {label:'🤖 AI Gợi ý', color:'#a5b4fc', bg:'rgba(99,102,241,.10)', border:'rgba(99,102,241,.26)'},
+};
+
+function _renderRecoCard(r, idx){
+  const cat    = r._cat || 'ai';
+  const cm     = _CAT_META[cat] || _CAT_META.ai;
+  const pct    = Math.round(r.score||0);
+  const clr    = pct>=80?'#00ffe0':pct>=60?'#34d399':pct>=40?'#f59e0b':'#a5b4fc';
+  const bd     = r.breakdown || {};
+
+  // Parse numbers from breakdown basis strings
+  const bkgNum   = (bd.booking_history?.basis||'').match(/^(\d+)/)?.[1]||'0';
+  const schNum   = (bd.user_history?.basis||'').match(/^(\d+)/)?.[1]||'0';
+  const popM     = (bd.popularity?.basis||'').match(/Rank #(\d+) · (\d+)/);
+  const popRank  = popM ? '#'+popM[1] : '—';
+  const weeklyBk = popM ? popM[2] : null;
+  const priceM   = (bd.price_attract?.basis||'').match(/([+\-]?\d+)%/);
+  const priceDiff= priceM ? (parseInt(priceM[1])>0?'+':'')+priceM[1]+'%' : null;
+  const price    = r.current_price ? r.current_price.toLocaleString('vi-VN')+'đ' : null;
+  const rating   = r.avg_rating ? r.avg_rating.toFixed(1) : null;
+  const trips    = r.trip_count || 0;
+
+  // Reasons (top 3, human-friendly)
+  const rsnHtml = (r.reasons||[]).filter(x=>x?.text).slice(0,3).map((x,ri)=>
+    `<div style="font-size:11px;color:#94a3b8;line-height:1.45;animation:aiInsightFade .3s ease ${ri*60}ms both">
+       <span style="color:${cm.color};margin-right:3px">${x.icon||'•'}</span>${x.text}
+       ${x.score_contribution?`<span style="font-size:9px;color:#334155;margin-left:4px">${x.score_contribution}</span>`:''}
+     </div>`
+  ).join('');
+
+  // Stat pill
+  const stat=(ico,val,lbl,c)=>val
+    ?`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:5px 8px;text-align:center;min-width:0">
+        <div style="font-size:12px;font-weight:800;color:${c}">${ico} ${val}</div>
+        <div style="font-size:9px;color:#475569;margin-top:1px">${lbl}</div>
+      </div>`:''
+  ;
+
+  // Score bar component
+  const bar=(lbl,sc,w,c)=>
+    `<div style="flex:1;min-width:60px">
+       <div style="font-size:9px;color:#475569;margin-bottom:2px;display:flex;justify-content:space-between">
+         <span>${lbl}</span><span style="color:${c};font-weight:700">${w}</span>
+       </div>
+       <div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+         <div style="height:100%;width:${Math.min(100,Math.round(sc))}%;background:${c};border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1) ${idx*100}ms"></div>
+       </div>
+     </div>`;
+
+  const origEsc = (r.origin||'').replace(/'/g,"\\'");
+  const destEsc = (r.destination||'').replace(/'/g,"\\'");
+
+  return `<div
+    style="background:${cm.bg};border:1px solid ${cm.border};border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column;animation:aiInsightFade .4s ease ${idx*80}ms both"
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 32px rgba(0,0,0,.42)'"
+    onmouseout="this.style.transform='none';this.style.boxShadow='none'"
+    onclick="_aiRecoClick('${origEsc}','${destEsc}')">
+
+    <!-- Category strip -->
+    <div style="padding:5px 14px;background:${cm.bg};border-bottom:1px solid ${cm.border};display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:10px;font-weight:800;color:${cm.color};letter-spacing:.3px">${cm.label}</span>
+      <span style="font-size:9px;color:#334155">${{collaborative_filtering:'Collaborative Filtering',search_based:'Search-Based',popularity_based:'Popularity-Based'}[r.algorithm]||'AI Engine'}</span>
+    </div>
+
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex:1">
+      <!-- Header: route + score -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:900;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.origin||''}</div>
+          <div style="font-size:10px;color:#334155;margin:3px 0;display:flex;align-items:center;gap:4px">
+            <div style="height:1px;width:12px;background:${cm.color};opacity:.5"></div>
+            <span>hành trình</span>
+            <div style="height:1px;flex:1;background:${cm.color};opacity:.2"></div>
+          </div>
+          <div style="font-size:14px;font-weight:900;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.destination||''}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0;background:rgba(0,0,0,.30);border:1px solid ${cm.border};border-radius:12px;padding:8px 14px;min-width:68px">
+          <div style="font-size:26px;font-weight:900;color:${clr};line-height:1">${pct}</div>
+          <div style="font-size:8px;color:${clr};font-weight:800;letter-spacing:.6px;margin-top:2px">% PHÙ HỢP</div>
+        </div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px">
+        ${stat('🎫',bkgNum!=='0'?bkgNum:null,'Lần đặt','#34d399')}
+        ${stat('🔍',schNum!=='0'?schNum:null,'Lần tìm','#60a5fa')}
+        ${stat('✅',trips>0?trips:null,'Còn chỗ','#a3e635')}
+        ${stat('📈',weeklyBk,'lượt/tuần','#f59e0b')}
+        ${stat('⭐',rating,'Đánh giá','#fbbf24')}
+        ${stat('💰',price,priceDiff?'So TB '+priceDiff:'Giá từ',priceDiff?.startsWith('-')?'#34d399':clr)}
+      </div>
+
+      <!-- Score breakdown bars -->
+      <div style="background:rgba(0,0,0,.18);border-radius:8px;padding:8px 10px">
+        <div style="font-size:9px;color:#334155;font-weight:700;margin-bottom:6px;letter-spacing:.3px">📊 CÔNG THỨC AI SCORE</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${bar('Lịch sử tìm',bd.user_history?.score||0,'40%','#60a5fa')}
+          ${bar('Lịch sử đặt',bd.booking_history?.score||0,'25%','#34d399')}
+          ${bar('Phổ biến',bd.popularity?.score||0,'20%','#f59e0b')}
+          ${bar('Giá hấp dẫn',bd.price_attract?.score||0,'15%','#a78bfa')}
+        </div>
+      </div>
+
+      <!-- Reasons -->
+      ${rsnHtml?`<div style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;background:rgba(0,0,0,.12);border-radius:8px;border-left:3px solid ${cm.color}40">
+        <div style="font-size:9px;color:#334155;font-weight:800;letter-spacing:.3px;margin-bottom:2px">🔍 TẠI SAO ĐƯỢC GỢI Ý</div>
+        ${rsnHtml}
+      </div>`:''}
+
+      <!-- CTA -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto">
+        <div style="font-size:10px;color:#334155">${popRank!=='—'?'Rank '+popRank+' tuần này':''}</div>
+        <span style="font-size:12px;font-weight:800;color:${clr};background:rgba(0,0,0,.25);border:1px solid ${cm.border};border-radius:20px;padding:6px 16px;pointer-events:none">Tìm chuyến →</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function _aiRecoClick(origin, dest){
+  document.getElementById('origin').value = origin;
+  document.getElementById('destination').value = dest;
+  const oTrig = document.getElementById('originTrigger');
+  const dTrig = document.getElementById('destTrigger');
+  if(oTrig) oTrig.textContent = '📍 ' + origin;
+  if(dTrig) dTrig.textContent = '📍 ' + dest;
+  // Fire AI insight immediately — visible AI reaction
+  _triggerAISearchInsight(origin, dest);
+  document.querySelector('.search-box')?.scrollIntoView({behavior:'smooth', block:'center'});
+  searchTrips();
+}
+
+/* ── GEOLOCATION ── */
+async function findNearestPickup(){
+  if(!navigator.geolocation){ showToast('Trình duyệt không hỗ trợ định vị', 'warning'); return; }
+  const btn = document.getElementById('geoBtn');
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">⏳</span> Đang định vị...';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const {latitude:lat, longitude:lng} = pos.coords;
+    try{
+      const res = await fetch(`/api/stops/nearest?lat=${lat}&lng=${lng}&type=PICKUP`);
+      const stops = await res.json();
+      const list = Array.isArray(stops) ? stops : (stops.stops || []);
+      if(list.length){
+        _renderGeoStops(list);
+      } else {
+        showToast('Không tìm thấy điểm đón gần bạn', 'info');
+      }
+    }catch(e){ showToast('Không thể lấy danh sách điểm đón', 'error'); }
+    btn.innerHTML = origHtml; btn.disabled = false;
+  }, ()=>{ showToast('Không thể lấy vị trí của bạn', 'warning'); btn.innerHTML = origHtml; btn.disabled = false; });
+}
+
+let _geoStopsRaw = [];
+
+function _renderGeoStops(stops){
+  _geoStopsRaw = stops || [];
+  document.getElementById('geoStopsCount').textContent = _geoStopsRaw.length + ' bến xe';
+  // Default sort: near → far
+  _sortGeoStops('asc', true);
+  const panel = document.getElementById('geoStopsPanel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function _setGeoBtnActive(btnId, active){
+  const btn = document.getElementById(btnId);
+  if(!btn) return;
+  btn.style.background    = active ? 'rgba(52,211,153,.22)' : 'rgba(255,255,255,.05)';
+  btn.style.color         = active ? '#34d399'              : '#94a3b8';
+  btn.style.borderColor   = active ? 'rgba(52,211,153,.40)' : 'rgba(255,255,255,.10)';
+  btn.style.fontWeight    = active ? '800'                  : '700';
+}
+
+function _sortGeoStops(dir, skipBtnUpdate){
+  if(!skipBtnUpdate){
+    _setGeoBtnActive('geoSortNear', dir==='asc');
+    _setGeoBtnActive('geoSortFar',  dir==='desc');
+  }
+  const sorted = [..._geoStopsRaw].sort((a,b)=>
+    dir==='asc' ? (a.distance_km||0)-(b.distance_km||0)
+                : (b.distance_km||0)-(a.distance_km||0)
+  );
+  _renderGeoStopsList(sorted);
+}
+
+function _renderGeoStopsList(stops){
+  document.getElementById('geoStopsList').innerHTML = stops.map(s=>{
+    const city    = s.city || '';
+    const name    = s.stop_name || city;
+    const addr    = s.address || city || '—';
+    const dist    = s.distance_km != null ? s.distance_km : '?';
+    const distNum = parseFloat(dist);
+    const distClr = distNum<=2?'#34d399':distNum<=8?'#f59e0b':'#94a3b8';
+    const distBg  = distNum<=2?'rgba(52,211,153,.14)':distNum<=8?'rgba(245,158,11,.14)':'rgba(148,163,184,.10)';
+    const distLbl = distNum<=1?'Rất gần':distNum<=3?'Gần':distNum<=8?'Khá gần':'Xa';
+    const typeIcon = (s.stop_type==='DROPOFF')?'🏁':(s.stop_type==='BOTH'?'🔄':'🚌');
+    const cityEsc = city.replace(/'/g,"\\'");
+    const nameEsc = name.replace(/'/g,"\\'");
+    return `<div onclick="_selectGeoStop('${cityEsc}','${nameEsc}')"
+      style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:13px 15px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:8px"
+      onmouseover="this.style.background='rgba(52,211,153,.07)';this.style.borderColor='rgba(52,211,153,.30)';this.style.transform='translateY(-1px)'"
+      onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.borderColor='rgba(255,255,255,.08)';this.style.transform='none'">
+      <!-- Row 1: icon + name + distance badge -->
+      <div style="display:flex;align-items:flex-start;gap:11px">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(52,211,153,.13);border:1.5px solid rgba(52,211,153,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px">${typeIcon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#e2e8f0;line-height:1.3;word-break:break-word">${name}</div>
+          ${city&&city!==name?`<div style="margin-top:3px"><span style="font-size:10px;background:rgba(99,102,241,.18);color:#a5b4fc;border-radius:10px;padding:1px 7px;font-weight:600">${city}</span></div>`:''}
+        </div>
+        <div style="flex-shrink:0;text-align:right">
+          <div style="font-size:14px;font-weight:800;color:${distClr};background:${distBg};border-radius:8px;padding:3px 9px;line-height:1.2">${dist} km</div>
+          <div style="font-size:10px;color:${distClr};opacity:.8;margin-top:3px;text-align:center;font-weight:600">${distLbl}</div>
+        </div>
+      </div>
+      <!-- Row 2: full address -->
+      <div style="display:flex;align-items:flex-start;gap:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.05)">
+        <span style="font-size:11px;color:#94a3b8;flex-shrink:0;margin-top:1px">📌</span>
+        <span style="font-size:11.5px;color:#64748b;line-height:1.4;word-break:break-word">${addr}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _selectGeoStop(city, stopName){
+  const trig = document.getElementById('originTrigger');
+  const inp  = document.getElementById('origin');
+  inp.value = city || stopName;
+  if(trig) trig.textContent = '📍 ' + (city || stopName);
+  document.getElementById('geoStopsPanel').style.display = 'none';
+  showToast(`📍 Đã chọn: ${stopName||city}`, 'success');
+}
+
+/* ── TRANSIT SEARCH ── */
+async function searchTransit(origin, destination, date){
+  try{
+    const res = await fetch('/api/search/transit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({origin, destination, date, mode:'time'})
+    });
+    const data = await res.json();
+    return data.transit || [];
+  }catch(e){ return []; }
+}
+
+let _transitData = [];
+let _transitMode = 'time';
+
+function renderTransitResults(routes, mode){
+  _transitData = routes || [];
+  _transitMode = mode || 'time';
+  const sec = document.getElementById('transitResultsSection');
+  if(!_transitData.length){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  _renderTransitList(_transitData);
+}
+
+function _sortTransit(data, mode){
+  const copy = [...data];
+  if(mode==='cost') copy.sort((a,b)=>(a.total_price||0)-(b.total_price||0));
+  else if(mode==='hops') copy.sort((a,b)=>{
+    const ha=(a.hops||a.legs&&a.legs.length||1), hb=(b.hops||b.legs&&b.legs.length||1);
+    return ha-hb || (a.total_mins||0)-(b.total_mins||0);
+  });
+  else copy.sort((a,b)=>(a.total_mins||0)-(b.total_mins||0));
+  return copy;
+}
+
+function setTransitSort(mode, el){
+  _transitMode = mode;
+  document.querySelectorAll('.transit-sort-chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  _renderTransitList(_transitData);
+}
+
+function _fmtDur(mins){
+  if(!mins) return '?';
+  const h=Math.floor(mins/60), m=mins%60;
+  return h>0?(h+'h'+(m?m+'p':'')):(m+'p');
+}
+function _fmtDT(iso, opts){
+  if(!iso) return '–';
+  return new Date(iso).toLocaleString('vi-VN', opts||{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+}
+function _fmtTime(iso){ return iso?new Date(iso).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'–'; }
+
+function _renderTransitList(data){
+  const sorted = _sortTransit(data, _transitMode);
+  const list = document.getElementById('transitList');
+  const RANK_COLORS = ['rgba(0,255,224,.10)','rgba(99,102,241,.10)','rgba(6,182,212,.09)','rgba(245,158,11,.07)','rgba(255,255,255,.04)'];
+  const RANK_BORDER = ['rgba(0,255,224,.30)','rgba(99,102,241,.30)','rgba(6,182,212,.28)','rgba(245,158,11,.22)','rgba(255,255,255,.08)'];
+  const RANK_ACCENT = ['#00ffe0','#a5b4fc','#22d3ee','#fbbf24','#94a3b8'];
+  const LEG_COLORS  = ['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444'];
+
+  list.innerHTML = sorted.slice(0,5).map((r,i)=>{
+    const legs    = r.legs||[];
+    const totalH  = _fmtDur(r.total_mins);
+    const waitH   = r.wait_mins>0 ? _fmtDur(r.wait_mins) : null;
+    const hops    = r.hops || legs.length || 1;
+    const transfers = hops - 1;
+    const accent  = RANK_ACCENT[Math.min(i,4)];
+    const bg      = RANK_COLORS[Math.min(i,4)];
+    const bd      = RANK_BORDER[Math.min(i,4)];
+    const depStr  = _fmtDT(r.departure_time);
+    const arrStr  = _fmtDT(r.arrival_time);
+    const rankLabel = ['🥇 Tốt nhất','🥈 Thứ hai','🥉 Thứ ba','',''][Math.min(i,4)];
+
+    // ── Route path breadcrumb ──
+    const cities = [legs[0]?.origin||'', ...legs.map(l=>l.destination||'')].filter(Boolean);
+    const pathHtml = cities.map((c,ci)=>{
+      const isEnd = ci===0||ci===cities.length-1;
+      return `<span style="color:${isEnd?accent:'#64748b'};font-weight:${isEnd?700:500};font-size:13px">${c}</span>`;
+    }).join(`<span style="color:#334155;margin:0 4px;font-size:12px">→</span>`);
+
+    // ── Summary chips ──
+    const chipStyle='display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:3px 10px;font-size:11px;color:#94a3b8;font-weight:600';
+    const summaryChips=`
+      <span style="${chipStyle}">⏱ ${totalH} tổng</span>
+      ${waitH?`<span style="${chipStyle}">🕐 chờ ${waitH}</span>`:''}
+      <span style="${chipStyle}">🔀 ${transfers} trung chuyển</span>
+      <span style="${chipStyle}">🚌 ${hops} chặng</span>`;
+
+    // ── Per-leg detail rows ──
+    const legsHtml = legs.map((l,li)=>{
+      const lc      = LEG_COLORS[li%LEG_COLORS.length];
+      const depTime = _fmtDT(l.departure_time);
+      const arrTime = _fmtDT(l.arrival_time);
+      const legMins = (l.departure_time&&l.arrival_time) ? Math.round((new Date(l.arrival_time)-new Date(l.departure_time))/60000) : 0;
+      const legDur  = legMins ? _fmtDur(legMins) : '';
+      const seats   = l.available_seats!=null ? l.available_seats+' chỗ trống' : '';
+      const dist    = l.distance_km ? l.distance_km+' km' : '';
+      const btype   = l.bus_type ? ({NORMAL:'Thường',VIP:'VIP',LIMOUSINE:'Limousine'}[l.bus_type]||l.bus_type) : '';
+
+      // Transfer wait to NEXT leg
+      let waitRow = '';
+      if(li < legs.length-1){
+        const nextDep = legs[li+1]?.departure_time;
+        if(nextDep && l.arrival_time){
+          const wMin = Math.round((new Date(nextDep)-new Date(l.arrival_time))/60000);
+          const wH   = _fmtDur(wMin);
+          waitRow = `<div style="display:flex;align-items:center;gap:8px;padding:5px 12px;margin:2px 0;background:rgba(245,158,11,.07);border-left:2px dashed rgba(245,158,11,.4);border-radius:0 6px 6px 0">
+            <span style="font-size:10px;color:#f59e0b;font-weight:700">⏳ Chờ trung chuyển tại ${l.destination||''}</span>
+            <span style="font-size:10px;color:#78716c;margin-left:auto">${wH} · tiếp theo: ${_fmtTime(nextDep)}</span>
+          </div>`;
+        }
+      }
+
+      return `<div style="border-left:3px solid ${lc};border-radius:0 10px 10px 0;background:rgba(255,255,255,.03);margin-bottom:4px;overflow:hidden">
+        <!-- Leg header -->
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;flex-wrap:wrap">
+          <div style="background:${lc};color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;flex-shrink:0">Chặng ${li+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;color:#e2e8f0">${l.origin||''} → ${l.destination||''}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:1px">
+              ${l.operator_name?`🚌 ${l.operator_name}`:''}
+              ${btype?`<span style="margin-left:6px;background:rgba(255,255,255,.07);border-radius:8px;padding:1px 6px">${btype}</span>`:''}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:12px;font-weight:700;color:#10b981">${(l.base_price||0).toLocaleString('vi-VN')}đ</div>
+            ${seats?`<div style="font-size:10px;color:#475569">${seats}</div>`:''}
+          </div>
+        </div>
+        <!-- Leg timeline -->
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:0 12px 8px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:${lc}">${_fmtTime(l.departure_time)}</div>
+            <div style="font-size:10px;color:#475569">${l.departure_time?new Date(l.departure_time).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}):''}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">📍 ${l.origin||''}</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:#334155;white-space:nowrap">${legDur}</div>
+            <div style="height:2px;background:linear-gradient(90deg,${lc}88,${lc}22);border-radius:2px;margin:3px 0;width:60px"></div>
+            ${dist?`<div style="font-size:10px;color:#334155">${dist}</div>`:''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:800;color:${lc}">${_fmtTime(l.arrival_time)}</div>
+            <div style="font-size:10px;color:#475569">${l.arrival_time?new Date(l.arrival_time).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}):''}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">🏁 ${l.destination||''}</div>
+          </div>
+        </div>
+        ${waitRow}
+      </div>`;
+    }).join('');
+
+    // First leg trip ID for booking link
+    const firstTripId = legs[0]?.trip_id || '';
+    const routeJson = JSON.stringify(r).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
+
+    // ── AI reasoning strip ──
+    const aiReasons=[];
+    if(i===0 && _transitMode==='time') aiReasons.push({ico:'⚡',txt:'Tổng thời gian ngắn nhất trong các phương án',cls:'rgba(99,102,241,.55)'});
+    if(i===0 && _transitMode==='cost') aiReasons.push({ico:'💰',txt:'Chi phí thấp nhất trong các phương án tìm được',cls:'rgba(52,211,153,.55)'});
+    if(i===0 && _transitMode==='hops') aiReasons.push({ico:'🔀',txt:'Ít điểm trung chuyển nhất',cls:'rgba(6,182,212,.55)'});
+    if(r.wait_mins>0 && r.wait_mins<=45) aiReasons.push({ico:'⏳',txt:`Chờ trung chuyển chỉ ${r.wait_mins} phút — rất thuận tiện`,cls:'rgba(251,146,60,.55)'});
+    if(sorted.length>1){
+      const cheapest=Math.min(...sorted.map(x=>x.total_price||0));
+      const fastest =Math.min(...sorted.map(x=>x.total_mins||9999));
+      if((r.total_price||0)===cheapest && i>0) aiReasons.push({ico:'💰',txt:`Rẻ nhất: ${(r.total_price||0).toLocaleString('vi-VN')}đ`,cls:'rgba(52,211,153,.55)'});
+      if((r.total_mins||0)===fastest  && i>0) aiReasons.push({ico:'⚡',txt:`Nhanh nhất: ${_fmtDur(r.total_mins)}`,cls:'rgba(99,102,241,.55)'});
+      if(i===0) {
+        const saved=(sorted[sorted.length-1]?.total_price||0)-(r.total_price||0);
+        if(saved>0) aiReasons.push({ico:'📊',txt:`Tiết kiệm ${saved.toLocaleString('vi-VN')}đ so với phương án đắt nhất`,cls:'rgba(163,230,53,.50)'});
+      }
+    }
+    if(hops===1) aiReasons.push({ico:'✅',txt:'Không cần trung chuyển — hành trình trực tiếp',cls:'rgba(52,211,153,.55)'});
+    const aiBar = aiReasons.length ? `
+      <div style="padding:6px 14px 0;display:flex;flex-wrap:wrap;gap:5px;border-bottom:1px solid rgba(255,255,255,.04);padding-bottom:8px;background:rgba(99,102,241,.04)">
+        <span style="font-size:9px;font-weight:800;color:#6366f1;letter-spacing:.5px;align-self:center;flex-shrink:0">🤖 AI ĐỀ XUẤT VÌ:</span>
+        ${aiReasons.slice(0,3).map((a,ai)=>`<span style="font-size:10px;color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid ${a.cls};border-radius:20px;padding:2px 10px;animation:aiInsightFade .3s ease ${ai*80}ms both">${a.ico} ${a.txt}</span>`).join('')}
+      </div>` : '';
+
+    return `<div style="background:${bg};border:1px solid ${bd};border-radius:16px;overflow:hidden;transition:transform .18s,box-shadow .18s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,.45)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+      ${aiBar}
+      <!-- ── Card Header ── -->
+      <div style="padding:14px 18px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.05)">
+        <div style="flex:1;min-width:0">
+          ${rankLabel?`<div style="font-size:11px;color:${accent};font-weight:800;margin-bottom:6px;letter-spacing:.3px">${rankLabel}</div>`:''}
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-bottom:8px">${pathHtml}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${summaryChips}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;background:rgba(0,0,0,.25);border:1px solid ${bd};border-radius:12px;padding:10px 16px">
+          <div style="font-size:22px;font-weight:900;color:${accent};line-height:1">${totalH}</div>
+          <div style="font-size:9px;color:#475569;font-weight:700;letter-spacing:.5px;margin-top:2px">TỔNG THỜI GIAN</div>
+          <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-top:8px">${(r.total_price||0).toLocaleString('vi-VN')}đ</div>
+          <div style="font-size:9px;color:#475569;margin-top:1px">tổng vé ${hops} chặng</div>
+        </div>
+      </div>
+      <!-- ── Journey summary bar ── -->
+      <div style="padding:8px 18px;background:rgba(0,0,0,.15);display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.04)">
+        <span style="font-size:10px;color:#334155;font-weight:700;flex-shrink:0">HÀNH TRÌNH:</span>
+        <span style="font-size:11px;color:#475569;flex-shrink:0">${depStr}</span>
+        ${legs.map((_,li)=>`<span style="font-size:9px;color:${LEG_COLORS[li%LEG_COLORS.length]};flex-shrink:0">━━ C${li+1} ━━▶</span>`).join('')}
+        <span style="font-size:11px;color:#475569;flex-shrink:0">${arrStr}</span>
+      </div>
+      <!-- ── Leg details ── -->
+      <div style="padding:10px 14px 4px">${legsHtml}</div>
+      <!-- ── Actions ── -->
+      <div style="padding:10px 14px 14px;display:flex;gap:8px;border-top:1px solid rgba(255,255,255,.05)">
+        <button onclick="openTransitMap(decodeTransitRoute(this))" data-route="${routeJson}" style="flex:1;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.32);color:#a5b4fc;border-radius:10px;padding:9px 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s" onmouseover="this.style.background='rgba(99,102,241,.28)'" onmouseout="this.style.background='rgba(99,102,241,.14)'">🗺️ Xem bản đồ</button>
+        <button onclick="window.location.href='booking.html?tripId=${firstTripId}&transit=1'" style="flex:2;background:linear-gradient(135deg,${accent}20,${accent}12);border:1.5px solid ${accent}50;color:${accent};border-radius:10px;padding:9px 0;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s" onmouseover="this.style.background='linear-gradient(135deg,${accent}38,${accent}25)'" onmouseout="this.style.background='linear-gradient(135deg,${accent}20,${accent}12)'">🎫 Đặt vé hành trình này</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function decodeTransitRoute(btn){
+  try{ return JSON.parse(btn.getAttribute('data-route').replace(/&quot;/g,'"')); }
+  catch(e){ return {}; }
+}
+
+/* ── TRANSIT MAP MODAL ── */
+let transitLeafletMap = null;
+const CITY_COORDS = {
+  'hà nội':[21.0285,105.8542],'hồ chí minh':[10.7769,106.7009],'sài gòn':[10.7769,106.7009],
+  'đà nẵng':[16.0544,108.2022],'huế':[16.4637,107.5909],'hội an':[15.8800,108.3380],
+  'nha trang':[12.2388,109.1967],'đà lạt':[11.9404,108.4583],'cần thơ':[10.0452,105.7469],
+  'vũng tàu':[10.3460,107.0843],'phan thiết':[10.9331,108.1029],'quy nhơn':[13.7657,109.2295],
+  'vinh':[18.6790,105.6813],'hải phòng':[20.8449,106.6881],'thanh hóa':[19.8084,105.7851],
+  'buôn ma thuột':[12.6800,108.0500],'pleiku':[13.9833,108.0000],'kon tum':[14.3500,107.9833],
+  'quảng ngãi':[15.1167,108.8000],'quảng nam':[15.5736,108.4742]
+};
+function getCityCoords(name){
+  const k = (name||'').toLowerCase().trim();
+  for(const [city,coords] of Object.entries(CITY_COORDS)){
+    if(k.includes(city)||city.includes(k)) return coords;
+  }
+  return null;
+}
+
+function closeTransitMap(){
+  document.getElementById('transitMapModal').style.display='none';
+  if(transitLeafletMap){ transitLeafletMap.remove(); transitLeafletMap=null; }
+}
+
+function openTransitMap(route){
+  const modal = document.getElementById('transitMapModal');
+  const legs   = route.legs||[];
+  const colors = ['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444'];
+
+  // ── Build sidebar legend ──
+  const totalPrice = (route.total_price||0).toLocaleString('vi-VN');
+  const totalH     = _fmtDur(route.total_mins);
+  let legendHtml = `<div style="font-size:11px;font-weight:800;color:#e2e8f0;margin-bottom:8px;letter-spacing:.4px">📋 CHI TIẾT HÀNH TRÌNH</div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#94a3b8">⏱ <b style="color:#e2e8f0">${totalH}</b> tổng</span>
+      <span style="font-size:11px;color:#94a3b8">💰 <b style="color:#10b981">${totalPrice}đ</b></span>
+      <span style="font-size:11px;color:#94a3b8">🚌 <b style="color:#e2e8f0">${legs.length}</b> chặng</span>
+    </div>`;
+  legs.forEach((l,i)=>{
+    const clr    = colors[i%colors.length];
+    const depT   = _fmtDT(l.departure_time);
+    const arrT   = _fmtDT(l.arrival_time);
+    const legMin = (l.departure_time&&l.arrival_time)?Math.round((new Date(l.arrival_time)-new Date(l.departure_time))/60000):0;
+    const btype  = l.bus_type?({NORMAL:'Thường',VIP:'VIP',LIMOUSINE:'Limousine'}[l.bus_type]||l.bus_type):'';
+    const seats  = l.available_seats!=null?l.available_seats+' chỗ':'';
+    legendHtml += `<div style="border-left:3px solid ${clr};padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,.03);border-radius:0 8px 8px 0">
+      <div style="font-size:11px;font-weight:800;color:${clr};margin-bottom:3px">Chặng ${i+1}: ${l.origin||''} → ${l.destination||''}</div>
+      <div style="font-size:10px;color:#64748b;line-height:1.6">
+        🕐 ${depT} → ${arrT}<br>
+        ${legMin?'⏱ '+_fmtDur(legMin)+' · ':''}${l.distance_km?l.distance_km+'km · ':''}<br>
+        🚌 ${l.operator_name||'–'} ${btype?'('+btype+')':''} ${seats?'· '+seats:''}<br>
+        💰 ${(l.base_price||0).toLocaleString('vi-VN')}đ
+      </div>
+    </div>`;
+    // Transfer wait
+    if(i<legs.length-1){
+      const nxt=legs[i+1];
+      if(nxt&&l.arrival_time&&nxt.departure_time){
+        const wMin=Math.round((new Date(nxt.departure_time)-new Date(l.arrival_time))/60000);
+        legendHtml+=`<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;margin-bottom:6px;font-size:10px;color:#f59e0b;background:rgba(245,158,11,.07);border-radius:6px">
+          ⏳ Chờ tại ${l.destination||''}: <b>${_fmtDur(wMin)}</b> · tiếp theo lúc ${_fmtTime(nxt.departure_time)}
+        </div>`;
+      }
+    }
+  });
+
+  document.getElementById('transitMapLegend').innerHTML = legendHtml;
+  modal.style.display='flex';
+
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(transitLeafletMap){ transitLeafletMap.remove(); transitLeafletMap=null; }
+    transitLeafletMap = L.map('transitMapContainer',{zoomControl:true}).setView([16,106],5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18
+    }).addTo(transitLeafletMap);
+
+    const allPoints = [];
+
+    legs.forEach((leg,i)=>{
+      const fromLat = parseFloat(leg.origin_lat)||null;
+      const fromLng = parseFloat(leg.origin_lng)||null;
+      const toLat   = parseFloat(leg.dest_lat)||null;
+      const toLng   = parseFloat(leg.dest_lng)||null;
+      const fromCoords = (fromLat&&fromLng)?[fromLat,fromLng]:getCityCoords(leg.origin||'');
+      const toCoords   = (toLat&&toLng)?[toLat,toLng]:getCityCoords(leg.destination||'');
+      const clr  = colors[i%colors.length];
+      const depT = _fmtDT(leg.departure_time);
+      const arrT = _fmtDT(leg.arrival_time);
+      const legMin = (leg.departure_time&&leg.arrival_time)?Math.round((new Date(leg.arrival_time)-new Date(leg.departure_time))/60000):0;
+      const btype = leg.bus_type?({NORMAL:'Thường',VIP:'VIP',LIMOUSINE:'Limousine'}[leg.bus_type]||leg.bus_type):'';
+      const seats = leg.available_seats!=null?leg.available_seats+' chỗ trống':'';
+
+      const makeIcon=(label,bg,size=30)=>L.divIcon({className:'',
+        html:`<div style="background:${bg};color:#fff;border-radius:50%;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${size>26?12:10}px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)">${label}</div>`,
+        iconSize:[size,size],iconAnchor:[size/2,size/2]});
+
+      const popupStyle='font-family:system-ui,sans-serif;min-width:210px;max-width:260px;font-size:12px;line-height:1.6';
+
+      if(fromCoords){
+        allPoints.push(fromCoords);
+        const isFirst = i===0;
+        L.marker(fromCoords,{icon:makeIcon(isFirst?'🚀':(i+1),isFirst?'#10b981':clr,isFirst?32:28)})
+          .addTo(transitLeafletMap)
+          .bindPopup(`<div style="${popupStyle}">
+            <b style="color:${clr};font-size:13px">${isFirst?'🚀 Xuất phát':'Chặng '+(i+1)+' — Bắt đầu'}</b><br>
+            <b>${leg.origin||''}</b><br>
+            🕐 Khởi hành: <b>${depT}</b><br>
+            🚌 ${leg.operator_name||'–'} ${btype?'('+btype+')':''}<br>
+            ${seats?'💺 '+seats+'<br>':''}
+            💰 Vé: <b>${(leg.base_price||0).toLocaleString('vi-VN')}đ</b><br>
+            ${legMin?'⏱ Thời gian chặng: '+_fmtDur(legMin):''}
+          </div>`,{maxWidth:280});
+      }
+
+      if(i===legs.length-1 && toCoords){
+        allPoints.push(toCoords);
+        L.marker(toCoords,{icon:makeIcon('🏁','#10b981',32)})
+          .addTo(transitLeafletMap)
+          .bindPopup(`<div style="${popupStyle}">
+            <b style="color:#10b981;font-size:13px">🏁 Điểm đến cuối</b><br>
+            <b>${leg.destination||''}</b><br>
+            🕐 Đến nơi: <b>${arrT}</b><br>
+            ✅ Hành trình hoàn tất
+          </div>`,{maxWidth:280});
+      } else if(toCoords && i<legs.length-1){
+        allPoints.push(toCoords);
+        const nxt=legs[i+1];
+        const wMin=(nxt&&leg.arrival_time&&nxt.departure_time)?Math.round((new Date(nxt.departure_time)-new Date(leg.arrival_time))/60000):0;
+        L.marker(toCoords,{icon:makeIcon('⇄','#f59e0b',26)})
+          .addTo(transitLeafletMap)
+          .bindPopup(`<div style="${popupStyle}">
+            <b style="color:#f59e0b;font-size:13px">⇄ Điểm trung chuyển</b><br>
+            <b>${leg.destination||''}</b><br>
+            🏁 Đến: <b>${arrT}</b><br>
+            ${wMin?'⏳ Thời gian chờ: <b>'+_fmtDur(wMin)+'</b><br>':''}
+            🕐 Chuyến tiếp: <b>${_fmtTime(nxt?.departure_time)}</b><br>
+            🚌 Tiếp theo: ${nxt?.operator_name||'–'}
+          </div>`,{maxWidth:280});
+      }
+
+      if(fromCoords&&toCoords){
+        // Solid line for first leg, dashed for subsequent to distinguish visually
+        L.polyline([fromCoords,toCoords],{color:clr,weight:5,opacity:0.88,
+          dashArray:i===0?null:'10,5',lineCap:'round'}).addTo(transitLeafletMap);
+        // Arrowhead approximation using a circle at midpoint
+        const mid=[(fromCoords[0]+toCoords[0])/2,(fromCoords[1]+toCoords[1])/2];
+        L.circleMarker(mid,{radius:4,color:'#fff',weight:1.5,fillColor:clr,fillOpacity:1}).addTo(transitLeafletMap);
+      }
+    });
+
+    if(allPoints.length>1) transitLeafletMap.fitBounds(allPoints,{padding:[50,50]});
+    else if(allPoints.length===1) transitLeafletMap.setView(allPoints[0],8);
+    else transitLeafletMap.setView([16,106],5);
+    transitLeafletMap.invalidateSize();
+  }));
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  // Defer AI reco so it doesn't compete with critical first-paint resources
+  setTimeout(loadAIRecommendations, 200);
+  document.getElementById('transitMapModal').addEventListener('click',function(e){
+    if(e.target===this) closeTransitMap();
+  });
+});
 </script>
+
+<!-- ═══ TRANSIT MAP MODAL ═══ -->
+<div id="transitMapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.80);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+  <div style="background:linear-gradient(135deg,rgba(8,15,35,.99),rgba(12,22,50,.99));border:1px solid rgba(99,102,241,.3);border-radius:20px;width:min(1060px,96vw);height:min(680px,92vh);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(99,102,241,.15)">
+    <!-- Header -->
+    <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center;background:rgba(99,102,241,.08);border-radius:20px 20px 0 0;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">🗺️</span>
+        <h3 style="margin:0;font-size:16px;font-weight:700;color:#e2e8f0">Bản đồ lộ trình trung chuyển</h3>
+        <span style="background:linear-gradient(135deg,#6366f1,#06b6d4);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700">LIVE MAP</span>
+      </div>
+      <button onclick="closeTransitMap()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#94a3b8;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:14px;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,.2)';this.style.color='#f87171'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='#94a3b8'">✕ Đóng</button>
+    </div>
+    <!-- Body: map + legend sidebar -->
+    <div style="display:flex;flex:1;min-height:0;border-radius:0 0 20px 20px;overflow:hidden">
+      <!-- Map -->
+      <div id="transitMapContainer" style="flex:1;min-width:0;min-height:0"></div>
+      <!-- Legend sidebar -->
+      <div id="transitMapLegend" style="width:260px;flex-shrink:0;overflow-y:auto;padding:14px 12px;background:rgba(6,13,26,.95);border-left:1px solid rgba(255,255,255,.06);font-family:system-ui,sans-serif;font-size:11px"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

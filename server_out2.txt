@@ -1,0 +1,17 @@
+🔥 ĐANG CHẠY SERVER ĐÚNG FILE
+[dotenv@17.3.1] injecting env (6) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+📚 [Swagger] API docs available at /api-docs
+✅ userRoutes loaded
+✅ userController loaded
+📧 [Email] Trip reminder scheduler started (every 10 min)
+⏰ [AutoTrip] Lên lịch tạo chuyến lúc 00:01:00
+🔄 [AutoTrip] Polling 1 phút/lần — tự động render chuyến ngày mai khi hết OPEN.
+=================================
+🚀 SmartBus Server Running
+🌐 http://localhost:2704
+=================================
+✅ MySQL Connected Successfully
+✅ [migrate] v2 schema migration completed
+✅ [AutoTrip] Advanced 3 completed trips to next cycle
+ℹ️  [Seeder] 1095 tuyến đã có — bỏ qua seed.
+📥 GET /api/recommendations/me?userId=1

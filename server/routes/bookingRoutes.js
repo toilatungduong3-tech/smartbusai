@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const bookingController = require("../controllers/bookingController");
 
+/* GET guest lookup  — /api/bookings/lookup?code=X&phone=Y (public, no auth) */
+router.get("/lookup",    bookingController.lookupBooking);
+
 /* GET all bookings  — /api/bookings */
 router.get("/",          bookingController.getAllBookings);
 

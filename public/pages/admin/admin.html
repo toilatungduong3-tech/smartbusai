@@ -640,6 +640,7 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
     <div class="tb" onclick="switchTab('ai',this)"><div class="tb-dot"></div>AI & Hành vi</div>
     <div class="tb" onclick="switchTab('reviews',this)"><div class="tb-dot"></div>Đánh giá</div>
     <div class="tb" onclick="switchTab('aiengine',this)"><div class="tb-dot"></div>🤖 AI Engine</div>
+    <div class="tb" onclick="switchTab('search',this)"><div class="tb-dot"></div>🔍 Tìm kiếm</div>
   </div>
 
   <!-- ▌ PANEL OVERVIEW ▌ -->
@@ -935,6 +936,60 @@ tbody tr:hover td{background:rgba(0,255,224,.025);}
 
   </div><!-- /panel-aiengine -->
 
+  <!-- ══════════════════════════════════════════
+       PANEL: Search Analytics (P8)
+  ══════════════════════════════════════════ -->
+  <div class="panel" id="panel-search">
+
+    <!-- KPI row -->
+    <div class="kpi4" style="margin-bottom:22px;">
+      <div class="kpi k-c"><div class="kpi-glow"></div><div class="kpi-ico">🔍</div><div class="kpi-lbl">Tổng lượt tìm kiếm</div><div class="kpi-val" id="sa-total">—</div><div class="kpi-trend nt" id="sa-today">hôm nay: —</div></div>
+      <div class="kpi k-a"><div class="kpi-glow"></div><div class="kpi-ico">✅</div><div class="kpi-lbl">Tỷ lệ thành công</div><div class="kpi-val" id="sa-rate">—</div><div class="kpi-trend up">Có kết quả trực tiếp</div></div>
+      <div class="kpi k-p"><div class="kpi-glow"></div><div class="kpi-ico">🔄</div><div class="kpi-lbl">Tìm trung chuyển</div><div class="kpi-val" id="sa-transit">—</div><div class="kpi-trend nt">Tuyến ghép thành công</div></div>
+      <div class="kpi k-r"><div class="kpi-glow"></div><div class="kpi-ico">❌</div><div class="kpi-lbl">Không tìm được tuyến</div><div class="kpi-val" id="sa-noresult">—</div><div class="kpi-trend dn">Cần thêm tuyến mới</div></div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="cg2" style="margin-bottom:20px;">
+      <div class="gc cc tall">
+        <div class="cc-head">
+          <div><div class="cc-title">Lượt tìm kiếm 7 ngày</div><div class="cc-sub">Biểu đồ theo ngày</div></div>
+          <span class="cc-badge cb-g">Bar</span>
+        </div>
+        <canvas id="saDailyChart"></canvas>
+      </div>
+      <div class="gc cc tall">
+        <div class="cc-head">
+          <div><div class="cc-title">Tuyến được tìm nhiều nhất</div><div class="cc-sub">Top 8 tuyến đường</div></div>
+          <span class="cc-badge cb-a">Horizontal Bar</span>
+        </div>
+        <canvas id="saRoutesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top routes table -->
+    <div class="gc gc-pad" style="margin-bottom:20px;">
+      <div class="sec-head" style="margin-bottom:14px;">
+        <div><div class="sec-title">📊 Top tuyến tìm kiếm nhiều nhất</div><div class="sec-sub">Thứ tự theo lượt tìm kiếm — cập nhật realtime</div></div>
+        <button onclick="loadSearchAnalytics()" style="background:rgba(0,255,224,.08);border:1px solid rgba(0,255,224,.22);color:#00ffe0;padding:6px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;" onmouseover="this.style.background='rgba(0,255,224,.18)'" onmouseout="this.style.background='rgba(0,255,224,.08)'">🔄 Làm mới</button>
+      </div>
+      <div id="saRoutesTable" style="overflow-x:auto;">
+        <div class="empty"><div class="empty-ico">⏳</div>Đang tải dữ liệu tìm kiếm…</div>
+      </div>
+    </div>
+
+    <!-- Transit popular points -->
+    <div class="gc gc-pad">
+      <div class="sec-head" style="margin-bottom:14px;">
+        <div><div class="sec-title">🔄 Điểm trung chuyển phổ biến</div><div class="sec-sub">Các tỉnh thành thường được dùng làm điểm đổi xe</div></div>
+      </div>
+      <div id="saTransitPoints" style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div class="empty"><div class="empty-ico">⏳</div>Đang phân tích…</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-search -->
+
 </div><!-- /content -->
 
 <!-- ▌ MODAL: Cập nhật booking status ▌ -->
@@ -1083,6 +1138,7 @@ function loadTab(n){
   if(n==="ai")return loadAI();if(n==="reviews")return loadReviews();
   if(n==="bookings")return initBookings();if(n==="routes")return loadRoutes();
   if(n==="aiengine")return loadAIEngine();
+  if(n==="search")return loadSearchAnalytics();
 }
 
 /* OVERVIEW */
@@ -1647,6 +1703,104 @@ document.getElementById("aiPanelClose").addEventListener("click",()=>{document.g
 const AI_RESP={"tổng quan":()=>"📊 Hệ thống đang hoạt động bình thường. Kiểm tra tab Tổng quan để xem KPI chi tiết và xu hướng theo thời gian.","doanh thu":()=>"💰 So sánh doanh thu tuần-tuần giúp phát hiện biến động. Áp dụng giá cao điểm cuối tuần và ngày lễ để tối ưu.","người dùng":()=>"👥 Người dùng mới tăng đầu tháng. Gửi email khuyến mãi cho user chưa đặt vé 30 ngày để tăng retention.","nhà xe":()=>"🚌 Nhà xe tốt nhất có tỷ lệ lấp đầy >75%. Hỗ trợ nhà xe thấp điều chỉnh lịch trình và giá vé.","hỗ trợ":()=>"🆘 Ticket hỗ trợ nên xử lý trong 24h. Ưu tiên phân loại theo khẩn cấp và gán nhân viên phụ trách.","dự đoán":()=>"🔮 Dịp lễ và cuối tuần tăng 30-50% lượng đặt vé. Chuẩn bị tăng năng lực vận tải trước 2 tuần."};
 function aiAsk(q){const hist=document.getElementById("aiChatHistory");const um=document.createElement("div");um.style.cssText="padding:10px 13px;border-radius:12px;font-size:12.5px;line-height:1.55;max-width:94%;background:rgba(0,168,255,.12);border:1px solid rgba(0,168,255,.22);color:#bde4ff;align-self:flex-end;border-radius:12px 12px 2px 12px;";um.textContent=q;hist.appendChild(um);const typing=document.createElement("div");typing.style.cssText="display:flex;gap:4px;padding:10px 13px;";typing.innerHTML="<span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s ease-in-out infinite;display:inline-block'></span><span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s .2s ease-in-out infinite;display:inline-block'></span><span style='width:7px;height:7px;border-radius:50%;background:rgba(124,92,231,.60);animation:aiTyping 1.2s .4s ease-in-out infinite;display:inline-block'></span>";hist.appendChild(typing);hist.scrollTop=hist.scrollHeight;setTimeout(()=>{typing.remove();const k=Object.keys(AI_RESP).find(x=>q.toLowerCase().includes(x));const bm=document.createElement("div");bm.style.cssText="padding:10px 13px;border-radius:12px 12px 12px 2px;font-size:12.5px;line-height:1.55;max-width:94%;background:rgba(124,92,231,.10);border:1px solid rgba(124,92,231,.22);color:#ddd6fe;align-self:flex-start;";bm.textContent=(k?AI_RESP[k]():"🤖 Hãy kiểm tra dữ liệu thực tế trong các tab Dashboard để có phân tích chính xác nhất.");hist.appendChild(bm);hist.scrollTop=hist.scrollHeight;},900+Math.random()*600);}
 (function(){const inp=document.getElementById("aiChatInput"),btn=document.getElementById("aiSendBtn");function send(){const v=inp.value.trim();if(!v)return;aiAsk(v);inp.value="";}btn.addEventListener("click",send);inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send();}});})();
+
+/* ════════════════════════════════════════════
+   SEARCH ANALYTICS (P8)
+════════════════════════════════════════════ */
+let _saDailyChart = null, _saRoutesChart = null;
+
+async function loadSearchAnalytics() {
+  try {
+    const data = await req("search/analytics");
+    const { totals = {}, topRoutes = [], daily = [], transitPopular = [] } = data || {};
+
+    // KPI cards
+    set("sa-total",     (totals.total_searches || 0).toLocaleString("vi-VN"));
+    const rate = totals.total_searches > 0
+      ? Math.round((totals.success_count / totals.total_searches) * 100) : 0;
+    set("sa-rate",      rate + "%");
+    set("sa-transit",   (totals.transit_count || 0).toLocaleString("vi-VN"));
+    set("sa-noresult",  (totals.no_result_count || 0).toLocaleString("vi-VN"));
+
+    // Daily chart
+    const dailyLabels = daily.map(d => d.date ? d.date.slice(5) : "");
+    const dailyCounts = daily.map(d => d.cnt || 0);
+    const dailyCtx = document.getElementById("saDailyChart");
+    if (dailyCtx) {
+      if (_saDailyChart) _saDailyChart.destroy();
+      _saDailyChart = new Chart(dailyCtx, {
+        type: "bar",
+        data: {
+          labels: dailyLabels,
+          datasets: [{
+            label: "Lượt tìm kiếm",
+            data: dailyCounts,
+            backgroundColor: "rgba(0,168,255,0.5)",
+            borderColor: "#00a8ff",
+            borderWidth: 1,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.05)" } },
+            y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.05)" }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Top routes donut chart
+    const routeLabels = topRoutes.slice(0, 6).map(r => `${r.origin}→${r.destination}`);
+    const routeCounts = topRoutes.slice(0, 6).map(r => r.cnt || 0);
+    const routeCtx = document.getElementById("saRoutesChart");
+    if (routeCtx) {
+      if (_saRoutesChart) _saRoutesChart.destroy();
+      _saRoutesChart = new Chart(routeCtx, {
+        type: "doughnut",
+        data: {
+          labels: routeLabels,
+          datasets: [{
+            data: routeCounts,
+            backgroundColor: ["#00a8ff","#7c5ce7","#00b894","#fdcb6e","#e17055","#fd79a8"],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "right", labels: { color: "#ccc", font: { size: 11 } } } }
+        }
+      });
+    }
+
+    // Routes table
+    const tbody = document.querySelector("#saRoutesTable tbody");
+    if (tbody) {
+      tbody.innerHTML = topRoutes.slice(0, 10).map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${r.origin || ""}</td>
+          <td>${r.destination || ""}</td>
+          <td>${(r.cnt || 0).toLocaleString("vi-VN")}</td>
+          <td>${r.success_rate != null ? Math.round(r.success_rate) + "%" : "—"}</td>
+        </tr>`).join("");
+    }
+
+    // Transit popular points
+    const tpEl = document.getElementById("saTransitPoints");
+    if (tpEl) {
+      tpEl.innerHTML = transitPopular.slice(0, 8).map(p =>
+        `<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(124,92,231,.15);border:1px solid rgba(124,92,231,.3);border-radius:20px;font-size:12px;color:#ddd6fe;margin:3px">
+          📍 ${p.city} <strong style="color:#a78bfa">${p.freq}</strong>
+        </span>`
+      ).join("");
+    }
+  } catch (e) {
+    console.error("[SearchAnalytics]", e);
+  }
+}
 </script>
 <script src="/js/admin-notif.js"></script>
 </body>

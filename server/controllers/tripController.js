@@ -6,9 +6,14 @@ const db = require("../config/db");
 const baseSelect = `
     SELECT
         t.trip_id,
+        r.route_id,
         r.origin,
         r.destination,
         r.distance_km,
+        r.origin_lat,
+        r.origin_lng,
+        r.dest_lat,
+        r.dest_lng,
         t.departure_time,
         t.arrival_time,
         t.base_price,

@@ -1,0 +1,1 @@
+[AI] getMyRecommendations error: Illegal mix of collations (utf8mb4_unicode_ci,IMPLICIT) and (utf8mb4_general_ci,IMPLICIT) for operation 'like'

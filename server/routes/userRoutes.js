@@ -22,5 +22,9 @@ router.delete("/:id", userController.deleteUser);
 /* ================= LOYALTY POINTS ================= */
 router.get("/:id/loyalty", userController.getUserLoyalty);
 router.post("/:id/redeem-points", userController.redeemPoints);
+router.get("/:id/stats", userController.getUserStats);
+router.get("/:id/monthly-stats", userController.getMonthlyStats);
+router.get("/:id/travel-profile", userController.getTravelProfile);
+router.get("/:id/notifications", userController.getNotifications);
 
 module.exports = router;

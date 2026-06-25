@@ -884,7 +884,7 @@ header{
 #bus3DLockPrompt h2{font-size:24px;font-weight:900;background:linear-gradient(90deg,#00ffe0,#00a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 #bus3DLockPrompt p{font-size:14px;color:rgba(255,255,255,.55);}
 .b3-start-btn{background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#04080f;padding:14px 36px;border-radius:14px;font-size:15px;font-weight:900;font-family:'Segoe UI',Arial,sans-serif;border:none;cursor:pointer;margin-top:6px;box-shadow:0 0 32px rgba(0,255,224,.4);}
-#bus3DSeatInfo{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(0,20,44,.92);border:1px solid rgba(0,255,224,.35);border-radius:11px;padding:9px 22px;font-size:13.5px;font-weight:700;color:#00ffe0;pointer-events:none;display:none;box-shadow:0 0 20px rgba(0,255,224,.18);white-space:nowrap;}
+#bus3DSeatInfo{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(4,12,32,.96);border:1px solid rgba(0,200,255,.40);border-radius:14px;padding:12px 20px;font-size:13px;font-weight:600;color:#c8e8ff;pointer-events:none;display:none;box-shadow:0 0 28px rgba(0,160,255,.22),0 4px 20px rgba(0,0,0,.55);white-space:normal;min-width:260px;max-width:340px;text-align:center;backdrop-filter:blur(12px);}
 .btn-3d-panoramic{width:100%;margin-top:14px;background:linear-gradient(145deg,rgba(0,168,255,.10),rgba(124,92,231,.10));border:1.5px solid rgba(0,168,255,.28);color:#7eb8ff;padding:13px 20px;border-radius:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .22s;letter-spacing:.3px;}
 .btn-3d-panoramic:hover{background:linear-gradient(145deg,rgba(0,168,255,.20),rgba(124,92,231,.20));border-color:rgba(0,168,255,.55);color:#aad4ff;box-shadow:0 0 22px rgba(0,168,255,.18);transform:translateY(-1px);}
 .btn-3d-panoramic svg{flex-shrink:0;}
@@ -2082,7 +2082,12 @@ header{
       <div class="pax-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
           <div class="pax-label">👤 Thông tin hành khách</div>
-          <button class="autofill-btn" onclick="autoFillFromProfile()">✨ Tự điền từ hồ sơ</button>
+          <button class="autofill-btn" id="autoFillBtn" onclick="autoFillFromProfile()">✨ Tự điền từ hồ sơ</button>
+        </div>
+        <!-- Guest notice — only shown when not logged in -->
+        <div id="guestNotice" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.25);border-radius:10px;font-size:12px;color:rgba(255,255,255,.65);">
+          🧳 Bạn đang đặt vé với tư cách <b style="color:#f39c12;">Khách vãng lai</b> — vui lòng điền đầy đủ họ tên và số điện thoại.
+          <a href="/pages/auth/login.html" style="color:#00ffe0;margin-left:6px;font-weight:700;">Đăng nhập</a> để tích điểm thành viên.
         </div>
         <div class="pax-field">
           <label>Họ và tên</label>
@@ -2451,9 +2456,8 @@ document.addEventListener("click",function(e){
   setTimeout(()=>{window.location.href=h;},230);
 });
 
-/* ── AUTH ── */
-const userId=localStorage.getItem("user_id");
-if(!userId){ window.location.href="/pages/auth/login.html"; }
+/* ── AUTH (Guest-friendly) ── */
+const userId=localStorage.getItem("user_id"); // null = guest, OK
 const params=new URLSearchParams(window.location.search);
 let tripId=params.get("tripId")||localStorage.getItem("tripId");
 if(!tripId){ window.location.href="/pages/passenger/index.html"; }
@@ -2462,6 +2466,21 @@ localStorage.setItem("tripId",tripId);
 let selectedSeats=[],seatPrice=0,isProcessing=false,pendingBookingData=null;
 let currentBusType="NORMAL";
 let currentLayoutId="STANDARD";
+
+// Show/hide guest notice based on login state
+(function(){
+  const notice=document.getElementById('guestNotice');
+  const fillBtn=document.getElementById('autoFillBtn');
+  if(!userId){
+    if(notice) notice.style.display='block';
+    if(fillBtn) fillBtn.style.display='none';
+    // Make name & phone required for guest
+    const paxName=document.getElementById('paxName');
+    const paxPhone=document.getElementById('paxPhone');
+    if(paxName){ paxName.required=true; paxName.placeholder='Họ và tên (bắt buộc)'; }
+    if(paxPhone){ paxPhone.required=true; paxPhone.placeholder='Số điện thoại (bắt buộc)'; }
+  }
+})();
 
 /*
  ── LAYOUT BY SEAT COUNT ──
@@ -3556,36 +3575,62 @@ async function payLater(){
 }
 
 async function submitBooking(payment, totalAmount, bookingStatus="PAID"){
+  // Guest validation
+  if(!userId){
+    const gName=(document.getElementById('paxName')||{}).value?.trim();
+    const gPhone=(document.getElementById('paxPhone')||{}).value?.trim();
+    if(!gName||!gPhone){
+      showToast("Vui lòng nhập họ tên và số điện thoại để đặt vé", "warning");
+      isProcessing=false;
+      const btn=document.getElementById("confirmBtn");
+      if(btn){btn.disabled=false;btn.textContent="✔ Xác nhận đặt vé";}
+      return;
+    }
+  }
+
   isProcessing=true;
   const btn=document.getElementById("confirmBtn");
   btn.disabled=true; btn.textContent="⏳ Đang xử lý…";
+
+  // Collect guest info (present for guest, ignored by server for registered users)
+  const guestName =(document.getElementById('paxName') ||{}).value?.trim()||null;
+  const guestPhone=(document.getElementById('paxPhone')||{}).value?.trim()||null;
+  const guestEmail=(document.getElementById('paxEmail')||{}).value?.trim()||null;
+
   try{
     const res=await fetch("/api/bookings",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
-        user_id:userId, trip_id:tripId, seats:selectedSeats,
+        user_id:userId||null, trip_id:tripId, seats:selectedSeats,
         total_amount:totalAmount, payment_method:payment,
         status:bookingStatus,
-        extras:pendingBookingData?.extras||[]
+        extras:pendingBookingData?.extras||[],
+        guest_name:userId?null:guestName,
+        guest_phone:userId?null:guestPhone,
+        guest_email:userId?null:guestEmail
       })
     });
     const data=await res.json();
     if(res.ok){
-    // Mark voucher as used if applied
-    if(_appliedVoucher){
-      const key='smartbus_vouchers';
-      const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
-      const idx=vouchers.findIndex(x=>x.code===_appliedVoucher.code);
-      if(idx>=0){vouchers[idx].used=true;vouchers[idx].usedAt=new Date().toISOString();}
-      localStorage.setItem(key,JSON.stringify(vouchers));
-      _appliedVoucher=null;_voucherDiscount=0;
-    }
+      if(_appliedVoucher){
+        const key='smartbus_vouchers';
+        const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
+        const idx=vouchers.findIndex(x=>x.code===_appliedVoucher.code);
+        if(idx>=0){vouchers[idx].used=true;vouchers[idx].usedAt=new Date().toISOString();}
+        localStorage.setItem(key,JSON.stringify(vouchers));
+        _appliedVoucher=null;_voucherDiscount=0;
+      }
       if(bookingStatus==="PAID"){
-        showBookingSuccess(data.booking_id, payment, totalAmount);
+        showBookingSuccess(data.booking_id, payment, totalAmount, data.booking_code, data.is_guest);
       }else{
-        showToast("✅ Vé đặt thành công — mã #"+data.booking_id+". Chuyển đến thanh toán...", "success");
-        setTimeout(()=>{ window.location.href="/pages/passenger/profile.html#bookings"; }, 2200);
+        if(data.is_guest){
+          showToast("✅ Đặt vé thành công! Mã vé: "+data.booking_code+" — lưu lại để tra cứu.", "success");
+          setTimeout(()=>{ window.location.href="/pages/passenger/index.html"; }, 3500);
+        } else {
+          showToast("✅ Vé đặt thành công — mã #"+data.booking_id+". Chuyển đến thanh toán...", "success");
+          setTimeout(()=>{ window.location.href="/pages/passenger/profile.html#bookings"; }, 2200);
+        }
       }
       selectedSeats=[]; updatePrice(); await loadSeats();
     }else{
@@ -3768,15 +3813,44 @@ function launchConfetti(){
   }
 }
 
-function showBookingSuccess(bookingId, paymentMethod, totalAmount){
+function showBookingSuccess(bookingId, paymentMethod, totalAmount, bookingCode, isGuest){
   const route=document.getElementById('busRouteDisplay')?.textContent||'—';
   const seats=selectedSeats.map(s=>'G'+s.number).join(', ')||'—';
   const payLabels={momo:'Ví MoMo',vnpay:'VNPay QR',zalopay:'ZaloPay',cash:'Tại quầy',CASH:'Tại quầy',PAID:'Đã thanh toán'};
-  document.getElementById('successBookingId').textContent='Mã đặt: #'+(bookingId||'——');
+
+  // Show booking code for guest, booking ID for member
+  const codeLabel = isGuest && bookingCode
+    ? 'Mã vé: ' + bookingCode
+    : 'Mã đặt: #' + (bookingId||'——');
+  document.getElementById('successBookingId').textContent = codeLabel;
+
   document.getElementById('successRoute').textContent=route;
   document.getElementById('successSeats').textContent=seats;
   document.getElementById('successTotal').textContent=Number(totalAmount).toLocaleString('vi-VN')+' ₫';
   document.getElementById('successPayment').textContent=payLabels[paymentMethod]||paymentMethod||'—';
+
+  // Guest CTA — encourage registration
+  let guestCta = document.getElementById('guestSuccessCta');
+  if(isGuest && bookingCode){
+    if(!guestCta){
+      guestCta = document.createElement('div');
+      guestCta.id = 'guestSuccessCta';
+      guestCta.style.cssText='margin-top:16px;padding:12px 16px;background:rgba(0,255,224,.07);border:1px solid rgba(0,255,224,.22);border-radius:12px;font-size:12.5px;color:rgba(255,255,255,.7);text-align:center;';
+      guestCta.innerHTML=`
+        <div style="margin-bottom:6px;">📋 <b style="color:#00ffe0;">Lưu lại mã vé của bạn: ${bookingCode}</b></div>
+        <div style="margin-bottom:10px;">Dùng mã này + số điện thoại để <a href="/pages/passenger/index.html#lookup" style="color:#00ffe0;font-weight:700;">tra cứu vé</a> bất cứ lúc nào.</div>
+        <a href="/pages/auth/register.html" style="display:inline-block;background:rgba(0,255,224,.15);border:1px solid rgba(0,255,224,.35);color:#00ffe0;padding:7px 18px;border-radius:20px;font-weight:700;text-decoration:none;font-size:12px;">
+          🎁 Đăng ký tài khoản — tích điểm & lưu lịch sử
+        </a>`;
+      const overlay = document.getElementById('bookingSuccessOverlay');
+      const inner = overlay?.querySelector('[style*="border-radius"]') || overlay;
+      if(inner) inner.appendChild(guestCta);
+    }
+    guestCta.style.display='block';
+  } else if(guestCta){
+    guestCta.style.display='none';
+  }
+
   const overlay=document.getElementById('bookingSuccessOverlay');
   overlay.classList.add('show');
   launchConfetti();
@@ -3897,88 +3971,75 @@ function _b3TexBlanket(isLux){
   const cv=document.createElement('canvas'); cv.width=256; cv.height=256;
   const ctx=cv.getContext('2d');
   ctx.scale(0.5,0.5); // draw at 512x512 logic coords, stored at 256x256
-  // Rich deep purple base — clearly purple, luxurious
-  ctx.fillStyle=isLux?'#c090e8':'#b070cc';
+  // Navy blue base — xe giường nằm cao cấp limousine
+  ctx.fillStyle=isLux?'#112458':'#0d1e4a';
   ctx.fillRect(0,0,512,512);
+  // Subtle sheen gradient (satin navy)
+  const navyBase=ctx.createLinearGradient(0,0,512,512);
+  navyBase.addColorStop(0, isLux?'#1a3070':'#0f2260');
+  navyBase.addColorStop(0.5,isLux?'#0e1c52':'#091848');
+  navyBase.addColorStop(1, isLux?'#1a3070':'#0f2260');
+  ctx.fillStyle=navyBase; ctx.fillRect(0,0,512,512);
   // Natural fabric fold waves — 3D draping simulation
   for(let y=0;y<512;y+=20){
     const fold=ctx.createLinearGradient(0,y,0,y+20);
     fold.addColorStop(0,  'rgba(0,0,0,0.00)');
-    fold.addColorStop(0.28,'rgba(0,0,0,0.12)');
-    fold.addColorStop(0.52,'rgba(255,255,255,0.10)');
-    fold.addColorStop(0.78,'rgba(255,255,255,0.04)');
+    fold.addColorStop(0.28,'rgba(0,0,0,0.14)');
+    fold.addColorStop(0.52,'rgba(255,255,255,0.08)');
+    fold.addColorStop(0.78,'rgba(255,255,255,0.03)');
     fold.addColorStop(1,  'rgba(0,0,0,0.02)');
     ctx.fillStyle=fold; ctx.fillRect(0,y,512,20);
   }
-  // Satin micro-weave — very fine cross grid
-  ctx.globalAlpha=0.05;
-  for(let x=0;x<512;x+=4){ ctx.fillStyle=x%8===0?'rgba(255,255,255,1)':'rgba(0,0,0,1)'; ctx.fillRect(x,0,2,512); }
-  for(let y=0;y<512;y+=4){ ctx.fillStyle=y%8===0?'rgba(255,255,255,1)':'rgba(0,0,0,1)'; ctx.fillRect(0,y,512,2); }
+  // Fine herringbone weave — premium fabric texture (replaces floral)
+  ctx.globalAlpha=0.07;
+  for(let i=0;i<512;i+=8){
+    ctx.fillStyle='rgba(100,150,255,1)';
+    ctx.fillRect(i,0,3,512); // vertical threads
+    ctx.fillRect(0,i,512,3); // horizontal threads
+  }
   ctx.globalAlpha=1;
-  // Diamond quilting (45° rotated grid)
+  // Diamond quilting (45° rotated grid) — navy blue tones
   ctx.save();
-  ctx.globalAlpha=0.24;
-  ctx.strokeStyle=isLux?'rgba(255,220,255,0.9)':'rgba(220,180,255,0.9)';
+  ctx.globalAlpha=0.28;
+  ctx.strokeStyle=isLux?'rgba(120,180,255,0.85)':'rgba(90,150,240,0.80)';
   ctx.lineWidth=1.0;
   ctx.translate(256,256); ctx.rotate(Math.PI/4);
   const qSz=52;
   for(let x=-600;x<=600;x+=qSz){ctx.beginPath();ctx.moveTo(x,-600);ctx.lineTo(x,600);ctx.stroke();}
   for(let y=-600;y<=600;y+=qSz){ctx.beginPath();ctx.moveTo(-600,y);ctx.lineTo(600,y);ctx.stroke();}
   ctx.restore();
-  // Quilt knot dots
-  ctx.save(); ctx.globalAlpha=0.40;
+  // Quilt knot dots — silver-blue
+  ctx.save(); ctx.globalAlpha=0.45;
   for(let gx=26;gx<512;gx+=qSz){
     for(let gy=26;gy<512;gy+=qSz){
       ctx.beginPath(); ctx.arc(gx,gy,2.8,0,Math.PI*2);
-      ctx.fillStyle=isLux?'rgba(255,210,255,1)':'rgba(240,190,255,1)'; ctx.fill();
+      ctx.fillStyle=isLux?'rgba(180,220,255,1)':'rgba(140,190,255,1)'; ctx.fill();
     }
   }
   ctx.restore();
-  // LARGE FLORAL PATTERN — signature design, clearly visible
-  ctx.save(); ctx.globalAlpha=0.38;
-  const flS=36;
-  for(let fx=flS;fx<512;fx+=flS*2.5){
-    for(let fy=(fx%(flS*5)<1?flS:flS*1.25);fy<512;fy+=flS*2.5){
-      // 6-petal flower
-      for(let p=0;p<6;p++){
-        const ang=p*Math.PI/3;
-        ctx.beginPath();
-        ctx.ellipse(fx+Math.cos(ang)*flS*0.46, fy+Math.sin(ang)*flS*0.46, flS*0.32,flS*0.17,ang,0,Math.PI*2);
-        ctx.fillStyle=isLux?'#f8d8ff':'#eed0ff'; ctx.fill();
-      }
-      // Inner petal ring (smaller, different shade)
-      for(let p=0;p<6;p++){
-        const ang=p*Math.PI/3+Math.PI/6;
-        ctx.beginPath();
-        ctx.ellipse(fx+Math.cos(ang)*flS*0.28, fy+Math.sin(ang)*flS*0.28, flS*0.18,flS*0.10,ang,0,Math.PI*2);
-        ctx.fillStyle=isLux?'#e8b8ff':'#d8a8f8'; ctx.fill();
-      }
-      // Center disc
-      ctx.beginPath(); ctx.arc(fx,fy,flS*0.16,0,Math.PI*2);
-      ctx.fillStyle=isLux?'#fff0a0':'#ffe890'; ctx.fill();
-      ctx.beginPath(); ctx.arc(fx,fy,flS*0.07,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,230,60,1)'; ctx.fill();
-      // Leaf accents between flowers
-      for(let la=0;la<4;la++){
-        const lang=la*Math.PI/2+Math.PI/4;
-        ctx.beginPath();
-        ctx.ellipse(fx+Math.cos(lang)*flS*0.75, fy+Math.sin(lang)*flS*0.75, flS*0.14,flS*0.07,lang,0,Math.PI*2);
-        ctx.fillStyle=isLux?'rgba(180,255,160,0.65)':'rgba(160,240,140,0.55)'; ctx.fill();
-      }
+  // Subtle geometric chevron pattern — premium limousine style
+  ctx.save(); ctx.globalAlpha=0.12;
+  ctx.strokeStyle=isLux?'rgba(160,210,255,1)':'rgba(120,180,255,1)';
+  ctx.lineWidth=0.8;
+  for(let row=0;row<512;row+=32){
+    for(let col=0;col<512;col+=24){
+      ctx.beginPath();
+      ctx.moveTo(col,row+16); ctx.lineTo(col+12,row); ctx.lineTo(col+24,row+16);
+      ctx.stroke();
     }
   }
   ctx.restore();
-  // Silky diagonal sheen
+  // Silver-white diagonal sheen — satin navy feel
   const sh=ctx.createLinearGradient(0,0,512,512);
-  sh.addColorStop(0,'rgba(255,255,255,0.00)'); sh.addColorStop(0.22,'rgba(255,255,255,0.16)');
-  sh.addColorStop(0.5,'rgba(200,175,255,0.10)'); sh.addColorStop(0.82,'rgba(255,255,255,0.06)');
-  sh.addColorStop(1,'rgba(0,0,0,0.06)');
+  sh.addColorStop(0,'rgba(255,255,255,0.00)'); sh.addColorStop(0.22,'rgba(180,210,255,0.14)');
+  sh.addColorStop(0.5,'rgba(100,160,255,0.06)'); sh.addColorStop(0.82,'rgba(200,230,255,0.08)');
+  sh.addColorStop(1,'rgba(0,0,0,0.04)');
   ctx.fillStyle=sh; ctx.fillRect(0,0,512,512);
-  // Gold embroidery border (luxury)
+  // Gold embroidery border (luxury) — giữ viền vàng cho cảm giác cao cấp
   if(isLux){
-    ctx.strokeStyle='rgba(255,215,100,0.55)'; ctx.lineWidth=2.8; ctx.strokeRect(16,16,480,480);
+    ctx.strokeStyle='rgba(200,170,80,0.55)'; ctx.lineWidth=2.8; ctx.strokeRect(16,16,480,480);
     ctx.setLineDash([7,5]);
-    ctx.strokeStyle='rgba(255,200,80,0.32)'; ctx.lineWidth=1.5; ctx.strokeRect(24,24,464,464);
+    ctx.strokeStyle='rgba(180,150,60,0.30)'; ctx.lineWidth=1.5; ctx.strokeRect(24,24,464,464);
     ctx.setLineDash([]);
   }
   const t=new THREE.CanvasTexture(cv);
@@ -4121,6 +4182,69 @@ function _b3TexTV(){
   ctx.fillStyle='rgba(0,0,0,0.04)';
   for(let sy=0;sy<144;sy+=2){ ctx.fillRect(0,sy,256,1); }
   return (_b3TC.tv=new THREE.CanvasTexture(cv));
+}
+
+function _b3TexInfoBoard(){
+  if(_b3TC.infobd) return _b3TC.infobd;
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=256;
+  const ctx=cv.getContext('2d');
+  // Deep navy OLED background
+  ctx.fillStyle='#010810'; ctx.fillRect(0,0,512,256);
+  // Top gradient bar
+  const topBar=ctx.createLinearGradient(0,0,512,0);
+  topBar.addColorStop(0,'#001a4a'); topBar.addColorStop(0.5,'#002266'); topBar.addColorStop(1,'#001a4a');
+  ctx.fillStyle=topBar; ctx.fillRect(0,0,512,36);
+  // Logo SmartBusAI
+  ctx.fillStyle='#00d4ff'; ctx.font='bold 18px "Segoe UI",Arial';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.shadowColor='#00aaff'; ctx.shadowBlur=10;
+  ctx.fillText('🚌 SmartBusAI', 14, 18);
+  ctx.shadowBlur=0;
+  // Right side: time
+  ctx.fillStyle='#88ccff'; ctx.font='bold 14px monospace';
+  ctx.textAlign='right'; ctx.fillText(new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}), 498, 18);
+  ctx.textAlign='left';
+  // Divider line
+  ctx.strokeStyle='rgba(0,180,255,0.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,36); ctx.lineTo(512,36); ctx.stroke();
+  // WiFi icon + label
+  ctx.fillStyle='#00ff88'; ctx.font='bold 13px Arial'; ctx.shadowColor='#00ff88'; ctx.shadowBlur=6;
+  ctx.fillText('📶  WiFi Miễn Phí  ·  Mật khẩu: smartbus2024', 16, 62);
+  ctx.shadowBlur=0;
+  // Temperature
+  ctx.fillStyle='#ffdd44'; ctx.font='bold 13px Arial'; ctx.shadowColor='#ffcc00'; ctx.shadowBlur=5;
+  ctx.fillText('🌡  Nhiệt độ cabin: 24°C', 16, 90);
+  ctx.shadowBlur=0;
+  // Next stop
+  ctx.fillStyle='#ff9944'; ctx.font='bold 13px Arial'; ctx.shadowColor='#ff8800'; ctx.shadowBlur=5;
+  ctx.fillText('📍  Điểm dừng tiếp theo: Đà Nẵng — còn 148 km', 16, 118);
+  ctx.shadowBlur=0;
+  // ETA
+  ctx.fillStyle='#aaddff'; ctx.font='13px Arial';
+  ctx.fillText('⏱  Dự kiến đến: 06:20  ·  Tổng quãng đường: 1,726 km', 16, 146);
+  // Amenities row
+  ctx.fillStyle='rgba(0,150,255,0.18)'; ctx.fillRect(0,164,512,46);
+  ctx.strokeStyle='rgba(0,180,255,0.22)'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(0,164); ctx.lineTo(512,164); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,210); ctx.lineTo(512,210); ctx.stroke();
+  const amenArr=[['🔌','Ổ điện',86],['🔋','USB x2',172],['❄️','Điều hòa',258],['🧴','Nước uống',344],['🎵','Âm nhạc',430]];
+  amenArr.forEach(([icon,lbl,x])=>{
+    ctx.fillStyle='#66ccff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
+    ctx.fillText(icon, x, 180);
+    ctx.fillStyle='rgba(160,210,255,0.80)'; ctx.font='10px Arial';
+    ctx.fillText(lbl, x, 198);
+  });
+  ctx.textAlign='left';
+  // Bottom tagline
+  ctx.fillStyle='rgba(60,120,200,0.60)'; ctx.fillRect(0,215,512,41);
+  ctx.fillStyle='rgba(100,180,255,0.85)'; ctx.font='italic 11px "Segoe UI",Arial';
+  ctx.textAlign='center';
+  ctx.fillText('Cảm ơn quý khách đã chọn SmartBusAI — Hành trình an toàn, thoải mái 🌟', 256, 238);
+  ctx.textAlign='left';
+  // Scanlines
+  ctx.fillStyle='rgba(0,0,0,0.06)';
+  for(let sy=0;sy<256;sy+=2){ ctx.fillRect(0,sy,512,1); }
+  const t=new THREE.CanvasTexture(cv);
+  return (_b3TC.infobd=t);
 }
 
 function _b3TexHeadboard(){
@@ -4380,9 +4504,9 @@ function _init3DBus(){
   const isLux=_b3isLuxury(), isSl=_b3isSleeper();
   // ── LIGHTING: tối giản, chất lượng cao — TỔNG 9 lights (giảm từ 48) ──
   // Hemisphere: sky/ground gradient — free, key cho PBR realism
-  scene.add(new THREE.HemisphereLight(isLux?0xfff8e8:0xd8e8ff, isLux?0x301800:0x080e18, isLux?0.70:0.65));
-  // Ambient fill mạnh hơn để bù đèn điểm ít hơn
-  scene.add(new THREE.AmbientLight(isLux?0xfff4e0:0xeef4ff, isLux?0.80:0.72));
+  scene.add(new THREE.HemisphereLight(isLux?0xfff8e8:0xd8e8ff, isLux?0x301800:0x080e18, isLux?0.88:0.82));
+  // Ambient fill — raised so berth details (USB, curtain, pillow) are visible without shadows
+  scene.add(new THREE.AmbientLight(isLux?0xfff4e0:0xeef4ff, isLux?1.00:0.92));
   // 3 đèn trần — mỗi cái radius 20m bao phủ toàn xe (thay vì 5 đèn radius 14m)
   const ceilCol=isLux?0xffedd8:0xf4f8ff;
   [-6,0,6].forEach(z=>{
@@ -4462,7 +4586,7 @@ function _init3DBus(){
   function loop(t){
     if(!_b3||!_b3.active){_b3&&(_b3.raf=null);return;} // paused — stop silently
     _b3.raf=requestAnimationFrame(loop);
-    if(t-lt<50)return; // cap 20fps — đủ smooth cho walk, giảm 67% GPU so với 60fps
+    if(t-lt<22)return; // cap ~45fps — smooth cho demo, đủ mượt khi bảo vệ đồ án
     const dt=Math.min((t-lt)*0.001,0.05); lt=t;
     let mx=0,mz=0;
     if(keys.KeyW||keys.ArrowUp)mz=1; if(keys.KeyS||keys.ArrowDown)mz=-1;
@@ -4489,7 +4613,27 @@ function _init3DBus(){
     if(hh.length){
       const m=hh[0].object,sd=m.userData;
       if(!sd.booked){m.material.emissiveIntensity=0.42;prevHov=m;}
-      siEl.textContent=`🪑 Ghế ${sd.seatNumber} · ${sd.isVIP?'⭐ VIP':'Thường'} · ${sd.booked?'🚫 Đã đặt':sd.selected?'✅ Đang chọn':'Còn trống — Click để chọn'}`;
+      const statusHtml=sd.booked
+        ?'<span style="color:#ff6655;font-weight:800;">🚫 Đã đặt</span>'
+        :sd.selected
+          ?'<span style="color:#00e8a8;font-weight:800;">✅ Đang chọn</span>'
+          :'<span style="color:#44ff99;font-weight:700;">● Còn trống</span>';
+      const typeHtml=sd.isVIP
+        ?'<span style="background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800;">⭐ VIP</span>'
+        :'<span style="background:rgba(30,80,160,.70);color:#aad4ff;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;">STANDARD</span>';
+      const amenities=sd.isVIP
+        ?'📺 TV SONY &nbsp;·&nbsp; 🔌 USB + Ổ điện &nbsp;·&nbsp; ❄️ Điều hòa &nbsp;·&nbsp; 🪟 Rèm riêng'
+        :'📺 TV &nbsp;·&nbsp; 🔌 Sạc USB &nbsp;·&nbsp; ❄️ Điều hòa &nbsp;·&nbsp; 🪟 Rèm';
+      const actionHtml=sd.booked?''
+        :'<div style="margin-top:8px;font-size:11px;color:rgba(150,200,255,.65);">🖱️ Click để '+(sd.selected?'bỏ chọn':'chọn ghế này')+'</div>';
+      siEl.innerHTML=`
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span style="font-size:22px;font-weight:900;color:#00d4ff;letter-spacing:1px;">${sd.seatNumber}</span>
+          ${typeHtml}
+          <span style="margin-left:auto;">${statusHtml}</span>
+        </div>
+        <div style="font-size:11.5px;color:rgba(160,210,255,.75);border-top:1px solid rgba(0,180,255,.18);padding-top:7px;">${amenities}</div>
+        ${actionHtml}`;
       siEl.style.display='block';
     }else{siEl.style.display='none';}
     renderer.render(scene,cam);
@@ -4639,6 +4783,63 @@ function _b3buildInterior(scene){
   // Gear shift nub
   add(new THREE.BoxGeometry(0.08,0.18,0.08),mDash,-0.2,0.62,-10.2);
 
+  // ── SmartBusAI logo placard on front partition (centre, eye-level) ──
+  {
+    const logoCv=document.createElement('canvas'); logoCv.width=512; logoCv.height=160;
+    const lCtx=logoCv.getContext('2d');
+    // Deep navy panel
+    const lbg=lCtx.createLinearGradient(0,0,512,160);
+    lbg.addColorStop(0,'#001438'); lbg.addColorStop(0.5,'#002060'); lbg.addColorStop(1,'#001438');
+    lCtx.fillStyle=lbg; lCtx.fillRect(0,0,512,160);
+    // Border
+    lCtx.strokeStyle='rgba(0,180,255,0.60)'; lCtx.lineWidth=3; lCtx.strokeRect(6,6,500,148);
+    lCtx.setLineDash([8,5]);
+    lCtx.strokeStyle='rgba(0,140,220,0.30)'; lCtx.lineWidth=1.5; lCtx.strokeRect(14,14,484,132);
+    lCtx.setLineDash([]);
+    // Main text
+    lCtx.fillStyle='#00d4ff'; lCtx.font='bold 58px "Segoe UI",Arial';
+    lCtx.textAlign='center'; lCtx.textBaseline='middle';
+    lCtx.shadowColor='#00aaff'; lCtx.shadowBlur=18;
+    lCtx.fillText('🚌 SmartBusAI',256,68);
+    lCtx.shadowBlur=0;
+    // Tagline
+    lCtx.fillStyle='rgba(160,220,255,0.80)'; lCtx.font='italic 22px "Segoe UI",Arial';
+    lCtx.fillText('Hành trình an toàn — Thoải mái — Đúng giờ',256,118);
+    const logoTex=new THREE.CanvasTexture(logoCv);
+    const mLogo=new THREE.MeshStandardMaterial({
+      map:logoTex,emissiveMap:logoTex,
+      emissive:new THREE.Color(0xffffff),emissiveIntensity:1.8,
+      roughness:0.04,metalness:0.0
+    });
+    const logoPlane=new THREE.Mesh(new THREE.BoxGeometry(1.60,0.50,0.008),mLogo);
+    logoPlane.position.set(0.55,1.55,-10.93); scene.add(logoPlane);
+    // Subtle glow behind logo
+    const mLogoGlow=new THREE.MeshBasicMaterial({color:0x002288,transparent:true,opacity:0.18});
+    const logoGlow=new THREE.Mesh(new THREE.BoxGeometry(1.70,0.60,0.003),mLogoGlow);
+    logoGlow.position.set(0.55,1.55,-10.92); scene.add(logoGlow);
+  }
+  // ── Emergency exit sign above bus door (right side, front) ──
+  {
+    const exitCv=document.createElement('canvas'); exitCv.width=256; exitCv.height=80;
+    const eCtx=exitCv.getContext('2d');
+    eCtx.fillStyle='#006620'; eCtx.fillRect(0,0,256,80);
+    eCtx.strokeStyle='rgba(0,255,100,0.70)'; eCtx.lineWidth=3; eCtx.strokeRect(3,3,250,74);
+    eCtx.fillStyle='#00ff88'; eCtx.font='bold 26px Arial'; eCtx.textAlign='center'; eCtx.textBaseline='middle';
+    eCtx.shadowColor='#00ff44'; eCtx.shadowBlur=8;
+    eCtx.fillText('🚪 THOÁT HIỂM',128,28);
+    eCtx.shadowBlur=0;
+    eCtx.fillStyle='rgba(0,220,100,0.90)'; eCtx.font='16px Arial';
+    eCtx.fillText('EMERGENCY EXIT →',128,58);
+    const exitTex=new THREE.CanvasTexture(exitCv);
+    const mExit=new THREE.MeshStandardMaterial({
+      map:exitTex,emissiveMap:exitTex,
+      emissive:new THREE.Color(0xffffff),emissiveIntensity:2.0,
+      roughness:0.04,metalness:0.0
+    });
+    const exitSign=new THREE.Mesh(new THREE.BoxGeometry(0.64,0.20,0.006),mExit);
+    exitSign.position.set(BW-0.04,BH*0.88,-9.30); scene.add(exitSign);
+  }
+
   // ── Driver seat ──
   const mSeat=S({color:isLux?0x3a2810:0x1e2a38,roughness:0.75,metalness:0.02});
   const mSeatBk=S({color:isLux?0x2e1e0c:0x161e2c,roughness:0.80,metalness:0.01});
@@ -4679,6 +4880,31 @@ function _b3buildInterior(scene){
   // ── Back wall ──
   add(new THREE.BoxGeometry(BW*2,BH,0.14),mPanel,0,BH/2,11);
 
+  // ── Back wall LED info board — visible as player walks toward back ──
+  if(isSleeper){
+    const infTex=_b3TexInfoBoard();
+    const mInfoScr=new THREE.MeshStandardMaterial({
+      map:infTex, emissiveMap:infTex,
+      emissive:new THREE.Color(0xffffff), emissiveIntensity:3.8,
+      roughness:0.04, metalness:0.0
+    });
+    // Screen: 1.80m wide × 0.90m tall, mounted at eye level
+    const infoScr=new THREE.Mesh(new THREE.BoxGeometry(1.80,0.90,0.008),mInfoScr);
+    infoScr.position.set(0,1.55,10.93); scene.add(infoScr);
+    // Bezel frame
+    const mInfoBezel=new THREE.MeshStandardMaterial({color:0x080c12,roughness:0.18,metalness:0.22});
+    add(new THREE.BoxGeometry(1.86,0.96,0.018),mInfoBezel,0,1.55,10.92);
+    // Glow halo blue
+    const mInfoGlow=new THREE.MeshBasicMaterial({color:0x0044cc,transparent:true,opacity:0.50});
+    add(new THREE.BoxGeometry(2.10,1.20,0.004),mInfoGlow,0,1.55,10.90);
+    // Wide outer bloom for long-distance visibility
+    const mInfoBloom=new THREE.MeshBasicMaterial({color:0x001a66,transparent:true,opacity:0.28});
+    add(new THREE.BoxGeometry(2.50,1.60,0.003),mInfoBloom,0,1.55,10.88);
+    // Point light illuminating the area in front of the screen
+    const screenLight=new THREE.PointLight(0x2255cc,3.2,8.0);
+    screenLight.position.set(0,1.55,9.4); scene.add(screenLight);
+  }
+
   // ── Sleeper-specific: bunk rails along each berth column ──
   if(isSleeper){
     // Longitudinal rails at berth outer edges (berth centre ±2.14, outer edge ±2.50)
@@ -4708,7 +4934,7 @@ function _b3sleeperMats(isBooked, isVIP, isLux){
   const L=(o)=>new THREE.MeshLambertMaterial(o); // chỉ tính diffuse — nhanh hơn 3-5× so với PBR
 
   const mattC=isBooked?0xd8d0d0:isVIP?0xd4ccd8:(isLux?0xfafaf8:0xf8f8f4);
-  const blankC=isBooked?0x6858a0:isVIP?0x7060a8:(isLux?0xb898e0:0xa878d0);
+  const blankC=isBooked?0x2a3060:isVIP?0x1e2a58:(isLux?0x1a3878:0x122e68);
   const pilC  =isBooked?0xd0c8c8:isVIP?0xccc4cc:(isLux?0xfdfcff:0xf8f6ff);
   const qC    =isBooked?0x9890a8:isVIP?0x9888a8:(isLux?0xb8a8d8:0xb0a0cc);
 
@@ -4915,7 +5141,7 @@ function _b3placeSeats(scene){
         cfold.position.set(0,PH_SL+0.047,bCZ+bLen*0.14); g.add(cfold);
         // Side drape — chăn rủ xuống cạnh giường
         const mBlanke=_b3MC.blanke||(_b3MC.blanke=new THREE.MeshStandardMaterial(
-          {map:_b3TexBlanket(isLux),color:isBooked?0x6858a0:isVIP?0x7060a8:(isLux?0xb898e0:0xa878d0),roughness:0.24,metalness:0.0,side:THREE.DoubleSide}));
+          {map:_b3TexBlanket(isLux),color:isBooked?0x2a3060:isVIP?0x1e2a58:(isLux?0x1a3878:0x122e68),roughness:0.24,metalness:0.0,side:THREE.DoubleSide}));
         [-1,1].forEach(xs=>{
           const sdp=new THREE.Mesh(new THREE.BoxGeometry(0.030,0.065,bLen*0.52),mBlanke);
           sdp.position.set(xs*(BW_SL/2-0.030),PH_SL-0.010,bCZ); g.add(sdp);
@@ -5102,7 +5328,8 @@ function _b3placeSeats(scene){
         const mChgLED2=_b3MC.chld||(_b3MC.chld=new THREE.MeshBasicMaterial({color:0x00ff88}));
         // Charger: wall-side of TV (+0.09m beyond TV edge) — fully visible, not covered by screen
         // chZ shifted forward so charger face protrudes clearly from foot panel
-        const chZ=tvZ+0.010, chX=wallSide*(tvW/2+0.09), chY=isUpper?PH_SL+0.14:PH_SL+0.20;
+        // chX: place on AISLE side of TV so it's visible from the corridor, not buried in the wall
+        const chZ=tvZ+0.010, chX=-wallSide*(BW_SL*0.26), chY=isUpper?PH_SL+0.14:PH_SL+0.20;
         const mSlot=_b3MC.chsl||(_b3MC.chsl=new THREE.MeshStandardMaterial(
           {color:0x060a10,roughness:0.50,metalness:0.40}));
         const chBox=new THREE.Mesh(new THREE.BoxGeometry(0.152,0.100,0.026),mCharge);
@@ -5113,13 +5340,13 @@ function _b3placeSeats(scene){
         const mChgLabel=_b3MC.chlbl||(_b3MC.chlbl=new THREE.MeshBasicMaterial({color:0x88ffcc,transparent:true,opacity:0.72}));
         const chLblBar=new THREE.Mesh(new THREE.BoxGeometry(0.120,0.014,0.004),mChgLabel);
         chLblBar.position.set(chX,chY+0.042,chZ-0.012); g.add(chLblBar);
-        // 2 khe USB + 1 ổ điện — dùng material cache
+        // 2 khe USB + 1 ổ điện — gắn đúng lên mặt hộp sạc tại chX
         [0.028,-0.028].forEach(dy=>{
           const sl=new THREE.Mesh(new THREE.BoxGeometry(0.024,0.010,0.008),mSlot);
-          sl.position.set(-0.018,chY+dy,chZ-0.013); g.add(sl);
+          sl.position.set(chX-0.018,chY+dy,chZ-0.013); g.add(sl);
         });
         const outSlot=new THREE.Mesh(new THREE.BoxGeometry(0.022,0.022,0.008),mSlot);
-        outSlot.position.set(0.030,chY,chZ-0.013); g.add(outSlot);
+        outSlot.position.set(chX+0.030,chY,chZ-0.013); g.add(outSlot);
         const chDot=new THREE.Mesh(new THREE.BoxGeometry(0.009,0.009,0.009),mChgLED2);
         chDot.position.set(chX+0.050,chY+0.030,chZ-0.008); g.add(chDot);
 
@@ -5189,9 +5416,9 @@ function _b3placeSeats(scene){
         {
           const lblCv=document.createElement('canvas'); lblCv.width=256; lblCv.height=96;
           const lCtx=lblCv.getContext('2d');
-          const lbg=isBooked?'rgba(55,12,12,.94)':isVIP?'rgba(75,14,38,.94)':(isLux?'rgba(36,16,56,.94)':'rgba(8,26,60,.94)');
-          const lfg=isBooked?'#ff9977':isVIP?'#ff88cc':(isLux?'#e8bbff':'#66e0ff');
-          const lbd=isBooked?'rgba(255,100,60,.72)':isVIP?'rgba(255,100,180,.68)':(isLux?'rgba(200,150,255,.68)':'rgba(50,180,255,.68)');
+          const lbg=isBooked?'rgba(55,12,12,.94)':isVIP?'rgba(18,30,62,.96)':(isLux?'rgba(14,24,56,.94)':'rgba(8,20,50,.94)');
+          const lfg=isBooked?'#ff9977':isVIP?'#ffd060':(isLux?'#88d4ff':'#66e0ff');
+          const lbd=isBooked?'rgba(255,100,60,.72)':isVIP?'rgba(255,200,60,.68)':(isLux?'rgba(80,160,255,.68)':'rgba(50,180,255,.68)');
           lCtx.clearRect(0,0,256,96);
           lCtx.fillStyle=lbg;
           if(lCtx.roundRect)lCtx.roundRect(4,4,248,88,14);else lCtx.rect(4,4,248,88);
@@ -5223,9 +5450,9 @@ function _b3placeSeats(scene){
         if(posZ>10.5)continue;
 
         const p=isBooked?{col:0x5a2820,emi:0x8a3a2a,ei:0.20,sh:10}
-               :isVIP   ?{col:0x7a2050,emi:0xc04080,ei:0.18,sh:36}
-               :isLux   ?{col:0x5a3468,emi:0x9c6aac,ei:0.14,sh:28}
-                        :{col:0x3a6090,emi:0x5088c0,ei:0.12,sh:22};
+               :isVIP   ?{col:0x1e3468,emi:0xc8a020,ei:0.22,sh:36}
+               :isLux   ?{col:0x1a3060,emi:0x4488cc,ei:0.14,sh:28}
+                        :{col:0x1e3a68,emi:0x3a70b8,ei:0.12,sh:22};
         const mat=new THREE.MeshStandardMaterial({color:p.col,emissive:p.emi,emissiveIntensity:p.ei,roughness:0.70,metalness:0.04});
         const g=new THREE.Group(); g.position.set(posX,0,posZ); scene.add(g);
         const base=new THREE.Mesh(new THREE.BoxGeometry(SC.sw,SC.sh,SC.sd),mat);
@@ -5284,14 +5511,15 @@ function _b3updateColor(mesh){
       mesh.material.emissiveIntensity=0.90;
     }
   }else if(sd.isVIP){
-    mesh.material.color.setHex(isMat?0x3a1028:0x7a2050);
+    // VIP: warm cream mattress with subtle gold emissive; blue seat for upright
+    mesh.material.color.setHex(isMat?0xf0eef8:0x2a4a80);
     if(mesh.material.emissive){
-      mesh.material.emissive.setHex(isMat?0x280818:0xc04080);
-      mesh.material.emissiveIntensity=isMat?0.06:0.16;
+      mesh.material.emissive.setHex(isMat?0x604880:0x4070c0);
+      mesh.material.emissiveIntensity=isMat?0.06:0.18;
     }
   }else{
-    // Normal available — realistic dark base, very low emissive
-    mesh.material.color.setHex(isMat?(isLux?0x2a1c3a:0x18243a):(isLux?0x5a3468:0x3a6090));
+    // Normal available — cream mattress (shows quilted texture), navy seat for upright
+    mesh.material.color.setHex(isMat?0xf4f0e6:(isLux?0x1a3870:0x1a3060));
     if(mesh.material.emissive){
       mesh.material.emissive.setHex(isMat?0x000000:(isLux?0x9c6aac:0x5088c0));
       mesh.material.emissiveIntensity=isMat?0:0.10;
@@ -5302,9 +5530,9 @@ function _b3updateColor(mesh){
 function _b3makeLabel(text,isVIP,isBooked,isLux){
   const cv=document.createElement('canvas'); cv.width=144; cv.height=64;
   const ctx=cv.getContext('2d');
-  const bg=isBooked?'rgba(60,14,14,.96)':isVIP?'rgba(80,16,40,.96)':(isLux?'rgba(40,18,60,.96)':'rgba(14,36,72,.96)');
-  const fg=isBooked?'#ff9977':isVIP?'#ff88cc':(isLux?'#e8bbff':'#66e0ff');
-  const bd=isBooked?'rgba(255,110,70,.6)':isVIP?'rgba(255,110,190,.55)':(isLux?'rgba(210,160,255,.55)':'rgba(70,190,255,.55)');
+  const bg=isBooked?'rgba(60,14,14,.96)':isVIP?'rgba(18,28,60,.96)':(isLux?'rgba(12,22,52,.96)':'rgba(10,22,48,.96)');
+  const fg=isBooked?'#ff9977':isVIP?'#ffd060':(isLux?'#88d4ff':'#66e0ff');
+  const bd=isBooked?'rgba(255,110,70,.6)':isVIP?'rgba(255,195,55,.55)':(isLux?'rgba(80,160,255,.55)':'rgba(70,190,255,.55)');
   ctx.clearRect(0,0,144,64);
   ctx.shadowColor='rgba(0,0,0,.55)'; ctx.shadowBlur=7;
   ctx.fillStyle=bg;

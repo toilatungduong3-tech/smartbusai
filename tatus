@@ -1,0 +1,13 @@
+[33m5a007f0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: commit: add project screenshots
+[33m6d25b3e[m HEAD@{1}: commit: remove node_modules
+[33mae95fcf[m HEAD@{2}: Branch: renamed refs/heads/main to refs/heads/main
+[33mae95fcf[m HEAD@{4}: commit: First upload project
+[33m5628fe3[m[33m ([m[1;32mclaude/compassionate-austin-78299e[m[33m)[m HEAD@{5}: commit: Nhung ngu
+[33md6131eb[m HEAD@{6}: commit: Bach ngu
+[33ma4cb1c9[m HEAD@{7}: commit: test CI/CD auto trigger
+[33m5280ebc[m HEAD@{8}: commit: Add GitHub Actions CI/CD pipeline
+[33md232452[m HEAD@{9}: reset: moving to HEAD
+[33md232452[m HEAD@{10}: commit: Update Jenkinsfile for Windows
+[33ma3ca9d9[m HEAD@{11}: commit: first commit
+[33m6149a8e[m HEAD@{12}: Branch: renamed refs/heads/master to refs/heads/main
+[33m6149a8e[m HEAD@{14}: commit (initial): first commit

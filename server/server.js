@@ -36,6 +36,14 @@ const io = new Server(server, {
 /* ================= DATABASE ================= */
 const db = require("./config/db");
 
+/* ================= SCHEMA MIGRATION ================= */
+const { runMigration } = require("./config/migrate");
+runMigration();
+
+/* ================= DATA SEED ================= */
+const { runSeedIfNeeded } = require("./config/seed_full");
+setTimeout(runSeedIfNeeded, 2000);
+
 /* ================= SECURITY HEADERS (Helmet) ================= */
 // Tắt CSP để không làm hỏng inline scripts hiện có
 // Tắt crossOriginEmbedderPolicy để tránh lỗi với static assets
@@ -91,6 +99,10 @@ const supportRoutes  = require("./routes/supportRoutes");
 const seatRoutes     = require("./routes/seatRoutes");
 const busRoutes      = require("./routes/busRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
+const searchRoutes   = require("./routes/searchRoutes");
+const stopRoutes     = require("./routes/routeStopRoutes");
+const passengerAIRoutes    = require("./routes/passengerAIRoutes");
+const recommendationRoutes = require("./routes/recommendationRoutes");
 
 /* ================= USE ROUTES ================= */
 app.use("/api/auth",      authRoutes);
@@ -104,6 +116,10 @@ app.use("/api/support",   supportRoutes);
 app.use("/api/seats",     seatRoutes);
 app.use("/api/buses",     busRoutes);
 app.use("/api/settings",  settingsRoutes);
+app.use("/api/search",    searchRoutes);
+app.use("/api/stops",     stopRoutes);
+app.use("/api/ai",              passengerAIRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 /* ================= DB TEST ================= */
 app.get("/api/db-test", async (req, res) => {
