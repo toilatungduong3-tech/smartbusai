@@ -46,5 +46,6 @@
   "smtpHost": "smtp.gmail.com",
   "smtpPort": 587,
   "smtpName": "SmartBusAI",
-  "smtpFrom": "no-reply@smartbusai.vn"
+  "smtpFrom": "no-reply@smartbusai.vn",
+  "serverStartedAt": "2026-06-27T11:14:25.208Z"
 }

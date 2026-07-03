@@ -7,6 +7,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <meta name="theme-color" content="#00ffe0">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1302,6 +1303,176 @@ header{
 .dev-kick { padding:4px 10px; border-radius:7px; font-size:11px; font-weight:700; background:rgba(231,76,60,.11); border:1px solid rgba(231,76,60,.22); color:#e74c3c; cursor:pointer; font-family:inherit; transition:all .18s; }
 .dev-kick:hover { background:rgba(231,76,60,.24); }
 
+/* ══════════════════════════════════════
+   2FA MODAL STYLES
+══════════════════════════════════════ */
+.tfa-overlay{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s;
+}
+.tfa-overlay.open{opacity:1;pointer-events:all;}
+.tfa-box{
+  background:linear-gradient(145deg,rgba(8,18,44,.99),rgba(4,12,30,.98));
+  border:1px solid rgba(255,255,255,.10);border-radius:22px;
+  width:min(480px,96vw);max-height:92vh;overflow-y:auto;
+  box-shadow:0 40px 100px rgba(0,0,0,.70),0 0 0 1px rgba(0,255,224,.07);
+  transform:scale(.94) translateY(12px);transition:transform .24s ease;
+}
+.tfa-box::-webkit-scrollbar{width:3px;}
+.tfa-box::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:2px;}
+.tfa-overlay.open .tfa-box{transform:scale(1) translateY(0);}
+
+/* Header */
+.tfa-head{
+  padding:20px 24px 16px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;gap:12px;
+}
+.tfa-head-ico{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(0,168,255,.18));
+  border:1px solid rgba(99,102,241,.35);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.tfa-head-txt{flex:1;}
+.tfa-head-txt h3{font-size:17px;font-weight:900;color:#fff;margin-bottom:2px;}
+.tfa-head-txt p{font-size:12px;color:rgba(255,255,255,.45);}
+.tfa-close{
+  width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);
+  font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .18s;
+}
+.tfa-close:hover{background:rgba(231,76,60,.2);color:#e74c3c;border-color:rgba(231,76,60,.3);}
+
+/* Step progress */
+.tfa-steps{
+  display:flex;align-items:center;padding:16px 24px;
+  border-bottom:1px solid rgba(255,255,255,.06);gap:0;
+}
+.tfa-step{
+  display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;
+}
+.tfa-step-circle{
+  width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);
+  font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  transition:all .3s;
+}
+.tfa-step.active .tfa-step-circle{
+  border-color:#6366f1;background:rgba(99,102,241,.2);color:#a5b4fc;
+  box-shadow:0 0 12px rgba(99,102,241,.35);
+}
+.tfa-step.done .tfa-step-circle{
+  border-color:#00ffe0;background:rgba(0,255,224,.15);color:#00ffe0;
+}
+.tfa-step-lbl{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.4px;}
+.tfa-step.active .tfa-step-lbl{color:#a5b4fc;}
+.tfa-step.done .tfa-step-lbl{color:#00ffe0;}
+.tfa-step-line{flex:1;height:1px;background:rgba(255,255,255,.10);margin:0 6px;margin-bottom:14px;}
+.tfa-step-line.done{background:rgba(0,255,224,.35);}
+
+/* Panels */
+.tfa-body{padding:20px 24px 24px;}
+.tfa-panel{display:none;}
+.tfa-panel.active{display:block;}
+
+/* QR section */
+.tfa-qr-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:18px;
+}
+#tfaQRCanvas{
+  background:#fff;border-radius:12px;padding:10px;
+  box-shadow:0 0 0 4px rgba(0,255,224,.15),0 8px 28px rgba(0,0,0,.4);
+}
+.tfa-secret-box{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:12px 16px;width:100%;
+}
+.tfa-secret-lbl{font-size:10px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.tfa-secret-val{
+  font-family:monospace;font-size:16px;font-weight:800;color:#00ffe0;
+  letter-spacing:3px;word-break:break-all;
+}
+.tfa-copy-btn{
+  margin-top:8px;padding:5px 14px;border-radius:8px;border:1px solid rgba(0,255,224,.28);
+  background:rgba(0,255,224,.08);color:#00ffe0;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .18s;
+}
+.tfa-copy-btn:hover{background:rgba(0,255,224,.18);}
+.tfa-app-hint{
+  display:flex;gap:8px;align-items:flex-start;
+  background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.20);
+  border-radius:11px;padding:11px 13px;font-size:12px;color:rgba(200,220,255,.7);line-height:1.5;
+}
+
+/* OTP input */
+.tfa-otp-row{display:flex;gap:9px;justify-content:center;margin:18px 0 10px;}
+.tfa-otp-digit{
+  width:46px;height:54px;border-radius:12px;
+  border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);
+  color:#fff;font-size:22px;font-weight:900;text-align:center;
+  font-family:monospace;outline:none;transition:all .18s;caret-color:transparent;
+}
+.tfa-otp-digit:focus{border-color:#6366f1;background:rgba(99,102,241,.12);box-shadow:0 0 12px rgba(99,102,241,.3);}
+.tfa-otp-digit.filled{border-color:rgba(0,255,224,.45);background:rgba(0,255,224,.08);color:#00ffe0;}
+.tfa-otp-digit.error{border-color:rgba(231,76,60,.55)!important;background:rgba(231,76,60,.10)!important;animation:tfaShake .35s ease;}
+@keyframes tfaShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* TOTP timer */
+.tfa-timer-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;}
+.tfa-timer-ring{position:relative;width:34px;height:34px;}
+.tfa-timer-ring svg{transform:rotate(-90deg);}
+.tfa-timer-ring circle{transition:stroke-dashoffset .9s linear;}
+.tfa-timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#a5b4fc;}
+.tfa-timer-txt{font-size:12px;color:rgba(255,255,255,.45);}
+
+/* Backup codes */
+.tfa-backup-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;
+}
+.tfa-backup-code{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);
+  border-radius:9px;padding:10px 14px;
+  font-family:monospace;font-size:14px;font-weight:700;color:#e2e8f0;
+  letter-spacing:2px;text-align:center;transition:all .18s;
+}
+.tfa-backup-code.used{opacity:.35;text-decoration:line-through;color:#94a3b8;}
+.tfa-backup-warn{
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.22);
+  border-radius:10px;padding:11px 13px;font-size:12px;color:rgba(253,186,116,.85);
+  line-height:1.5;margin-bottom:14px;
+}
+
+/* Disable confirm */
+.tfa-disable-wrap{padding:4px 0;}
+.tfa-disable-warn{
+  background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.22);
+  border-radius:11px;padding:13px 15px;font-size:12.5px;color:rgba(252,165,165,.85);
+  line-height:1.6;margin-bottom:16px;
+}
+
+/* Action buttons */
+.tfa-btn{
+  width:100%;padding:12px;border-radius:12px;border:none;cursor:pointer;
+  font-size:14px;font-weight:800;font-family:inherit;transition:all .22s;margin-top:10px;
+}
+.tfa-btn.primary{
+  background:linear-gradient(135deg,#6366f1,#00a8ff);color:#fff;
+  box-shadow:0 4px 20px rgba(99,102,241,.35);
+}
+.tfa-btn.primary:hover{transform:translateY(-2px);box-shadow:0 6px 26px rgba(99,102,241,.55);}
+.tfa-btn.success{background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#040d18;}
+.tfa-btn.success:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,255,224,.45);}
+.tfa-btn.danger{background:rgba(231,76,60,.14);border:1px solid rgba(231,76,60,.30);color:#e74c3c;}
+.tfa-btn.danger:hover{background:rgba(231,76,60,.28);}
+.tfa-btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
+.tfa-btn.ghost:hover{background:rgba(255,255,255,.11);}
+.tfa-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;}
+.tfa-err{font-size:12px;color:#f87171;text-align:center;margin-top:6px;min-height:18px;}
+
 /* ── Activity log ── */
 .act-log-hdr { font-size:12.5px; font-weight:700; color:var(--neon); margin-bottom:10px; display:flex; align-items:center; gap:7px; }
 .act-feed { display:flex; flex-direction:column; gap:0; max-height:180px; overflow-y:auto; }
@@ -1813,7 +1984,7 @@ header{
             <div class="sec-sub">Bảo vệ thêm bằng OTP khi đăng nhập từ thiết bị mới</div>
           </div>
           <span class="sec-tag off" id="twoFATag">Chưa bật</span>
-          <button class="sec-small-btn" onclick="show2FAInfo()">Bật 2FA</button>
+          <button class="sec-small-btn" id="twoFABtn" onclick="show2FAInfo()">Bật 2FA</button>
         </div>
         <!-- Last login -->
         <div class="sec-row">
@@ -3274,9 +3445,365 @@ function _initLastLoginInfo(){
   const now=new Date();
   el.textContent='Đăng nhập lúc '+now.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
 }
-function show2FAInfo(){
-  showToast('🔐 Tính năng xác thực 2 bước (2FA) sẽ ra mắt sớm — hãy theo dõi cập nhật!','success');
+/* ════════════════════════════════════════════════════
+   2FA — TOTP (RFC 6238) pure-frontend implementation
+   State persisted in localStorage key: "smartbus_2fa"
+════════════════════════════════════════════════════ */
+
+/* ── Base32 helpers ── */
+const _B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function _b32Encode(bytes){
+  let bits=0,val=0,out='';
+  for(const b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=_B32[(val>>>(bits-5))&31];bits-=5;}}
+  if(bits>0) out+=_B32[(val<<(5-bits))&31];
+  return out;
 }
+function _b32Decode(s){
+  s=s.toUpperCase().replace(/=+$/,'');
+  let bits=0,val=0;const out=[];
+  for(const c of s){const idx=_B32.indexOf(c);if(idx<0)continue;val=(val<<5)|idx;bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8;}}
+  return new Uint8Array(out);
+}
+
+/* ── Generate random base32 secret (20 bytes = 160 bits) ── */
+function _genSecret(){
+  const b=new Uint8Array(20);crypto.getRandomValues(b);return _b32Encode(b);
+}
+
+/* ── TOTP code for a given secret and time window offset ── */
+async function _totp(secret, offsetWindows=0){
+  const key=_b32Decode(secret);
+  const counter=Math.floor(Date.now()/1000/30)+offsetWindows;
+  const buf=new ArrayBuffer(8);
+  const view=new DataView(buf);
+  view.setUint32(4,counter>>>0,false);
+  const cryptoKey=await crypto.subtle.importKey('raw',key,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',cryptoKey,buf));
+  const off=sig[19]&0x0f;
+  const otp=((sig[off]&0x7f)<<24|(sig[off+1]&0xff)<<16|(sig[off+2]&0xff)<<8|(sig[off+3]&0xff))%1000000;
+  return otp.toString().padStart(6,'0');
+}
+
+/* ── Verify entered code (±1 window tolerance) ── */
+async function _totpVerify(secret, entered){
+  const code=entered.replace(/\s/g,'');
+  if(!/^\d{6}$/.test(code)) return false;
+  for(const w of [-1,0,1]){
+    if(await _totp(secret,w)===code) return true;
+  }
+  return false;
+}
+
+/* ── Generate 8 random backup codes ── */
+function _genBackupCodes(){
+  return Array.from({length:8},()=>{
+    const n=new Uint32Array(1);crypto.getRandomValues(n);
+    return (n[0]%100000000).toString().padStart(8,'0');
+  });
+}
+
+/* ── localStorage state ── */
+function _tfa_load(){ try{return JSON.parse(localStorage.getItem('smartbus_2fa')||'null');}catch{return null;} }
+function _tfa_save(obj){ localStorage.setItem('smartbus_2fa',JSON.stringify(obj)); }
+function _tfa_clear(){ localStorage.removeItem('smartbus_2fa'); }
+
+/* ── State for current setup session ── */
+let _tfaSecret='';
+let _tfaBackupCodes=[];
+let _tfaTimerInterval=null;
+let _tfaMode='setup'; // 'setup' | 'disable'
+
+/* ── Update the security row UI based on stored state ── */
+function _tfa_updateUI(){
+  const state=_tfa_load();
+  const tag=document.getElementById('twoFATag');
+  const btn=document.querySelector('[onclick="show2FAInfo()"]')||document.getElementById('twoFABtn');
+  if(!tag) return;
+  if(state&&state.enabled){
+    tag.textContent='Đã bật';tag.className='sec-tag on';
+    if(btn){btn.textContent='Tắt 2FA';btn.setAttribute('onclick','open2FADisable()');}
+  } else {
+    tag.textContent='Chưa bật';tag.className='sec-tag off';
+    if(btn){btn.textContent='Bật 2FA';btn.setAttribute('onclick','show2FAInfo()');}
+  }
+}
+
+/* ── OTP digit-box keyboard wiring ── */
+function _wireOtpDigits(prefix, count, onChange){
+  for(let i=0;i<count;i++){
+    const el=document.getElementById(prefix+i);
+    if(!el) continue;
+    el.addEventListener('input',e=>{
+      const v=e.target.value.replace(/\D/g,'');
+      e.target.value=v?v[v.length-1]:'';
+      if(v&&i<count-1) document.getElementById(prefix+(i+1)).focus();
+      el.classList.toggle('filled',!!v);
+      if(onChange) onChange();
+    });
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Backspace'&&!el.value&&i>0){ document.getElementById(prefix+(i-1)).focus(); }
+      if(e.key==='ArrowLeft'&&i>0) document.getElementById(prefix+(i-1)).focus();
+      if(e.key==='ArrowRight'&&i<count-1) document.getElementById(prefix+(i+1)).focus();
+    });
+    el.addEventListener('paste',e=>{
+      e.preventDefault();
+      const txt=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,count);
+      txt.split('').forEach((c,j)=>{
+        const d=document.getElementById(prefix+j);
+        if(d){d.value=c;d.classList.add('filled');}
+      });
+      const last=document.getElementById(prefix+Math.min(txt.length,count-1));
+      if(last) last.focus();
+      if(onChange) onChange();
+    });
+  }
+}
+
+function _getOtpValue(prefix, count){
+  return Array.from({length:count},(_,i)=>document.getElementById(prefix+i)?.value||'').join('');
+}
+
+function _clearOtpDigits(prefix, count){
+  for(let i=0;i<count;i++){
+    const d=document.getElementById(prefix+i);
+    if(d){d.value='';d.classList.remove('filled','error');}
+  }
+}
+
+function _shakeOtpDigits(prefix, count){
+  for(let i=0;i<count;i++){
+    const d=document.getElementById(prefix+i);
+    if(d){d.classList.add('error');setTimeout(()=>d.classList.remove('error'),400);}
+  }
+}
+
+/* ── TOTP countdown ring ── */
+function _startTOTPTimer(){
+  _stopTOTPTimer();
+  const circum=2*Math.PI*14; // r=14
+  function tick(){
+    const rem=30-(Math.floor(Date.now()/1000)%30);
+    const circle=document.getElementById('tfaTimerCircle');
+    const numEl=document.getElementById('tfaTimerNum');
+    const secEl=document.getElementById('tfaTimerSec');
+    if(!circle) return;
+    const pct=rem/30;
+    circle.style.strokeDashoffset=circum*(1-pct);
+    circle.style.stroke=rem<=5?'#f87171':rem<=10?'#fb923c':'#6366f1';
+    if(numEl) numEl.textContent=rem;
+    if(secEl) secEl.textContent=rem;
+  }
+  tick();
+  _tfaTimerInterval=setInterval(tick,500);
+}
+function _stopTOTPTimer(){ clearInterval(_tfaTimerInterval); _tfaTimerInterval=null; }
+
+/* ── Step helpers ── */
+function _tfaSetStep(step){
+  [1,2,3].forEach(n=>{
+    document.getElementById('tfaPanel'+n)?.classList.remove('active');
+    const st=document.getElementById('tfaSt'+n);
+    if(st){
+      st.className='tfa-step'+(n===step?' active':n<step?' done':'');
+      const sc=document.getElementById('tfaSc'+n);
+      if(sc) sc.textContent=n<step?'✓':n;
+    }
+    const line=document.getElementById('tfaLine'+n);
+    if(line) line.className='tfa-step-line'+(n<step?' done':'');
+  });
+  document.getElementById('tfaPanel'+step)?.classList.add('active');
+}
+
+/* ════════════ PUBLIC API ════════════ */
+
+/* Open setup flow */
+function show2FAInfo(){
+  _tfaMode='setup';
+  _tfaSecret=_genSecret();
+  _tfaBackupCodes=_genBackupCodes();
+
+  // Reset UI
+  document.getElementById('tfaSteps').style.display='flex';
+  document.getElementById('tfaHeadTitle').textContent='Bật xác thực 2 bước';
+  document.getElementById('tfaHeadSub').textContent='Bảo vệ tài khoản bằng mã OTP mỗi 30 giây';
+  ['tfaPanel1','tfaPanel2','tfaPanel3','tfaPanelDisable'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('active');
+  });
+  _tfaSetStep(1);
+
+  // Build QR code
+  const user=typeof getUser==='function'?getUser():null;
+  const email=(user&&user.email)||'user@smartbusai.vn';
+  const issuer='SmartBusAI';
+  const otpauth=`otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${_tfaSecret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
+
+  const qrEl=document.getElementById('tfaQRCanvas');
+  qrEl.innerHTML='';
+  try{
+    new QRCode(qrEl,{text:otpauth,width:168,height:168,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){
+    qrEl.innerHTML=`<div style="width:168px;height:168px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#333;text-align:center;padding:10px">QR: escanear desde app</div>`;
+  }
+
+  // Display secret in groups of 4
+  const grouped=_tfaSecret.match(/.{1,4}/g).join(' ');
+  document.getElementById('tfaSecretDisp').textContent=grouped;
+
+  // Backup codes
+  const grid=document.getElementById('tfaBackupGrid');
+  grid.innerHTML=_tfaBackupCodes.map(c=>`<div class="tfa-backup-code">${c.slice(0,4)} ${c.slice(4)}</div>`).join('');
+
+  document.getElementById('tfaOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+/* Open disable flow */
+function open2FADisable(){
+  _tfaMode='disable';
+  document.getElementById('tfaSteps').style.display='none';
+  document.getElementById('tfaHeadTitle').textContent='Tắt xác thực 2 bước';
+  document.getElementById('tfaHeadSub').textContent='Nhập mã OTP để xác nhận';
+  ['tfaPanel1','tfaPanel2','tfaPanel3'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('active');
+  });
+  document.getElementById('tfaPanelDisable').classList.add('active');
+  _clearOtpDigits('tfaDD',6);
+  document.getElementById('tfaDisableErr').textContent='';
+  document.getElementById('tfaDisableBtn').disabled=true;
+  _startTOTPTimer();
+
+  // Wire disable OTP digits
+  _wireOtpDigits('tfaDD',6,()=>{
+    const val=_getOtpValue('tfaDD',6);
+    document.getElementById('tfaDisableBtn').disabled=val.length<6;
+    document.getElementById('tfaDisableErr').textContent='';
+  });
+
+  document.getElementById('tfaOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('tfaDD0')?.focus(),120);
+}
+
+/* Close modal */
+function closeTFA(){
+  document.getElementById('tfaOverlay').classList.remove('open');
+  document.body.style.overflow='';
+  _stopTOTPTimer();
+}
+function tfaOverlayClick(e){
+  if(e.target===document.getElementById('tfaOverlay')) closeTFA();
+}
+
+/* Step 1 → Step 2 */
+function tfaGoStep2(){
+  _tfaSetStep(2);
+  _clearOtpDigits('tfaD',6);
+  document.getElementById('tfaVerifyErr').textContent='';
+  document.getElementById('tfaVerifyBtn').disabled=true;
+  _startTOTPTimer();
+  _wireOtpDigits('tfaD',6,()=>{
+    const val=_getOtpValue('tfaD',6);
+    document.getElementById('tfaVerifyBtn').disabled=val.length<6;
+    document.getElementById('tfaVerifyErr').textContent='';
+  });
+  setTimeout(()=>document.getElementById('tfaD0')?.focus(),80);
+}
+
+/* Step 2 → Step 1 */
+function tfaGoStep1(){
+  _stopTOTPTimer();
+  _tfaSetStep(1);
+}
+
+/* Verify OTP during setup */
+async function tfaVerifySetup(){
+  const btn=document.getElementById('tfaVerifyBtn');
+  const errEl=document.getElementById('tfaVerifyErr');
+  const code=_getOtpValue('tfaD',6);
+  btn.disabled=true;btn.textContent='Đang xác minh…';
+  const ok=await _totpVerify(_tfaSecret,code);
+  btn.textContent='Xác minh';
+  if(ok){
+    _stopTOTPTimer();
+    _tfaSetStep(3);
+  } else {
+    _shakeOtpDigits('tfaD',6);
+    errEl.textContent='❌ Mã không đúng — hãy kiểm tra lại ứng dụng hoặc thời gian thiết bị';
+    btn.disabled=false;
+  }
+}
+
+/* Step 3: Finish and save */
+function tfaFinishSetup(){
+  _tfa_save({
+    enabled:true,
+    secret:_tfaSecret,
+    backupCodes:_tfaBackupCodes,
+    enabledAt:new Date().toISOString()
+  });
+  closeTFA();
+  _tfa_updateUI();
+  showToast('🔐 Xác thực 2 bước đã được bật thành công!','success');
+}
+
+/* Confirm disable */
+async function tfaConfirmDisable(){
+  const btn=document.getElementById('tfaDisableBtn');
+  const errEl=document.getElementById('tfaDisableErr');
+  const code=_getOtpValue('tfaDD',6);
+  const state=_tfa_load();
+  if(!state||!state.secret){ closeTFA(); return; }
+
+  btn.disabled=true; btn.textContent='Đang xác minh…';
+
+  // Check TOTP
+  let ok=await _totpVerify(state.secret,code);
+
+  // Check backup codes
+  if(!ok&&state.backupCodes){
+    const idx=state.backupCodes.indexOf(code);
+    if(idx>=0){
+      state.backupCodes.splice(idx,1);
+      ok=true;
+    }
+  }
+
+  btn.textContent='Tắt xác thực 2 bước';
+  if(ok){
+    _tfa_clear();
+    _stopTOTPTimer();
+    closeTFA();
+    _tfa_updateUI();
+    showToast('🔓 Đã tắt xác thực 2 bước','info');
+  } else {
+    _shakeOtpDigits('tfaDD',6);
+    errEl.textContent='❌ Mã không đúng — thử lại hoặc dùng mã dự phòng';
+    btn.disabled=false;
+  }
+}
+
+/* Copy helpers */
+function tfaCopySecret(){
+  navigator.clipboard?.writeText(_tfaSecret).then(()=>showToast('✅ Đã sao chép khóa bí mật','success')).catch(()=>{});
+}
+function tfaCopyBackup(){
+  const text=_tfaBackupCodes.join('\n');
+  navigator.clipboard?.writeText(text).then(()=>showToast('✅ Đã sao chép tất cả mã dự phòng','success')).catch(()=>{});
+}
+
+/* Init on page load */
+(function _tfa_init(){
+  // Update UI once DOM is ready
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',_tfa_updateUI);
+  } else {
+    _tfa_updateUI();
+  }
+  // ESC to close
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&document.getElementById('tfaOverlay')?.classList.contains('open')) closeTFA();
+  });
+})();
 
 /* ── TIPS INTERACTIVE ── */
 function toggleTip(el){
@@ -4497,6 +5024,125 @@ function downloadQR() {
     <button onclick="downloadQR()" style="margin-top:16px;background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#030d18;border:none;padding:10px 24px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">⬇️ Tải về PNG</button>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════
+     2FA MODAL
+══════════════════════════════════════ -->
+<div class="tfa-overlay" id="tfaOverlay" onclick="tfaOverlayClick(event)">
+  <div class="tfa-box">
+
+    <!-- Header -->
+    <div class="tfa-head">
+      <div class="tfa-head-ico">🔐</div>
+      <div class="tfa-head-txt">
+        <h3 id="tfaHeadTitle">Bật xác thực 2 bước</h3>
+        <p id="tfaHeadSub">Bảo vệ tài khoản bằng mã OTP mỗi 30 giây</p>
+      </div>
+      <button class="tfa-close" onclick="closeTFA()">✕</button>
+    </div>
+
+    <!-- Step indicators (only shown in setup flow) -->
+    <div class="tfa-steps" id="tfaSteps">
+      <div class="tfa-step active" id="tfaSt1">
+        <div class="tfa-step-circle" id="tfaSc1">1</div>
+        <div class="tfa-step-lbl">Quét mã</div>
+      </div>
+      <div class="tfa-step-line" id="tfaLine1"></div>
+      <div class="tfa-step" id="tfaSt2">
+        <div class="tfa-step-circle" id="tfaSc2">2</div>
+        <div class="tfa-step-lbl">Xác minh</div>
+      </div>
+      <div class="tfa-step-line" id="tfaLine2"></div>
+      <div class="tfa-step" id="tfaSt3">
+        <div class="tfa-step-circle" id="tfaSc3">3</div>
+        <div class="tfa-step-lbl">Mã dự phòng</div>
+      </div>
+    </div>
+
+    <div class="tfa-body">
+
+      <!-- ── PANEL 1: QR Setup ── -->
+      <div class="tfa-panel active" id="tfaPanel1">
+        <div class="tfa-qr-wrap">
+          <div id="tfaQRCanvas"></div>
+        </div>
+        <div class="tfa-secret-box">
+          <div class="tfa-secret-lbl">Hoặc nhập thủ công khóa bí mật</div>
+          <div class="tfa-secret-val" id="tfaSecretDisp">—</div>
+          <button class="tfa-copy-btn" onclick="tfaCopySecret()">📋 Sao chép khóa</button>
+        </div>
+        <div class="tfa-app-hint" style="margin-top:12px;">
+          <span style="font-size:20px;flex-shrink:0">📱</span>
+          <span>Mở ứng dụng <strong style="color:#c4b5fd">Google Authenticator</strong>, <strong style="color:#c4b5fd">Authy</strong> hoặc bất kỳ ứng dụng TOTP nào, sau đó quét mã QR hoặc nhập khóa bí mật ở trên.</span>
+        </div>
+        <button class="tfa-btn primary" onclick="tfaGoStep2()" style="margin-top:18px">Tiếp theo →</button>
+      </div>
+
+      <!-- ── PANEL 2: Verify OTP ── -->
+      <div class="tfa-panel" id="tfaPanel2">
+        <p style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:4px">Nhập mã 6 chữ số từ ứng dụng xác thực của bạn</p>
+
+        <!-- TOTP timer ring -->
+        <div class="tfa-timer-row">
+          <div class="tfa-timer-ring">
+            <svg width="34" height="34" viewBox="0 0 34 34">
+              <circle cx="17" cy="17" r="14" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3"/>
+              <circle id="tfaTimerCircle" cx="17" cy="17" r="14" fill="none"
+                stroke="#6366f1" stroke-width="3"
+                stroke-dasharray="87.96" stroke-dashoffset="0"
+                stroke-linecap="round"/>
+            </svg>
+            <div class="tfa-timer-num" id="tfaTimerNum">30</div>
+          </div>
+          <span class="tfa-timer-txt">Mã làm mới sau <strong id="tfaTimerSec" style="color:#a5b4fc">30</strong>s</span>
+        </div>
+
+        <!-- 6 digit boxes -->
+        <div class="tfa-otp-row" id="tfaOtpRow">
+          <input class="tfa-otp-digit" id="tfaD0" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
+          <input class="tfa-otp-digit" id="tfaD1" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaD2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaD3" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaD4" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaD5" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        </div>
+        <div class="tfa-err" id="tfaVerifyErr"></div>
+        <button class="tfa-btn primary" id="tfaVerifyBtn" onclick="tfaVerifySetup()" disabled>Xác minh</button>
+        <button class="tfa-btn ghost" onclick="tfaGoStep1()" style="margin-top:6px">← Quay lại</button>
+      </div>
+
+      <!-- ── PANEL 3: Backup codes ── -->
+      <div class="tfa-panel" id="tfaPanel3">
+        <div class="tfa-backup-warn">
+          ⚠️ <strong>Lưu mã dự phòng ngay!</strong> Mỗi mã chỉ dùng được 1 lần khi bạn mất quyền truy cập ứng dụng xác thực. Đừng chia sẻ với ai.
+        </div>
+        <div class="tfa-backup-grid" id="tfaBackupGrid"></div>
+        <button class="tfa-copy-btn" style="width:100%;text-align:center;padding:9px" onclick="tfaCopyBackup()">📋 Sao chép tất cả mã dự phòng</button>
+        <button class="tfa-btn success" onclick="tfaFinishSetup()" style="margin-top:14px">✅ Hoàn thành — Bật 2FA</button>
+      </div>
+
+      <!-- ── PANEL: Disable 2FA ── -->
+      <div class="tfa-panel" id="tfaPanelDisable">
+        <div class="tfa-disable-warn">
+          ⚠️ Tắt xác thực 2 bước sẽ làm giảm độ bảo mật cho tài khoản của bạn. Hãy chắc chắn rằng bạn muốn thực hiện điều này.
+        </div>
+        <p style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:8px">Nhập mã OTP hoặc mã dự phòng để xác nhận</p>
+        <div class="tfa-otp-row" id="tfaDisableOtpRow">
+          <input class="tfa-otp-digit" id="tfaDD0" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaDD1" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaDD2" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaDD3" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaDD4" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <input class="tfa-otp-digit" id="tfaDD5" maxlength="1" inputmode="numeric" pattern="[0-9]">
+        </div>
+        <div class="tfa-err" id="tfaDisableErr"></div>
+        <button class="tfa-btn danger" id="tfaDisableBtn" onclick="tfaConfirmDisable()" disabled style="margin-top:4px">Tắt xác thực 2 bước</button>
+        <button class="tfa-btn ghost" onclick="closeTFA()" style="margin-top:6px">Hủy</button>
+      </div>
+
+    </div><!-- /tfa-body -->
+  </div><!-- /tfa-box -->
+</div><!-- /tfa-overlay -->
 
 <!-- ── PWA: Service Worker Registration ── -->
 <script>
