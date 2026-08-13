@@ -1,35 +1,22 @@
-const express = require("express");
-const router = express.Router();
-const tripController = require("../controllers/tripController");
+const express  = require("express");
+const router   = express.Router();
+const ctrl     = require("../controllers/tripController");
+const { authenticate, requireAdmin, requireAdminOrOperator } = require("../middleware/authMiddleware");
 
-/* GET all trips  — /api/trips?bus_id=X */
-router.get("/",               tripController.getTrips);
+/* PUBLIC — hành khách xem chuyến, tìm kiếm */
+router.get("/",                  ctrl.getTrips);
+router.get("/running",           ctrl.getRunningTrips);
+router.get("/search",            ctrl.searchTrips);
+router.get("/dynamic-price/:id", ctrl.getDynamicPriceForTrip);
+router.get("/:id",               ctrl.getTripById);
 
-/* GET running    — /api/trips/running  (phải trước /:id) */
-router.get("/running",        tripController.getRunningTrips);
+/* ADMIN OR OPERATOR — tạo, sửa, hủy chuyến */
+router.post("/",              authenticate, requireAdminOrOperator, ctrl.createTrip);
+router.put("/status/:id",     authenticate, requireAdminOrOperator, ctrl.updateTripStatus);
+router.put("/price/:id",      authenticate, requireAdminOrOperator, ctrl.updateTripPrice);
+router.put("/:id",            authenticate, requireAdminOrOperator, ctrl.updateTrip);
 
-/* GET search     — /api/trips/search?origin=...&destination=...&date=... */
-router.get("/search",         tripController.searchTrips);
-
-/* GET dynamic price — /api/trips/dynamic-price/:id */
-router.get("/dynamic-price/:id", tripController.getDynamicPriceForTrip);
-
-/* POST create    — /api/trips */
-router.post("/",              tripController.createTrip);
-
-/* PUT status     — /api/trips/status/:id  (specific before :id) */
-router.put("/status/:id",     tripController.updateTripStatus);
-
-/* PUT price      — /api/trips/price/:id  (specific before :id) */
-router.put("/price/:id",      tripController.updateTripPrice);
-
-/* GET by id      — /api/trips/:id */
-router.get("/:id",            tripController.getTripById);
-
-/* PUT update     — /api/trips/:id */
-router.put("/:id",            tripController.updateTrip);
-
-/* DELETE         — /api/trips/:id */
-router.delete("/:id",         tripController.deleteTrip);
+/* ADMIN only — xóa (soft) */
+router.delete("/:id",         authenticate, requireAdmin, ctrl.deleteTrip);
 
 module.exports = router;

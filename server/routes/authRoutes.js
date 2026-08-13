@@ -44,6 +44,19 @@ router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);
 
 // =============================
+// ĐĂNG NHẬP / ĐĂNG KÝ VỚI GOOGLE
+// POST /api/auth/google
+// =============================
+router.post("/google", authController.googleAuth);
+
+// Trả về Google Client ID cho frontend (không cần auth)
+router.get("/google-config", (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const configured = clientId && clientId !== "YOUR_GOOGLE_CLIENT_ID_HERE";
+    res.json({ clientId: configured ? clientId : null, configured });
+});
+
+// =============================
 // TEST ROUTE
 // GET /api/auth/test
 // =============================

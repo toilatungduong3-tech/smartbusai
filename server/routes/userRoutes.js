@@ -1,30 +1,25 @@
 console.log("✅ userRoutes loaded");
 
-const express = require("express");
-const router = express.Router();
-const userController = require("../controllers/userController");
+const express  = require("express");
+const router   = express.Router();
+const ctrl     = require("../controllers/userController");
+const { authenticate, requireAdmin, requireSelfOrAdmin } = require("../middleware/authMiddleware");
 
-/* ================= GET ALL USERS ================= */
-router.get("/", userController.getUsers);
+/* ADMIN: danh sách + tạo user (không phải public register — xem /api/auth/register) */
+router.get("/",    authenticate, requireAdmin, ctrl.getUsers);
+router.post("/",   authenticate, requireAdmin, ctrl.createUser);
 
-/* ================= GET USER BY ID ================= */
-router.get("/:id", userController.getUserById);
+/* SELF OR ADMIN */
+router.get("/:id",    authenticate, requireSelfOrAdmin, ctrl.getUserById);
+router.put("/:id",    authenticate, requireSelfOrAdmin, ctrl.updateUser);
+router.delete("/:id", authenticate, requireAdmin,       ctrl.deleteUser);
 
-/* ================= CREATE USER ================= */
-router.post("/", userController.createUser);
-
-/* ================= UPDATE USER ================= */
-router.put("/:id", userController.updateUser);
-
-/* ================= DELETE USER ================= */
-router.delete("/:id", userController.deleteUser);
-
-/* ================= LOYALTY POINTS ================= */
-router.get("/:id/loyalty", userController.getUserLoyalty);
-router.post("/:id/redeem-points", userController.redeemPoints);
-router.get("/:id/stats", userController.getUserStats);
-router.get("/:id/monthly-stats", userController.getMonthlyStats);
-router.get("/:id/travel-profile", userController.getTravelProfile);
-router.get("/:id/notifications", userController.getNotifications);
+/* User data — self or admin */
+router.get("/:id/loyalty",        authenticate, requireSelfOrAdmin, ctrl.getUserLoyalty);
+router.post("/:id/redeem-points", authenticate, requireSelfOrAdmin, ctrl.redeemPoints);
+router.get("/:id/stats",          authenticate, requireSelfOrAdmin, ctrl.getUserStats);
+router.get("/:id/monthly-stats",  authenticate, requireSelfOrAdmin, ctrl.getMonthlyStats);
+router.get("/:id/travel-profile", authenticate, requireSelfOrAdmin, ctrl.getTravelProfile);
+router.get("/:id/notifications",  authenticate, requireSelfOrAdmin, ctrl.getNotifications);
 
 module.exports = router;

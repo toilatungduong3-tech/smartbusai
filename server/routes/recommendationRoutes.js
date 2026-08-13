@@ -6,4 +6,65 @@ const ctrl    = require('../controllers/passengerAIController');
 // GET /api/recommendations/me?userId=X
 router.get('/me', ctrl.getMyRecommendations);
 
+// GET /api/recommendations/trending — top trips by booking count
+router.get('/trending', async (req, res) => {
+  try {
+    const db = require('../config/db');
+    const [rows] = await db.query(`
+      SELECT
+        t.trip_id     AS route_id,
+        r.origin, r.destination,
+        t.departure_time, t.arrival_time,
+        t.base_price  AS current_price,
+        b.bus_type,
+        (b.total_seats - COUNT(DISTINCT bd.seat_id)) AS available_seats,
+        COUNT(DISTINCT bk.booking_id) AS booking_count,
+        AVG(rv.rating)               AS avg_rating,
+        COUNT(DISTINCT bk.booking_id) AS trip_count
+      FROM trip t
+      JOIN route r   ON t.route_id  = r.route_id
+      JOIN bus b     ON t.bus_id    = b.bus_id
+      LEFT JOIN booking bk        ON bk.trip_id    = t.trip_id
+                                 AND bk.status IN ('PAID','PENDING','CONFIRMED')
+      LEFT JOIN booking_detail bd ON bd.booking_id = bk.booking_id
+      LEFT JOIN review rv         ON rv.trip_id    = t.trip_id
+      WHERE t.status = 'OPEN'
+        AND t.departure_time > NOW()
+      GROUP BY t.trip_id, r.origin, r.destination, t.departure_time,
+               t.arrival_time, t.base_price, b.bus_type, b.total_seats
+      ORDER BY booking_count DESC, avg_rating DESC
+      LIMIT 4
+    `);
+    const recommendations = rows.map(r => ({
+      route_id:      r.route_id,
+      origin:        r.origin,
+      destination:   r.destination,
+      departure_time:r.departure_time,
+      arrival_time:  r.arrival_time,
+      current_price: Number(r.current_price),
+      bus_type:      r.bus_type,
+      available_seats: r.available_seats,
+      score:         Math.min(95, 60 + (r.booking_count || 0) * 2),
+      avg_rating:    r.avg_rating ? Number(r.avg_rating).toFixed(1) : null,
+      trip_count:    r.trip_count || 0,
+      algorithm:     'popularity_based',
+      reasons: [
+        { icon:'🔥', text:`${r.booking_count||0} lượt đặt vé`, key:'trending' },
+        r.avg_rating ? { icon:'⭐', text:`Đánh giá ${Number(r.avg_rating).toFixed(1)}/5`, key:'rating' } : null,
+        { icon:'💺', text:`Còn ${r.available_seats} ghế trống`, key:'seats' },
+      ].filter(Boolean),
+      breakdown: {
+        popularity: { score: 80, basis: `Rank #1 · ${r.booking_count||0}` },
+        price_attract: { score: 60, basis: '+0%' },
+        booking_history: { score: 0, basis: '0 lần' },
+        user_history:    { score: 0, basis: '0 lần' },
+      }
+    }));
+    res.json({ recommendations });
+  } catch(e) {
+    console.error('trending reco error', e);
+    res.json({ recommendations: [] });
+  }
+});
+
 module.exports = router;

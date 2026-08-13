@@ -18,7 +18,8 @@ const MAX_RESULTS     = 5;   // trả về tối đa 5 phương án
 
 /* ── Haversine distance (km) ── */
 function haversine(lat1, lng1, lat2, lng2) {
-    if (!lat1 || !lng1 || !lat2 || !lng2) return Infinity;
+    if (lat1 == null || lng1 == null || lat2 == null || lng2 == null ||
+        !isFinite(lat1) || !isFinite(lng1) || !isFinite(lat2) || !isFinite(lng2)) return Infinity;
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;

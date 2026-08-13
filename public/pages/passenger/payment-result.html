@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kết quả thanh toán — SmartBusAI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html,body{min-height:100vh;background:#06132f;color:#fff;display:flex;align-items:center;justify-content:center;}
+body{
+  background:
+    radial-gradient(ellipse at 20% 20%,rgba(99,102,241,.10) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 80%,rgba(245,158,11,.08) 0%,transparent 50%),
+    #06132f;
+  animation:fadeIn .4s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.card{
+  width:min(440px,94vw);padding:48px 36px 40px;text-align:center;
+  background:linear-gradient(145deg,rgba(8,18,48,.94),rgba(4,10,30,.90));
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.icon-wrap{
+  width:88px;height:88px;border-radius:50%;margin:0 auto 24px;
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  transition:transform .4s .1s cubic-bezier(.34,1.56,.64,1);
+}
+.icon-wrap.show{transform:scale(1);}
+.icon-success{background:radial-gradient(circle,rgba(52,211,153,.22),rgba(52,211,153,.04));border:2px solid rgba(52,211,153,.35);box-shadow:0 0 40px rgba(52,211,153,.20);}
+.icon-failed {background:radial-gradient(circle,rgba(239,68,68,.20),rgba(239,68,68,.04));border:2px solid rgba(239,68,68,.30);box-shadow:0 0 40px rgba(239,68,68,.15);}
+
+h1{font-size:26px;font-weight:900;margin-bottom:10px;letter-spacing:-.3px;}
+.status-success h1{background:linear-gradient(120deg,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.status-failed  h1{background:linear-gradient(120deg,#f87171,#fca5a5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+.subtitle{font-size:14px;color:rgba(255,255,255,.52);line-height:1.6;margin-bottom:28px;}
+
+.info-box{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:16px 20px;margin-bottom:28px;text-align:left;
+}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;}
+.info-row+.info-row{border-top:1px solid rgba(255,255,255,.06);}
+.info-label{font-size:12px;color:rgba(255,255,255,.40);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.info-value{font-size:13.5px;font-weight:800;color:#f1f5f9;}
+.info-value.code{color:#818cf8;font-family:monospace;letter-spacing:1px;}
+
+.btn-primary{
+  display:block;width:100%;padding:13px;border:none;border-radius:13px;
+  background:linear-gradient(135deg,#6366f1,#818cf8);
+  color:#fff;font-size:14.5px;font-weight:900;cursor:pointer;letter-spacing:.2px;
+  margin-bottom:12px;transition:transform .2s,box-shadow .2s;
+  text-decoration:none;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.35);}
+.btn-secondary{
+  display:block;width:100%;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:13px;
+  background:transparent;color:rgba(255,255,255,.55);font-size:13.5px;font-weight:700;cursor:pointer;
+  text-decoration:none;transition:all .2s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.06);color:#fff;}
+
+.method-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;
+  font-size:11px;font-weight:800;letter-spacing:.3px;margin-bottom:20px;
+  background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:#818cf8;
+}
+
+.confetti{position:fixed;pointer-events:none;z-index:99;}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon-wrap" id="iconWrap"></div>
+  <div class="method-badge" id="methodBadge"></div>
+  <h1 id="title"></h1>
+  <p class="subtitle" id="subtitle"></p>
+
+  <div class="info-box" id="infoBox" style="display:none">
+    <div class="info-row">
+      <span class="info-label">Mã vé</span>
+      <span class="info-value code" id="bookingCode">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Trạng thái</span>
+      <span class="info-value" id="bookingStatus">—</span>
+    </div>
+  </div>
+
+  <a href="/pages/passenger/profile.html#bookings" class="btn-primary" id="btnMain">📋 Xem vé của tôi</a>
+  <a href="/pages/passenger/index.html" class="btn-secondary">🏠 Về trang chủ</a>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const p = new URLSearchParams(location.search);
+const status    = p.get('status') || 'failed';
+const bookingId = p.get('bookingId');
+const method    = p.get('method') || '';
+
+const METHOD_LABEL = { momo:'Ví MoMo 💜', vnpay:'VNPay 💙', vietqr:'Chuyển khoản 🏦' };
+const card = document.getElementById('card');
+
+document.getElementById('methodBadge').textContent = METHOD_LABEL[method] || method.toUpperCase();
+
+if (status === 'success') {
+  card.classList.add('status-success');
+  const icon = document.getElementById('iconWrap');
+  icon.classList.add('icon-success');
+  icon.textContent = '✅';
+  document.getElementById('title').textContent = 'Thanh toán thành công!';
+  document.getElementById('subtitle').textContent = 'Vé xe của bạn đã được xác nhận. Chúng tôi sẽ gửi thông tin vé qua email trong vài phút.';
+  spawnConfetti();
+} else {
+  card.classList.add('status-failed');
+  const icon = document.getElementById('iconWrap');
+  icon.classList.add('icon-failed');
+  icon.textContent = '❌';
+  document.getElementById('title').textContent = 'Thanh toán thất bại';
+  document.getElementById('subtitle').textContent = 'Giao dịch không thành công hoặc đã bị huỷ. Vé của bạn vẫn được giữ ở trạng thái chờ — bạn có thể thanh toán lại từ trang Vé của tôi.';
+  document.getElementById('btnMain').textContent = '🔄 Thử lại từ hồ sơ';
+}
+
+// Load booking info
+if (bookingId) {
+  fetch(`/api/payment/status/${bookingId}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.booking_code) {
+        document.getElementById('infoBox').style.display = '';
+        document.getElementById('bookingCode').textContent = d.booking_code;
+        document.getElementById('bookingStatus').textContent =
+          d.status === 'PAID' ? '✅ Đã thanh toán' :
+          d.status === 'PENDING' ? '⏳ Chờ thanh toán' : d.status;
+      }
+    })
+    .catch(() => {});
+}
+
+function spawnConfetti() {
+  const colors = ['#6366f1','#f59e0b','#34d399','#818cf8','#fb923c'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.style.cssText = `
+        width:8px;height:8px;border-radius:${Math.random()>.5?'50%':'2px'};
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        left:${Math.random()*100}vw;top:-10px;
+        animation:fall ${1.5+Math.random()*2}s linear forwards;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 40);
+  }
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fall {
+      0%   { transform:translateY(0) rotate(0deg);   opacity:1; }
+      100% { transform:translateY(100vh) rotate(720deg); opacity:0; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+</script>
+</body>
+</html>

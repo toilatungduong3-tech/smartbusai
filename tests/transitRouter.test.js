@@ -25,12 +25,13 @@ describe('haversine()', () => {
         expect(d).toBeLessThan(1200);
     });
 
-    test('returns Infinity when any coord is falsy', () => {
+    test('returns Infinity when any coord is null/undefined/non-finite', () => {
         expect(haversine(null, 106, 10, 106)).toBe(Infinity);
         expect(haversine(21, null, 10, 106)).toBe(Infinity);
         expect(haversine(21, 106, null, 106)).toBe(Infinity);
         expect(haversine(21, 106, 10, null)).toBe(Infinity);
-        expect(haversine(0, 106, 10, 106)).toBe(Infinity);
+        // lat=0 is valid (Gulf of Guinea) — should NOT return Infinity
+        expect(haversine(0, 106, 10, 106)).not.toBe(Infinity);
     });
 
     test('symmetric: d(A,B) ≈ d(B,A)', () => {

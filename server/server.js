@@ -71,6 +71,24 @@ app.use("/api/", apiLimiter);
 // Giới hạn 10 lần đăng nhập/15 phút cho login endpoint
 app.use("/api/auth/login", loginLimiter);
 
+/* ================= API CACHE HEADERS ================= */
+// GET requests on stable read-only endpoints: short CDN/browser cache
+const READ_CACHE_ROUTES = [
+    /^\/api\/operators(\?|$)/,
+    /^\/api\/trips\/search/,
+    /^\/api\/trips\/dynamic-price/,
+    /^\/api\/ai\/(trending|search-insight)/,
+    /^\/api\/search\/(suggestions|popular-transfers)/,
+    /^\/api\/stops/,
+];
+app.use((req, res, next) => {
+    if (req.method !== "GET") return next();
+    if (READ_CACHE_ROUTES.some(r => r.test(req.path))) {
+        res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
+    }
+    next();
+});
+
 /* ================= SWAGGER API DOCS ================= */
 const setupSwagger = require('./swagger');
 setupSwagger(app);
@@ -85,7 +103,18 @@ app.use((req, res, next) => {
     }
     next();
 });
-app.use(express.static(path.join(__dirname, "../public"), { maxAge: 0, etag: false }));
+// Static assets: JS/CSS/images cached 7 days, HTML no-cache (already set above)
+app.use(express.static(path.join(__dirname, "../public"), {
+    maxAge: 0,
+    etag: false,
+    setHeaders(res, filePath) {
+        if (/\.(js|css)$/.test(filePath)) {
+            res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+        } else if (/\.(png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf)$/.test(filePath)) {
+            res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
+        }
+    }
+}));
 
 /* ================= ROUTES ================= */
 const authRoutes     = require("./routes/authRoutes");
@@ -103,6 +132,8 @@ const searchRoutes   = require("./routes/searchRoutes");
 const stopRoutes     = require("./routes/routeStopRoutes");
 const passengerAIRoutes    = require("./routes/passengerAIRoutes");
 const recommendationRoutes = require("./routes/recommendationRoutes");
+const locationRoutes       = require("./routes/locationRoutes");
+const paymentRoutes        = require("./routes/paymentRoutes");
 
 /* ================= USE ROUTES ================= */
 app.use("/api/auth",      authRoutes);
@@ -120,6 +151,8 @@ app.use("/api/search",    searchRoutes);
 app.use("/api/stops",     stopRoutes);
 app.use("/api/ai",              passengerAIRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/locations",       locationRoutes);
+app.use("/api/payment",         paymentRoutes);
 
 /* ================= DB TEST ================= */
 app.get("/api/db-test", async (req, res) => {
@@ -149,8 +182,21 @@ app.use((err, req, res, next) => {
 });
 
 /* ── Socket.io Seat Lock Manager ── */
-const seatLocks = new Map(); // key: "tripId_seatId", value: { userId, socketId, lockedAt }
+const seatLocks    = new Map(); // key: "tripId_seatId", value: { userId, socketId, lockedAt }
+const seatLockTmos = new Map(); // key: "tripId_seatId", value: timeoutId  (prevent double-timeout bug)
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
+function _releaseLock(key, reason) {
+    const lock = seatLocks.get(key);
+    if (!lock) return;
+    clearTimeout(seatLockTmos.get(key));
+    seatLockTmos.delete(key);
+    seatLocks.delete(key);
+    const parts = key.split('_');
+    const tripId = parts[0];
+    const seatId = parts.slice(1).join('_');
+    io.to(`trip_${tripId}`).emit('seat:released', { seatId });
+}
 
 io.on('connection', (socket) => {
     console.log(`🔌 Socket connected: ${socket.id}`);
@@ -160,22 +206,28 @@ io.on('connection', (socket) => {
         const key = `${tripId}_${seatId}`;
         const existing = seatLocks.get(key);
 
+        // Deny if locked by a DIFFERENT socket AND different user
         if (existing && existing.socketId !== socket.id) {
             socket.emit('seat:lock_denied', { seatId, message: 'Ghế đang được người khác chọn' });
             return;
         }
 
+        // Clear any previous timeout for this key (prevents stale auto-release)
+        clearTimeout(seatLockTmos.get(key));
+
         seatLocks.set(key, { userId, socketId: socket.id, lockedAt: Date.now() });
 
-        io.to(`trip_${tripId}`).emit('seat:locked', { seatId, lockedBy: userId === null ? 'anonymous' : userId });
+        // Notify only OTHER clients — sender already handled UI locally
+        socket.to(`trip_${tripId}`).emit('seat:locked', { seatId, lockedBy: userId ?? 'anonymous' });
 
-        setTimeout(() => {
+        // Auto-release after timeout — store handle to allow cancellation
+        const tmo = setTimeout(() => {
             const lock = seatLocks.get(key);
             if (lock && lock.socketId === socket.id) {
-                seatLocks.delete(key);
-                io.to(`trip_${tripId}`).emit('seat:released', { seatId });
+                _releaseLock(key, 'timeout');
             }
         }, LOCK_TIMEOUT);
+        seatLockTmos.set(key, tmo);
     });
 
     // Unlock a seat
@@ -183,36 +235,30 @@ io.on('connection', (socket) => {
         const key = `${tripId}_${seatId}`;
         const lock = seatLocks.get(key);
         if (lock && lock.socketId === socket.id) {
-            seatLocks.delete(key);
-            io.to(`trip_${tripId}`).emit('seat:released', { seatId });
+            _releaseLock(key, 'unlock');
         }
     });
 
-    // Join trip room
+    // Join trip room — send current locks with lockedBy so client can distinguish own vs others
     socket.on('trip:join', ({ tripId }) => {
         socket.join(`trip_${tripId}`);
         const lockedSeats = [];
         seatLocks.forEach((lock, key) => {
             if (key.startsWith(`${tripId}_`)) {
                 const seatId = key.replace(`${tripId}_`, '');
-                lockedSeats.push({ seatId });
+                lockedSeats.push({ seatId, lockedBy: lock.userId ?? 'anonymous' });
             }
         });
         socket.emit('seat:current_locks', lockedSeats);
     });
 
-    // On disconnect, release all locks by this socket
+    // On disconnect, release all locks held by this socket
     socket.on('disconnect', () => {
         const toRelease = [];
         seatLocks.forEach((lock, key) => {
             if (lock.socketId === socket.id) toRelease.push(key);
         });
-        toRelease.forEach(key => {
-            const [tripId] = key.split('_');
-            const seatId = key.replace(`${tripId}_`, '');
-            seatLocks.delete(key);
-            io.to(`trip_${tripId}`).emit('seat:released', { seatId });
-        });
+        toRelease.forEach(key => _releaseLock(key, 'disconnect'));
     });
 });
 

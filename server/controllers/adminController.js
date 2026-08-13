@@ -747,10 +747,29 @@ exports.classifySupportTicket = async (req, res) => {
 =============================== */
 exports.getAllRoutes = async (req, res) => {
     try {
+        const page   = Math.max(1, parseInt(req.query.page)  || 1);
+        const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const offset = (page - 1) * limit;
+        const search = req.query.search?.trim() || "";
+        const status = req.query.status || "";
+
+        const wheres = [];
+        const params = [];
+        if (search) {
+            wheres.push("(r.origin LIKE ? OR r.destination LIKE ?)");
+            params.push(`%${search}%`, `%${search}%`);
+        }
+        if (status) { wheres.push("r.status=?"); params.push(status); }
+        const where = wheres.length ? "WHERE " + wheres.join(" AND ") : "";
+
+        const [[{ total }]] = await db.query(`SELECT COUNT(*) AS total FROM route r ${where}`, params);
+
         const [rows] = await db.query(`
             SELECT
                 r.route_id, r.origin, r.destination,
                 IFNULL(r.distance_km, 0)                                           AS distance_km,
+                IFNULL(r.status, 'ACTIVE')                                         AS status,
+                r.origin_lat, r.origin_lng, r.dest_lat, r.dest_lng,
                 COUNT(DISTINCT t.trip_id)                                           AS total_trips,
                 COUNT(DISTINCT b.booking_id)                                        AS total_bookings,
                 IFNULL(SUM(CASE WHEN b.status='PAID' THEN b.total_amount END), 0)  AS total_revenue,
@@ -760,12 +779,421 @@ exports.getAllRoutes = async (req, res) => {
             LEFT JOIN booking b ON t.trip_id = b.trip_id
             LEFT JOIN bus   bu ON t.bus_id = bu.bus_id
             LEFT JOIN bus_operator bo ON bu.operator_id = bo.operator_id
+            ${where}
             GROUP BY r.route_id
             ORDER BY total_bookings DESC
-        `);
-        res.json(rows);
+            LIMIT ? OFFSET ?
+        `, [...params, limit, offset]);
+
+        res.json({ data: rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (err) {
         console.error("GET ALL ROUTES ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   ROUTE BY ID
+═══════════════════════════════════════════ */
+exports.getRouteById = async (req, res) => {
+    try {
+        const [[row]] = await db.query(`
+            SELECT r.*, COUNT(DISTINCT rs.stop_id) AS stop_count
+            FROM route r
+            LEFT JOIN route_stop rs ON rs.route_id = r.route_id AND rs.is_active = 1
+            WHERE r.route_id = ?
+            GROUP BY r.route_id
+        `, [req.params.id]);
+        if (!row) return res.status(404).json({ message: "Tuyến không tồn tại" });
+        res.json(row);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   CREATE ROUTE
+═══════════════════════════════════════════ */
+exports.createRoute = async (req, res) => {
+    try {
+        const { origin, destination, distance_km, origin_lat, origin_lng, dest_lat, dest_lng } = req.body;
+
+        if (!origin?.trim() || !destination?.trim()) {
+            return res.status(400).json({ message: "origin và destination là bắt buộc" });
+        }
+        const o = origin.trim(), d = destination.trim();
+        if (o.toLowerCase() === d.toLowerCase()) {
+            return res.status(422).json({ message: "Điểm đi và điểm đến không được trùng nhau" });
+        }
+        if (distance_km !== undefined && (isNaN(distance_km) || Number(distance_km) <= 0)) {
+            return res.status(422).json({ message: "distance_km phải là số dương" });
+        }
+
+        /* Kiểm tra tuyến trùng (so sánh lowercase) */
+        const [[dup]] = await db.query(
+            "SELECT route_id FROM route WHERE LOWER(origin)=LOWER(?) AND LOWER(destination)=LOWER(?)",
+            [o, d]
+        );
+        if (dup) return res.status(409).json({ message: "Tuyến này đã tồn tại", route_id: dup.route_id });
+
+        const [result] = await db.query(
+            `INSERT INTO route (origin, destination, distance_km, origin_lat, origin_lng, dest_lat, dest_lng, status)
+             VALUES (?,?,?,?,?,?,?,'ACTIVE')`,
+            [o, d, distance_km || null, origin_lat || null, origin_lng || null, dest_lat || null, dest_lng || null]
+        );
+        res.status(201).json({ message: "Tạo tuyến thành công", route_id: result.insertId });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   UPDATE ROUTE
+═══════════════════════════════════════════ */
+exports.updateRoute = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { origin, destination, distance_km, origin_lat, origin_lng, dest_lat, dest_lng } = req.body;
+
+        if (origin && destination && origin.trim().toLowerCase() === destination.trim().toLowerCase()) {
+            return res.status(422).json({ message: "Điểm đi và điểm đến không được trùng nhau" });
+        }
+        if (distance_km !== undefined && (isNaN(distance_km) || Number(distance_km) <= 0)) {
+            return res.status(422).json({ message: "distance_km phải là số dương" });
+        }
+
+        const [[existing]] = await db.query("SELECT route_id FROM route WHERE route_id=?", [id]);
+        if (!existing) return res.status(404).json({ message: "Tuyến không tồn tại" });
+
+        await db.query(
+            `UPDATE route SET
+                origin=COALESCE(?,origin),
+                destination=COALESCE(?,destination),
+                distance_km=COALESCE(?,distance_km),
+                origin_lat=COALESCE(?,origin_lat),
+                origin_lng=COALESCE(?,origin_lng),
+                dest_lat=COALESCE(?,dest_lat),
+                dest_lng=COALESCE(?,dest_lng)
+             WHERE route_id=?`,
+            [origin||null, destination||null, distance_km||null,
+             origin_lat||null, origin_lng||null, dest_lat||null, dest_lng||null, id]
+        );
+        res.json({ message: "Cập nhật tuyến thành công" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   UPDATE ROUTE STATUS
+═══════════════════════════════════════════ */
+exports.updateRouteStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!["ACTIVE", "INACTIVE"].includes(status)) {
+            return res.status(422).json({ message: "status phải là ACTIVE hoặc INACTIVE" });
+        }
+        const [[existing]] = await db.query("SELECT route_id FROM route WHERE route_id=?", [req.params.id]);
+        if (!existing) return res.status(404).json({ message: "Tuyến không tồn tại" });
+
+        await db.query("UPDATE route SET status=? WHERE route_id=?", [status, req.params.id]);
+        res.json({ message: "Cập nhật trạng thái thành công" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   DELETE ROUTE — soft delete nếu có trip/booking
+═══════════════════════════════════════════ */
+exports.deleteRoute = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [[{ tripCount }]] = await db.query(
+            "SELECT COUNT(*) AS tripCount FROM trip WHERE route_id=?", [id]
+        );
+        if (tripCount > 0) {
+            await db.query("UPDATE route SET status='INACTIVE' WHERE route_id=?", [id]);
+            return res.json({ message: "Tuyến đã có chuyến xe — đã vô hiệu hóa thay vì xóa", soft: true });
+        }
+        await db.query("DELETE FROM route WHERE route_id=?", [id]);
+        res.json({ message: "Đã xóa tuyến", soft: false });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   US-102: IMPORT ROUTES — PREVIEW (không ghi DB)
+═══════════════════════════════════════════ */
+exports.importRoutesPreview = async (req, res) => {
+    try {
+        const rows = req.body.rows; // [{ origin, destination, distance_km, ... }]
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ message: "Không có dữ liệu để preview" });
+        }
+        if (rows.length > 500) {
+            return res.status(400).json({ message: "Tối đa 500 dòng mỗi lần import" });
+        }
+
+        /* Load existing routes để check duplicate */
+        const [existingRoutes] = await db.query(
+            "SELECT LOWER(origin) AS o, LOWER(destination) AS d FROM route"
+        );
+        const existingSet = new Set(existingRoutes.map(r => `${r.o}|${r.d}`));
+
+        const inFileSet = new Set();
+        const results = rows.map((row, idx) => {
+            const rowNum = idx + 1;
+            const errors = [];
+            const origin = String(row.origin || "").trim();
+            const destination = String(row.destination || "").trim();
+            const distance_km = row.distance_km !== undefined ? Number(row.distance_km) : null;
+
+            if (!origin) errors.push({ field: "origin", message: "Bắt buộc" });
+            if (!destination) errors.push({ field: "destination", message: "Bắt buộc" });
+            if (origin && destination && origin.toLowerCase() === destination.toLowerCase()) {
+                errors.push({ field: "destination", message: "Điểm đi và đến không được trùng" });
+            }
+            if (row.distance_km !== undefined && row.distance_km !== "" && (isNaN(distance_km) || distance_km <= 0)) {
+                errors.push({ field: "distance_km", message: "Phải là số dương" });
+            }
+
+            const key = `${origin.toLowerCase()}|${destination.toLowerCase()}`;
+            let status = "VALID";
+            if (errors.length > 0) {
+                status = "INVALID";
+            } else if (existingSet.has(key)) {
+                status = "DUPLICATE_DB";
+                errors.push({ field: "route", message: "Tuyến đã tồn tại trong database" });
+            } else if (inFileSet.has(key)) {
+                status = "DUPLICATE_FILE";
+                errors.push({ field: "route", message: "Tuyến bị trùng trong file" });
+            } else {
+                inFileSet.add(key);
+            }
+
+            return {
+                rowNumber: rowNum,
+                origin, destination,
+                distance_km: isNaN(distance_km) ? null : distance_km,
+                origin_lat: row.origin_lat || null,
+                origin_lng: row.origin_lng || null,
+                dest_lat: row.dest_lat || null,
+                dest_lng: row.dest_lng || null,
+                status,
+                errors
+            };
+        });
+
+        const valid    = results.filter(r => r.status === "VALID").length;
+        const invalid  = results.filter(r => r.status === "INVALID").length;
+        const dupDb    = results.filter(r => r.status === "DUPLICATE_DB").length;
+        const dupFile  = results.filter(r => r.status === "DUPLICATE_FILE").length;
+
+        res.json({
+            summary: { total: rows.length, valid, invalid, duplicate_db: dupDb, duplicate_file: dupFile },
+            rows: results
+        });
+    } catch (err) {
+        console.error("IMPORT PREVIEW ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   US-102: IMPORT ROUTES — CONFIRM (ghi DB)
+═══════════════════════════════════════════ */
+exports.importRoutesConfirm = async (req, res) => {
+    try {
+        const rows = req.body.rows;
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ message: "Không có dữ liệu để import" });
+        }
+
+        /* Chỉ import những dòng VALID */
+        const validRows = rows.filter(r => r.status === "VALID");
+        if (validRows.length === 0) {
+            return res.status(400).json({ message: "Không có dòng hợp lệ để import" });
+        }
+
+        const conn = await db.getConnection();
+        try {
+            await conn.beginTransaction();
+
+            let inserted = 0;
+            const skipped = [];
+
+            for (const row of validRows) {
+                const o = String(row.origin || "").trim();
+                const d = String(row.destination || "").trim();
+                /* Re-check duplicate tại thời điểm import để tránh race condition */
+                const [[dup]] = await conn.query(
+                    "SELECT route_id FROM route WHERE LOWER(origin)=LOWER(?) AND LOWER(destination)=LOWER(?)", [o, d]
+                );
+                if (dup) {
+                    skipped.push({ origin: o, destination: d, reason: "Đã tồn tại" });
+                    continue;
+                }
+                await conn.query(
+                    `INSERT INTO route (origin, destination, distance_km, origin_lat, origin_lng, dest_lat, dest_lng, status)
+                     VALUES (?,?,?,?,?,?,?,'ACTIVE')`,
+                    [o, d, row.distance_km || null, row.origin_lat || null, row.origin_lng || null,
+                     row.dest_lat || null, row.dest_lng || null]
+                );
+                inserted++;
+            }
+
+            await conn.commit();
+            res.json({ message: "Import thành công", inserted, skipped: skipped.length, skipped_detail: skipped });
+        } catch (e) {
+            await conn.rollback();
+            throw e;
+        } finally {
+            conn.release();
+        }
+    } catch (err) {
+        console.error("IMPORT CONFIRM ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════
+   US-201: LOCATION CRUD
+═══════════════════════════════════════════ */
+const LAT_RE  = /^-?([0-8]?\d(\.\d+)?|90(\.0+)?)$/;
+const LNG_RE  = /^-?((1[0-7]\d|\d{1,2})(\.\d+)?|180(\.0+)?)$/;
+
+function validateLatLng(lat, lng) {
+    const errors = [];
+    if (lat !== null && lat !== undefined && lat !== "") {
+        const v = Number(lat);
+        if (isNaN(v) || !isFinite(v) || v < -90 || v > 90) {
+            errors.push({ field: "latitude", message: "latitude phải trong [-90, 90]" });
+        }
+    }
+    if (lng !== null && lng !== undefined && lng !== "") {
+        const v = Number(lng);
+        if (isNaN(v) || !isFinite(v) || v < -180 || v > 180) {
+            errors.push({ field: "longitude", message: "longitude phải trong [-180, 180]" });
+        }
+    }
+    return errors;
+}
+
+exports.getLocations = async (req, res) => {
+    try {
+        const page   = Math.max(1, parseInt(req.query.page)  || 1);
+        const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const offset = (page - 1) * limit;
+        const search = req.query.search?.trim() || "";
+        const type   = req.query.type   || "";
+        const status = req.query.status || "";
+
+        const wheres = [], params = [];
+        if (search) { wheres.push("(l.name LIKE ? OR l.address LIKE ?)"); params.push(`%${search}%`, `%${search}%`); }
+        if (type)   { wheres.push("l.type=?");   params.push(type); }
+        if (status) { wheres.push("l.status=?"); params.push(status); }
+        const where = wheres.length ? "WHERE " + wheres.join(" AND ") : "";
+
+        const [[{ total }]] = await db.query(
+            `SELECT COUNT(*) AS total FROM location l ${where}`, params
+        );
+        const [rows] = await db.query(
+            `SELECT * FROM location l ${where} ORDER BY l.name ASC LIMIT ? OFFSET ?`,
+            [...params, limit, offset]
+        );
+        res.json({ data: rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+exports.createLocation = async (req, res) => {
+    try {
+        const { name, type, province, address, latitude, longitude } = req.body;
+        if (!name?.trim()) return res.status(400).json({ message: "name là bắt buộc" });
+
+        const gpsErrors = validateLatLng(latitude, longitude);
+        if (gpsErrors.length) return res.status(422).json({ message: gpsErrors[0].message, errors: gpsErrors });
+
+        const lat = (latitude !== null && latitude !== undefined && latitude !== "") ? Number(latitude) : null;
+        const lng = (longitude !== null && longitude !== undefined && longitude !== "") ? Number(longitude) : null;
+
+        const [[dup]] = await db.query(
+            "SELECT location_id FROM location WHERE LOWER(name)=LOWER(?) AND LOWER(IFNULL(type,''))=LOWER(IFNULL(?,''))",
+            [name.trim(), type || ""]
+        );
+        if (dup) return res.status(409).json({ message: "Địa điểm này đã tồn tại" });
+
+        const [result] = await db.query(
+            `INSERT INTO location (name, type, province, address, latitude, longitude, status)
+             VALUES (?,?,?,?,?,?,'ACTIVE')`,
+            [name.trim(), type || null, province || null, address || null, lat, lng]
+        );
+        res.status(201).json({ message: "Tạo địa điểm thành công", location_id: result.insertId });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+exports.updateLocation = async (req, res) => {
+    try {
+        const { name, type, province, address, latitude, longitude } = req.body;
+        const gpsErrors = validateLatLng(latitude, longitude);
+        if (gpsErrors.length) return res.status(422).json({ message: gpsErrors[0].message, errors: gpsErrors });
+
+        const [[existing]] = await db.query("SELECT location_id FROM location WHERE location_id=?", [req.params.id]);
+        if (!existing) return res.status(404).json({ message: "Địa điểm không tồn tại" });
+
+        const lat = (latitude !== null && latitude !== undefined && latitude !== "") ? Number(latitude) : null;
+        const lng = (longitude !== null && longitude !== undefined && longitude !== "") ? Number(longitude) : null;
+
+        await db.query(
+            `UPDATE location SET
+                name=COALESCE(?,name), type=COALESCE(?,type), province=COALESCE(?,province),
+                address=COALESCE(?,address),
+                latitude=?, longitude=?,
+                updated_at=NOW()
+             WHERE location_id=?`,
+            [name||null, type||null, province||null, address||null, lat, lng, req.params.id]
+        );
+        res.json({ message: "Cập nhật địa điểm thành công" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+exports.updateLocationStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!["ACTIVE", "INACTIVE"].includes(status)) {
+            return res.status(422).json({ message: "status phải là ACTIVE hoặc INACTIVE" });
+        }
+        const [[existing]] = await db.query("SELECT location_id FROM location WHERE location_id=?", [req.params.id]);
+        if (!existing) return res.status(404).json({ message: "Địa điểm không tồn tại" });
+        await db.query("UPDATE location SET status=? WHERE location_id=?", [status, req.params.id]);
+        res.json({ message: "Cập nhật trạng thái thành công" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+exports.deleteLocation = async (req, res) => {
+    try {
+        await db.query("UPDATE location SET status='INACTIVE' WHERE location_id=?", [req.params.id]);
+        res.json({ message: "Đã vô hiệu hóa địa điểm" });
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };

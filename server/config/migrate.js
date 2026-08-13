@@ -3,35 +3,39 @@ const fs   = require('fs');
 const path = require('path');
 const db   = require('./db');
 
-async function runMigration() {
-    try {
-        const sql = fs.readFileSync(path.join(__dirname, 'migrate_v2.sql'), 'utf8');
+async function runSqlFile(filePath) {
+    const sql = fs.readFileSync(filePath, 'utf8');
+    const stripped = sql
+        .split('\n')
+        .filter(line => !line.trim().startsWith('--'))
+        .join('\n');
+    const statements = stripped
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s.length > 10);
 
-        // Strip comment lines, then split by semicolon
-        const stripped = sql
-            .split('\n')
-            .filter(line => !line.trim().startsWith('--'))
-            .join('\n');
-
-        const statements = stripped
-            .split(';')
-            .map(s => s.trim())
-            .filter(s => s.length > 10);
-
-        for (const stmt of statements) {
-            try {
-                await db.query(stmt);
-            } catch (e) {
-                // errno 1060 = duplicate column, 1050 = table exists, 1061 = duplicate key
-                // errno 1064 = syntax error (ALTER TABLE IF NOT EXISTS on MySQL 5.x — safe to skip)
-                if (![1050, 1060, 1061, 1064].includes(e.errno)) {
-                    console.warn('[migrate] Skipped stmt:', e.message.slice(0, 100));
-                }
+    for (const stmt of statements) {
+        try {
+            await db.query(stmt);
+        } catch (e) {
+            // 1060 = duplicate column, 1050 = table exists, 1061 = duplicate key, 1064 = syntax
+            if (![1050, 1060, 1061, 1064].includes(e.errno)) {
+                console.warn('[migrate] Skipped:', e.message.slice(0, 120));
             }
         }
-        console.log('✅ [migrate] v2 schema migration completed');
+    }
+}
+
+async function runMigration() {
+    try {
+        await runSqlFile(path.join(__dirname, 'migrate_v2.sql'));
+        console.log('✅ [migrate] v2 completed');
+        await runSqlFile(path.join(__dirname, 'migrate_v3.sql'));
+        console.log('✅ [migrate] v3 completed');
+        await runSqlFile(path.join(__dirname, 'migrate_v4.sql'));
+        console.log('✅ [migrate] v4 (payment gateway) completed');
     } catch (err) {
-        console.error('❌ [migrate] Migration error:', err.message);
+        console.error('❌ [migrate] Error:', err.message);
     }
 }
 

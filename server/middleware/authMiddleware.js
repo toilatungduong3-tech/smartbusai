@@ -1,35 +1,24 @@
 /**
- * SmartBusAI — JWT Authentication Middleware
- * Xác thực JWT từ header Authorization: Bearer <token>
+ * SmartBusAI — JWT Authentication & RBAC Middleware
  */
 
 const jwt = require("jsonwebtoken");
 
-// Sử dụng biến môi trường hoặc fallback về secret mặc định
 const JWT_SECRET = process.env.JWT_SECRET || "smartbusai_jwt_secret_key_2024_international";
 
-// =================================
-// AUTHENTICATE (bắt buộc có token)
-// Gắn req.user = { user_id, role, email } nếu token hợp lệ
-// =================================
+const VALID_ROLES   = new Set(["ADMIN", "OPERATOR", "PASSENGER"]);
+const VALID_STATUSES = new Set(["ACTIVE", "INACTIVE", "BANNED"]);
+
+/* ── authenticate: bắt buộc có token hợp lệ ── */
 const authenticate = (req, res, next) => {
     const authHeader = req.headers["authorization"];
-
-    // Kiểm tra header có tồn tại và đúng định dạng Bearer
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "Không có token xác thực" });
     }
-
     const token = authHeader.split(" ")[1];
-
     try {
-        // Xác minh token và giải mã payload
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = {
-            user_id: decoded.user_id,
-            role:    decoded.role,
-            email:   decoded.email
-        };
+        req.user = { user_id: decoded.user_id, role: decoded.role, email: decoded.email };
         next();
     } catch (err) {
         if (err.name === "TokenExpiredError") {
@@ -39,33 +28,45 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// =================================
-// OPTIONAL AUTH (không bắt buộc có token)
-// Nếu có token hợp lệ thì gắn req.user, không có thì bỏ qua
-// =================================
+/* ── optionalAuth: không bắt buộc có token ── */
 const optionalAuth = (req, res, next) => {
     const authHeader = req.headers["authorization"];
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        // Không có token — cho phép tiếp tục mà không gắn req.user
-        return next();
-    }
-
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return next();
     const token = authHeader.split(" ")[1];
-
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = {
-            user_id: decoded.user_id,
-            role:    decoded.role,
-            email:   decoded.email
-        };
-    } catch (err) {
-        // Token không hợp lệ hoặc hết hạn — bỏ qua, không báo lỗi
-        req.user = null;
-    }
-
+        req.user = { user_id: decoded.user_id, role: decoded.role, email: decoded.email };
+    } catch { req.user = null; }
     next();
 };
 
-module.exports = { authenticate, optionalAuth };
+/* ── requireRole(...roles): user phải có 1 trong các role liệt kê ── */
+const requireRole = (...roles) => (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: "Chưa xác thực" });
+    if (!roles.includes(req.user.role)) {
+        return res.status(403).json({ message: "Không có quyền truy cập" });
+    }
+    next();
+};
+
+const requireAdmin            = requireRole("ADMIN");
+const requireAdminOrOperator  = requireRole("ADMIN", "OPERATOR");
+
+/* ── requireSelfOrAdmin: user chỉ truy cập dữ liệu của chính mình, trừ ADMIN ── */
+const requireSelfOrAdmin = (req, res, next) => {
+    if (!req.user) return res.status(401).json({ message: "Chưa xác thực" });
+    const targetId = parseInt(req.params.id, 10);
+    if (req.user.role === "ADMIN" || req.user.user_id === targetId) return next();
+    return res.status(403).json({ message: "Không có quyền truy cập dữ liệu này" });
+};
+
+module.exports = {
+    authenticate,
+    optionalAuth,
+    requireRole,
+    requireAdmin,
+    requireAdminOrOperator,
+    requireSelfOrAdmin,
+    VALID_ROLES,
+    VALID_STATUSES,
+};

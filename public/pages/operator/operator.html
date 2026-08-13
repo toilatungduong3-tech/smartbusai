@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <link rel="stylesheet" href="/css/style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Operator Dashboard — SmartBusAI</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
-  --bg:#04080f; --neon:#00ffe0; --neon2:#00a8ff; --purple:#7c5ce7;
-  --amber:#f39c12; --green:#2ecc71; --red:#e74c3c; --pink:#fd79a8;
-  --glass:rgba(255,255,255,0.055); --glass2:rgba(255,255,255,0.10);
-  --border:rgba(255,255,255,0.09); --border2:rgba(255,255,255,0.16);
-  --hh:62px; --text:#e8f4f8; --text2:rgba(255,255,255,.52); --text3:rgba(255,255,255,.30);
+  --bg:#0d1326; --neon:#6366f1; --neon2:#818cf8; --purple:#2563eb;
+  --amber:#fbbf24; --green:#34d399; --red:#fb7185; --pink:#f472b6;
+  --glass:rgba(255,255,255,0.05); --glass2:rgba(255,255,255,0.09);
+  --border:rgba(50,56,110,0.70); --border2:rgba(82,119,155,0.80);
+  --hh:62px; --text:#f7fafc; --text2:rgba(184,198,217,.80); --text3:rgba(142,163,189,.60);
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
 html{background:var(--bg);min-height:100vh;}
@@ -22,14 +23,14 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 #gc{position:fixed;inset:0;z-index:-3;pointer-events:none;}
 .neb{position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:
-    radial-gradient(ellipse at 10% 18%,rgba(0,255,224,.07) 0%,transparent 40%),
-    radial-gradient(ellipse at 88% 78%,rgba(124,92,231,.08) 0%,transparent 44%),
-    radial-gradient(ellipse at 52% 4%,rgba(0,164,255,.06) 0%,transparent 38%);}
+    radial-gradient(ellipse at 10% 18%,rgba(99,102,241,.07) 0%,transparent 40%),
+    radial-gradient(ellipse at 88% 78%,rgba(0,100,200,.08) 0%,transparent 44%),
+    radial-gradient(ellipse at 52% 4%,rgba(129,140,248,.06) 0%,transparent 38%);}
 .pl1{position:fixed;width:110px;height:110px;top:70px;right:85px;border-radius:50%;z-index:-1;pointer-events:none;
-  background:radial-gradient(circle at 30% 30%,#d0c8ff,#7c5ce7 44%,#1a0a40 78%);
-  box-shadow:0 0 50px rgba(124,92,231,.5),0 0 100px rgba(124,92,231,.18);}
+  background:radial-gradient(circle at 30% 30%,#c8e8ff,#0070c8 44%,#030e28 78%);
+  box-shadow:0 0 50px rgba(0,120,220,.45),0 0 100px rgba(0,184,245,.18);}
 .pl2{position:fixed;width:50px;height:50px;bottom:75px;left:90px;border-radius:50%;z-index:-1;pointer-events:none;
-  background:radial-gradient(circle at 38% 38%,#fff,#00d4ff 52%,#001a33 82%);
+  background:radial-gradient(circle at 38% 38%,#fff,#818cf8 52%,#001a33 82%);
   box-shadow:0 0 32px rgba(0,212,255,.5);animation:pfloat 12s ease-in-out infinite;}
 @keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 .mt{position:fixed;width:2px;height:50px;pointer-events:none;z-index:-1;
@@ -46,18 +47,18 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-bottom:1px solid var(--border);padding:0 32px;}
 .hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
 .hdr-logo-ic{width:34px;height:34px;border-radius:9px;font-size:18px;
-  background:linear-gradient(135deg,#00ffe0,#00a8ff);display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 14px rgba(0,255,224,.38);}
-.hdr-logo-tx{font-size:16px;font-weight:800;background:linear-gradient(90deg,#00ffe0,#7eb8ff);
+  background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px rgba(99,102,241,.38);}
+.hdr-logo-tx{font-size:16px;font-weight:800;background:linear-gradient(90deg,#6366f1,#c4b5fd);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .hdr-sep{width:1px;height:30px;background:var(--border);margin:0 18px;flex-shrink:0;}
-.hdr-role{background:rgba(0,255,224,.10);border:1px solid rgba(0,255,224,.22);
+.hdr-role{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);
   color:var(--neon);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.6px;flex-shrink:0;}
 .hdr-nav{display:flex;align-items:center;gap:4px;margin-left:auto;}
 .hdr-nav a{text-decoration:none;color:var(--text2);font-size:12.5px;font-weight:600;padding:7px 12px;
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
-.hdr-nav a:hover{color:var(--neon);background:rgba(0,255,224,.08);border-color:rgba(0,255,224,.20);}
-.hdr-nav a.active{color:var(--neon);background:rgba(0,255,224,.10);border-color:rgba(0,255,224,.25);}
+.hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.22);}
+.hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
 .hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:15px;transition:background .2s;}
@@ -65,7 +66,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .badge-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--red);border-radius:50%;}
 .op-chip{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);
   border-radius:20px;padding:5px 12px 5px 6px;}
-.op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00a8ff,#00ffe0);
+.op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .op-name{font-size:12px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
@@ -83,10 +84,10 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .pg-head-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .btn{border:none;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;
   font-family:"Segoe UI",Arial,sans-serif;transition:all .22s;display:inline-flex;align-items:center;gap:7px;}
-.btn-primary{background:linear-gradient(135deg,#00ffe0,#00a8ff);color:#04080f;box-shadow:0 0 18px rgba(0,255,224,.30);}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,255,224,.5);}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#818cf8);color:#080e20;box-shadow:0 0 18px rgba(99,102,241,.30);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(99,102,241,.5);}
 .btn-sec{background:var(--glass2);border:1px solid var(--border);color:var(--text2);}
-.btn-sec:hover{color:var(--neon);border-color:rgba(0,255,224,.25);}
+.btn-sec:hover{color:var(--neon);border-color:rgba(99,102,241,.28);}
 
 /* ═══ KPI STRIP ═══ */
 .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px;}
@@ -94,7 +95,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   padding:20px 22px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;cursor:default;}
 .kpi-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
 .kpi-card::before{content:"";position:absolute;inset:0;border-radius:16px;
-  background:linear-gradient(135deg,var(--k-bg,rgba(0,255,224,.04)),transparent 65%);pointer-events:none;}
+  background:linear-gradient(135deg,var(--k-bg,rgba(99,102,241,.04)),transparent 65%);pointer-events:none;}
 .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .kpi-ico{font-size:22px;}
 .kpi-trend{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;}
@@ -139,8 +140,8 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .bdg-full     {background:rgba(243,156,18,.14);color:#f9c858;border:1px solid rgba(243,156,18,.22);}
 .bdg-canceled {background:rgba(231,76,60,.14);color:#e74c3c;border:1px solid rgba(231,76,60,.22);}
 .bdg-paid     {background:rgba(46,204,113,.14);color:#2ecc71;border:1px solid rgba(46,204,113,.22);}
-.bdg-pending  {background:rgba(0,168,255,.14);color:#5dc8ff;border:1px solid rgba(0,168,255,.22);}
-.bdg-available{background:rgba(0,168,255,.14);color:#5dc8ff;border:1px solid rgba(0,168,255,.22);}
+.bdg-pending  {background:rgba(129,140,248,.14);color:#5dc8ff;border:1px solid rgba(129,140,248,.22);}
+.bdg-available{background:rgba(129,140,248,.14);color:#5dc8ff;border:1px solid rgba(129,140,248,.22);}
 .bdg-maintenance{background:rgba(231,76,60,.14);color:#e74c3c;border:1px solid rgba(231,76,60,.22);}
 .sdot{width:6px;height:6px;border-radius:50%;display:inline-block;}
 .sdot-green{background:#2ecc71;box-shadow:0 0 5px #2ecc71;}
@@ -196,7 +197,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   animation:toastIn .3s cubic-bezier(.22,.61,.36,1);min-width:240px;}
 @keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(30px)}}
-.toast.info{background:rgba(0,168,255,.16);border:1px solid rgba(0,168,255,.35);color:#5dc8ff;}
+.toast.info{background:rgba(129,140,248,.16);border:1px solid rgba(129,140,248,.35);color:#5dc8ff;}
 .toast.success{background:rgba(46,204,113,.16);border:1px solid rgba(46,204,113,.35);color:#2ecc71;}
 .toast.error{background:rgba(231,76,60,.16);border:1px solid rgba(231,76,60,.35);color:#e74c3c;}
 
@@ -208,13 +209,13 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(0,255,224,.18);border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,255,224,.32);}
+::-webkit-scrollbar-thumb{background:rgba(99,102,241,.18);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(99,102,241,.32);}
 
 /* KPI top colour stripe */
 .kpi-card::after{
   content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;
-  background:linear-gradient(90deg,var(--k-col,#00ffe0),transparent);opacity:.7;
+  background:linear-gradient(90deg,var(--k-col,#6366f1),transparent);opacity:.7;
 }
 /* KPI shimmer sweep */
 @keyframes kpiShimmer{0%{left:-100%}60%,100%{left:160%}}
@@ -233,26 +234,26 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   font-size:12.5px;font-weight:700;cursor:pointer;border:none;
   font-family:"Segoe UI",Arial,sans-serif;transition:all .22s;text-decoration:none;}
 .qa-btn:hover{transform:translateY(-2px);}
-.qa-trip{background:linear-gradient(135deg,rgba(0,255,224,.15),rgba(0,168,255,.10));
-  border:1px solid rgba(0,255,224,.28);color:var(--neon);}
-.qa-trip:hover{background:linear-gradient(135deg,rgba(0,255,224,.25),rgba(0,168,255,.18));box-shadow:0 4px 16px rgba(0,255,224,.18);}
-.qa-book{background:rgba(0,168,255,.12);border:1px solid rgba(0,168,255,.28);color:#5dc8ff;}
-.qa-book:hover{background:rgba(0,168,255,.22);box-shadow:0 4px 16px rgba(0,168,255,.18);}
-.qa-vehicle{background:rgba(124,92,231,.12);border:1px solid rgba(124,92,231,.28);color:#a29bfe;}
-.qa-vehicle:hover{background:rgba(124,92,231,.22);box-shadow:0 4px 16px rgba(124,92,231,.18);}
+.qa-trip{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(129,140,248,.10));
+  border:1px solid rgba(99,102,241,.28);color:var(--neon);}
+.qa-trip:hover{background:linear-gradient(135deg,rgba(99,102,241,.28),rgba(129,140,248,.18));box-shadow:0 4px 16px rgba(99,102,241,.18);}
+.qa-book{background:rgba(129,140,248,.12);border:1px solid rgba(129,140,248,.28);color:#5dc8ff;}
+.qa-book:hover{background:rgba(129,140,248,.22);box-shadow:0 4px 16px rgba(129,140,248,.18);}
+.qa-vehicle{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.28);color:#818cf8;}
+.qa-vehicle:hover{background:rgba(99,102,241,.22);box-shadow:0 4px 16px rgba(99,102,241,.18);}
 .qa-revenue{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.28);color:#2ecc71;}
 .qa-revenue:hover{background:rgba(46,204,113,.22);box-shadow:0 4px 16px rgba(46,204,113,.18);}
 .qa-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-right:auto;}
 
 /* Gradient heading */
 .pg-gradient-title{
-  background:linear-gradient(90deg,#fff 0%,#00ffe0 50%,#7eb8ff 100%);
+  background:linear-gradient(90deg,#fff 0%,#6366f1 50%,#b4a9fd 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 /* Live clock in subtitle */
 #lastUpdated{
   font-size:13px;color:var(--text2);margin-top:3px;
-  background:linear-gradient(90deg,rgba(0,255,224,.8),rgba(0,168,255,.8));
+  background:linear-gradient(90deg,rgba(99,102,241,.8),rgba(129,140,248,.8));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   font-weight:600;letter-spacing:.2px;
 }
@@ -260,6 +261,9 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .hdr-logo-ic{font-size:20px;}
 </style>
 <script src="/js/api.js"></script>
+<script>
+(function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role!=='OPERATOR'){window.location.replace(u.role==='ADMIN'?'/pages/admin/admin.html':'/pages/passenger/index.html');}})();
+</script>
 </head>
 <body>
 
@@ -323,13 +327,13 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 
   <!-- ═══ KPI ═══ -->
   <div class="kpi-strip">
-    <div class="kpi-card" style="--k-bg:rgba(0,255,224,.05);--k-col:#00ffe0;">
+    <div class="kpi-card" style="--k-bg:rgba(99,102,241,.05);--k-col:#6366f1;">
       <div class="kpi-top"><span class="kpi-ico">💰</span><span class="kpi-trend trend-up" id="revTrend">+0%</span></div>
       <div class="kpi-val" id="todayRevenue">—</div>
       <div class="kpi-label">Doanh thu hôm nay</div>
       <div class="kpi-sub" id="revSub">—</div>
     </div>
-    <div class="kpi-card" style="--k-bg:rgba(0,168,255,.05);--k-col:#5dc8ff;">
+    <div class="kpi-card" style="--k-bg:rgba(129,140,248,.05);--k-col:#5dc8ff;">
       <div class="kpi-top"><span class="kpi-ico">🎫</span><span class="kpi-trend trend-up" id="bkTrend">+0%</span></div>
       <div class="kpi-val" id="todayBookings">—</div>
       <div class="kpi-label">Đặt vé hôm nay</div>
@@ -485,7 +489,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
       const x=rng()*cv.width,y=rng()*cv.height,r=rng()*1.4+.15,a=rng()*.7+.2;
       const h=rng()<.11?180:rng()<.07?265:0;
       ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
-      ctx.fillStyle=h===180?`rgba(0,255,224,${a*.5})`:h===265?`rgba(170,148,255,${a*.42})`:`rgba(255,255,255,${a})`;ctx.fill();
+      ctx.fillStyle=h===180?`rgba(99,102,241,${a*.5})`:h===265?`rgba(170,148,255,${a*.42})`:`rgba(255,255,255,${a})`;ctx.fill();
     }
     [{x:.10,y:.18,r:.14,c:"rgba(0,190,255,0.055)"},{x:.78,y:.68,r:.14,c:"rgba(120,75,240,0.065)"}].forEach(s=>{
       const ng=ctx.createRadialGradient(s.x*cv.width,s.y*cv.height,0,s.x*cv.width,s.y*cv.height,s.r*cv.width);
@@ -615,8 +619,8 @@ function buildRevChart(labels,data){
   const ctx=document.getElementById("revenueChart");
   charts.rev=new Chart(ctx,{type:"line",data:{labels,datasets:[{
     label:"Doanh thu (đ)",data,
-    borderColor:"#00ffe0",backgroundColor:"rgba(0,255,224,0.08)",
-    fill:true,tension:0.42,pointBackgroundColor:"#00ffe0",pointRadius:4,pointHoverRadius:6,
+    borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.08)",
+    fill:true,tension:0.42,pointBackgroundColor:"#6366f1",pointRadius:4,pointHoverRadius:6,
     borderWidth:2.5
   }]},options:{
     responsive:true,maintainAspectRatio:false,
@@ -642,7 +646,7 @@ async function loadRoutes(){
 }
 function buildRouteChart(labels,data){
   const ctx=document.getElementById("routeChart");
-  const colors=["rgba(0,255,224,.7)","rgba(0,168,255,.7)","rgba(124,92,231,.7)","rgba(243,156,18,.7)","rgba(46,204,113,.7)","rgba(253,121,168,.7)"];
+  const colors=["rgba(99,102,241,.7)","rgba(129,140,248,.7)","rgba(99,102,241,.7)","rgba(243,156,18,.7)","rgba(46,204,113,.7)","rgba(253,121,168,.7)"];
   charts.route=new Chart(ctx,{type:"bar",data:{labels,datasets:[{
     label:"Số vé",data,
     backgroundColor:colors,borderColor:colors.map(c=>c.replace(".7","1")),borderWidth:1,borderRadius:6
@@ -671,7 +675,7 @@ function buildBkStatusChart(data){
     data:{
       labels:["PAID","PENDING","CANCELED"],
       datasets:[{data,
-        backgroundColor:["rgba(46,204,113,.7)","rgba(0,168,255,.7)","rgba(231,76,60,.7)"],
+        backgroundColor:["rgba(46,204,113,.7)","rgba(129,140,248,.7)","rgba(231,76,60,.7)"],
         borderColor:["#2ecc71","#5dc8ff","#e74c3c"],borderWidth:1.5,hoverOffset:6
       }]
     },
@@ -744,7 +748,7 @@ function renderTrips(data){
     <td style="color:var(--text2);font-size:12px;">${fmtDate(t.departure_time)}</td>
     <td>
       <div class="progress-wrap" style="gap:6px;">
-        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${t.total_seats?Math.round((t.total_seats-t.available_seats)/t.total_seats*100):0}%;background:linear-gradient(90deg,#00ffe0,#00a8ff);"></div></div>
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${t.total_seats?Math.round((t.total_seats-t.available_seats)/t.total_seats*100):0}%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div>
         <span style="font-size:11.5px;color:var(--text2);">${t.available_seats??0}</span>
       </div>
     </td>

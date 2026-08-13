@@ -299,7 +299,74 @@ exports.refreshToken = async (req, res) => {
 // Server chỉ trả về success, client tự xóa token
 // =================================
 exports.logout = (req, res) => {
-    // Với JWT stateless, logout chỉ cần client xóa token
-    // Server không cần làm gì thêm (trừ khi dùng token blacklist)
     return res.json({ message: "Đăng xuất thành công" });
+};
+
+// =================================
+// GOOGLE OAUTH
+// POST /api/auth/google
+// Nhận { credential } từ Google Identity Services
+// Tạo/tìm tài khoản, trả về JWT của hệ thống
+// =================================
+exports.googleAuth = async (req, res) => {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ message: "Thiếu Google credential" });
+
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID_HERE") {
+        return res.status(503).json({ message: "Google OAuth chưa được cấu hình trên server" });
+    }
+
+    try {
+        const { OAuth2Client } = require("google-auth-library");
+        const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const { email, name, picture, sub: googleId } = payload;
+
+        // Tìm user theo email
+        const [rows] = await db.query(
+            "SELECT user_id, full_name, email, role, status FROM users WHERE email = ?",
+            [email]
+        );
+
+        let user;
+        if (rows.length > 0) {
+            user = rows[0];
+            if (user.status === "BANNED") {
+                return res.status(403).json({ message: "Tài khoản đã bị khoá" });
+            }
+        } else {
+            // Tạo tài khoản mới với role PASSENGER
+            const username = email.split("@")[0].replace(/[^a-z0-9]/gi, "") + "_gg";
+            const [result] = await db.query(
+                `INSERT INTO users (username, full_name, email, password_hash, role)
+                 VALUES (?, ?, ?, ?, 'PASSENGER')`,
+                [username, name || email, email, `google:${googleId}`]
+            );
+            user = { user_id: result.insertId, full_name: name, email, role: "PASSENGER" };
+        }
+
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        return res.json({
+            message: "Đăng nhập Google thành công",
+            user: {
+                user_id:  user.user_id,
+                full_name: user.full_name,
+                email:    user.email,
+                role:     user.role,
+                operator_id: null,
+                operator_name: null,
+            },
+            accessToken,
+            refreshToken,
+        });
+    } catch (err) {
+        console.error("Google auth error:", err.message);
+        return res.status(401).json({ message: "Google token không hợp lệ hoặc đã hết hạn" });
+    }
 };

@@ -146,18 +146,30 @@ exports.getPopularTransfers = async (req, res) => {
 ═══════════════════════════════════════════════════ */
 exports.getSuggestions = async (req, res) => {
     const q = (req.query.q || '').trim();
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit, 10) || 10));
     if (q.length < 1) return res.json([]);
     try {
+        /* Ưu tiên bảng location nếu tồn tại (US-201) */
         const [rows] = await db.query(`
-            SELECT city FROM (
-                SELECT DISTINCT origin AS city FROM route WHERE origin LIKE ?
+            SELECT name AS city FROM (
+                SELECT DISTINCT name FROM location WHERE status='ACTIVE' AND name LIKE ?
                 UNION
-                SELECT DISTINCT destination AS city FROM route WHERE destination LIKE ?
+                SELECT DISTINCT origin AS name FROM route WHERE origin LIKE ?
+                UNION
+                SELECT DISTINCT destination AS name FROM route WHERE destination LIKE ?
             ) t
             ORDER BY city
-            LIMIT 10
-        `, [`%${q}%`, `%${q}%`]);
-        return res.json(rows.map(r => r.city));
+            LIMIT ?
+        `, [`%${q}%`, `%${q}%`, `%${q}%`, limit]).catch(() =>
+            db.query(`
+                SELECT city FROM (
+                    SELECT DISTINCT origin AS city FROM route WHERE origin LIKE ?
+                    UNION
+                    SELECT DISTINCT destination AS city FROM route WHERE destination LIKE ?
+                ) t ORDER BY city LIMIT ?
+            `, [`%${q}%`, `%${q}%`, limit])
+        );
+        return res.json((rows || []).map(r => r.city || r.name).filter(Boolean));
     } catch (err) {
         return res.status(500).json([]);
     }

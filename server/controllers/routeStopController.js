@@ -30,11 +30,14 @@ exports.getStopsByRoute = async (req, res) => {
 ═══════════════════════════════════════════════════ */
 exports.getNearestStops = async (req, res) => {
     const { lat, lng, route_id, type } = req.query;
-    const userLat = parseFloat(lat);
-    const userLng = parseFloat(lng);
+    const rawLat = req.query.lat, rawLng = req.query.lng;
+    const userLat = parseFloat(rawLat);
+    const userLng = parseFloat(rawLng);
 
-    if (isNaN(userLat) || isNaN(userLng)) {
-        return res.status(400).json({ message: 'Thiếu hoặc sai toạ độ lat/lng' });
+    if (rawLat === undefined || rawLng === undefined || isNaN(userLat) || isNaN(userLng)
+        || !isFinite(userLat) || !isFinite(userLng)
+        || userLat < -90 || userLat > 90 || userLng < -180 || userLng > 180) {
+        return res.status(400).json({ message: 'Thiếu hoặc sai toạ độ lat/lng (lat:[-90,90], lng:[-180,180])' });
     }
 
     try {
@@ -77,7 +80,9 @@ exports.getNearestStops = async (req, res) => {
             distance_km: Math.round(haversine(userLat, userLng, parseFloat(s.lat), parseFloat(s.lng)) * 10) / 10
         })).sort((a, b) => a.distance_km - b.distance_km);
 
-        return res.json(withDist.slice(0, 10));
+        const limitParam = parseInt(req.query.limit, 10);
+        const limit = isNaN(limitParam) ? 10 : Math.min(20, Math.max(1, limitParam));
+        return res.json(withDist.slice(0, limit));
     } catch (err) {
         console.error('[routeStop] getNearestStops:', err);
         return res.status(500).json({ message: 'DB error' });
@@ -89,15 +94,40 @@ exports.getNearestStops = async (req, res) => {
 ═══════════════════════════════════════════════════ */
 exports.createStop = async (req, res) => {
     const { route_id, stop_name, stop_type, address, lat, lng, stop_order } = req.body;
-    if (!route_id || !stop_name) {
+    if (!route_id || !stop_name?.trim()) {
         return res.status(400).json({ message: 'Thiếu route_id hoặc stop_name' });
     }
+    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH']);
+    if (stop_type && !VALID_TYPE.has(stop_type)) {
+        return res.status(422).json({ message: `stop_type phải là: ${[...VALID_TYPE].join(', ')}` });
+    }
+    if (lat !== undefined && lat !== null && lat !== '') {
+        const v = Number(lat);
+        if (isNaN(v) || !isFinite(v) || v < -90 || v > 90) {
+            return res.status(422).json({ message: 'lat phải trong [-90, 90]' });
+        }
+    }
+    if (lng !== undefined && lng !== null && lng !== '') {
+        const v = Number(lng);
+        if (isNaN(v) || !isFinite(v) || v < -180 || v > 180) {
+            return res.status(422).json({ message: 'lng phải trong [-180, 180]' });
+        }
+    }
+    const order = stop_order !== undefined ? parseInt(stop_order, 10) : 0;
+    if (isNaN(order) || order < 0) {
+        return res.status(422).json({ message: 'stop_order phải là số nguyên không âm' });
+    }
     try {
+        const [[routeExists]] = await db.query('SELECT route_id FROM route WHERE route_id=?', [route_id]);
+        if (!routeExists) return res.status(404).json({ message: 'route_id không tồn tại' });
+
+        const latVal = (lat !== undefined && lat !== null && lat !== '') ? Number(lat) : null;
+        const lngVal = (lng !== undefined && lng !== null && lng !== '') ? Number(lng) : null;
+
         const [r] = await db.query(`
             INSERT INTO route_stop (route_id, stop_name, stop_type, address, lat, lng, stop_order)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [route_id, stop_name, stop_type || 'BOTH', address || null,
-            lat || null, lng || null, stop_order || 0]);
+        `, [route_id, stop_name.trim(), stop_type || 'BOTH', address || null, latVal, lngVal, order]);
         return res.status(201).json({ message: 'Tạo điểm dừng thành công', stop_id: r.insertId });
     } catch (err) {
         console.error('[routeStop] createStop:', err);
@@ -111,11 +141,31 @@ exports.createStop = async (req, res) => {
 exports.updateStop = async (req, res) => {
     const { id } = req.params;
     const { stop_name, stop_type, address, lat, lng, stop_order, is_active } = req.body;
+
+    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH']);
+    if (stop_type && !VALID_TYPE.has(stop_type)) {
+        return res.status(422).json({ message: `stop_type phải là: ${[...VALID_TYPE].join(', ')}` });
+    }
+    if (lat !== undefined && lat !== null && lat !== '') {
+        const v = Number(lat);
+        if (isNaN(v) || !isFinite(v) || v < -90 || v > 90) {
+            return res.status(422).json({ message: 'lat phải trong [-90, 90]' });
+        }
+    }
+    if (lng !== undefined && lng !== null && lng !== '') {
+        const v = Number(lng);
+        if (isNaN(v) || !isFinite(v) || v < -180 || v > 180) {
+            return res.status(422).json({ message: 'lng phải trong [-180, 180]' });
+        }
+    }
+    const latVal = (lat !== undefined && lat !== null && lat !== '') ? Number(lat) : null;
+    const lngVal = (lng !== undefined && lng !== null && lng !== '') ? Number(lng) : null;
+
     try {
         await db.query(`
             UPDATE route_stop SET stop_name=?, stop_type=?, address=?, lat=?, lng=?, stop_order=?, is_active=?
             WHERE stop_id=?
-        `, [stop_name, stop_type, address, lat, lng, stop_order, is_active ?? 1, id]);
+        `, [stop_name, stop_type, address, latVal, lngVal, stop_order ?? 0, is_active ?? 1, id]);
         return res.json({ message: 'Cập nhật thành công' });
     } catch (err) {
         console.error('[routeStop] updateStop:', err);
