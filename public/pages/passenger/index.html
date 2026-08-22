@@ -9,6 +9,7 @@
 <title>SmartBusAI - Hệ thống đặt vé xe thông minh</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#6366f1">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SmartBusAI">
@@ -108,26 +109,18 @@ header{
   background:linear-gradient(90deg,#6366f1,#c4b5fd);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
-.nav-links{ display:flex; align-items:center; gap:4px; }
+.nav-links{ display:flex; align-items:center; gap:6px; }
 .nav-links a{
   text-decoration:none; color:rgba(220,235,255,0.62);
-  font-weight:600; font-size:13px; padding:7px 14px; border-radius:10px;
+  font-weight:600; font-size:13px; padding:8px 15px; border-radius:10px;
   border:1px solid transparent; transition:all .18s;
   display:flex; align-items:center; gap:5px;
 }
 .nav-links a:hover{ color:#6366f1; background:rgba(99,102,241,.07); border-color:rgba(99,102,241,.20); }
 .nav-links a.active{ color:#818cf8; background:rgba(0,212,255,.10); border-color:rgba(0,212,255,.25); font-weight:700; }
-.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; overflow:visible !important;min-width:0;}
 .nav-greeting{ font-size:13px; color:rgba(185,210,230,0.68); font-weight:500; white-space:nowrap; }
 .nav-greeting .nav-uname{ font-weight:800; color:#daf0f8; }
-.btn-logout{
-  background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
-  color:#e74c3c; padding:7px 15px; border-radius:9px;
-  font-weight:700; font-size:12.5px; cursor:pointer;
-  transition:all .20s; font-family:inherit; white-space:nowrap;
-}
-.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; border-color:rgba(231,76,60,.50); }
-
 /* ============================================================
    HERO SLIDER — TRANSPARENT, galaxy canvas xuyên qua
 ============================================================ */
@@ -580,6 +573,25 @@ header{
 .tc-status.open{ background:rgba(46,204,113,.15); color:#2ecc71; border:1px solid rgba(46,204,113,.28); }
 .tc-status.full{ background:rgba(231,76,60,.15);  color:#e74c3c; border:1px solid rgba(231,76,60,.28); }
 .tc-rating{ font-size:12px; font-weight:700; color:#f1c40f; display:flex; align-items:center; gap:3px; }
+
+/* AI Match Score badge (Sprint 11) */
+.tc-ai-badge{
+  padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:800; letter-spacing:.2px;
+  background:linear-gradient(135deg,rgba(0,229,212,.18),rgba(99,102,241,.18));
+  border:1px solid rgba(0,229,212,.38); color:#5eead4; cursor:pointer;
+  transition:box-shadow .18s,border-color .18s;
+}
+.tc-ai-badge:hover{ border-color:rgba(0,229,212,.65); box-shadow:0 0 12px rgba(0,229,212,.20); }
+.tc-ai-popover{
+  z-index:6000; background:linear-gradient(150deg,rgba(8,20,44,.98),rgba(4,12,30,.98));
+  border:1px solid rgba(0,229,212,.30); border-radius:12px; padding:12px 14px;
+  box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(0,229,212,.12);
+  animation:aiPopIn .18s ease;
+}
+@keyframes aiPopIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.tc-ai-pop-head{ font-size:12.5px; font-weight:800; color:#5eead4; margin-bottom:6px; }
+.tc-ai-pop-reason{ font-size:12px; font-weight:700; color:#e8f4fb; margin-bottom:4px; line-height:1.5; }
+.tc-ai-pop-detail{ font-size:11px; color:rgba(255,255,255,.55); line-height:1.5; }
 
 /* countdown badge */
 .tc-cdwn{
@@ -1822,6 +1834,94 @@ nav a.ai-highlight{
 #scrollTopBtn:hover{background:rgba(99,102,241,.25);transform:translateY(-3px);box-shadow:0 8px 22px rgba(99,102,241,.25);}
 #scrollTopBtn.visible{display:flex;}
 
+/* ══════════════════════════════════════════
+   Sprint 4 — AI Booking Concierge widget
+   Color hierarchy: primary brand accent stays the site's established
+   indigo/violet gradient (#6366f1 -> #8b5cf6, already used for every
+   other "AI"-branded surface on this page, e.g. #aiRecoSection); the
+   secondary/CTA accent is the teal-green (#34d399) already used
+   throughout this page for "available/positive" states (seat
+   availability, price tiers) — reused here for the booking CTA so it
+   reads as an action color, not a re-invented palette clashing with the
+   rest of the site. WCAG AA: body text on the dark panel is
+   rgba(255,255,255,.82)+ against a #060d1a-family background — 60-30-10:
+   ~60% neutral dark surface, ~30% neutral text/border, ~10% accent (the
+   two colors above, used sparingly for icons/CTAs/badges only). ── */
+#conciergeFab{
+  position:fixed;bottom:26px;right:26px;width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;cursor:pointer;
+  z-index:1200;display:flex;align-items:center;justify-content:center;font-size:26px;
+  box-shadow:0 6px 24px rgba(99,102,241,.45);transition:transform .22s,box-shadow .22s;
+}
+#conciergeFab:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 10px 30px rgba(99,102,241,.55);}
+#conciergeFab .cf-badge{
+  position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;
+  background:#34d399;border:2px solid #060d1a;
+  animation:cfPulse 2s ease-in-out infinite;
+}
+@keyframes cfPulse{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.55);}50%{box-shadow:0 0 0 6px rgba(52,211,153,0);}}
+
+#conciergePanel{
+  position:fixed;bottom:96px;right:26px;width:min(380px,92vw);height:min(560px,72vh);
+  background:linear-gradient(180deg,#0a1220,#060d1a);border:1px solid rgba(99,102,241,.28);
+  border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.55);z-index:1199;
+  display:none;flex-direction:column;overflow:hidden;
+  animation:cfSlideUp .22s cubic-bezier(.34,1.56,.64,1);
+}
+#conciergePanel.open{display:flex;}
+@keyframes cfSlideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+.cf-header{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(99,102,241,.16),rgba(139,92,246,.10));
+  border-bottom:1px solid rgba(99,102,241,.20);flex-shrink:0;
+}
+.cf-header-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 0 14px rgba(99,102,241,.4);}
+.cf-header-title{font-size:14px;font-weight:800;color:#f1f5f9;line-height:1.2;}
+.cf-header-sub{font-size:10.5px;color:rgba(255,255,255,.45);margin-top:1px;}
+.cf-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.45);font-size:20px;cursor:pointer;
+  width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cf-close:hover{background:rgba(255,255,255,.08);color:#fff;}
+
+.cf-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.cf-msg{max-width:88%;font-size:12.5px;line-height:1.55;border-radius:14px;padding:10px 13px;white-space:pre-wrap;word-break:break-word;}
+.cf-msg.user{align-self:flex-end;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-bottom-right-radius:4px;}
+.cf-msg.ai{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.85);border-bottom-left-radius:4px;}
+.cf-msg.ai b{color:#a5b4fc;}
+
+.cf-thinking{align-self:flex-start;display:flex;gap:4px;padding:10px 14px;background:rgba(255,255,255,.06);border-radius:14px;border-bottom-left-radius:4px;}
+.cf-thinking span{width:6px;height:6px;border-radius:50%;background:#a5b4fc;animation:cfBounce 1.1s ease-in-out infinite;}
+.cf-thinking span:nth-child(2){animation-delay:.15s;}
+.cf-thinking span:nth-child(3){animation-delay:.3s;}
+@keyframes cfBounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+
+.cf-cards{display:flex;flex-direction:column;gap:8px;margin-top:2px;max-width:100%;}
+.cf-card{background:rgba(255,255,255,.04);border:1px solid rgba(99,102,241,.18);border-radius:12px;padding:10px 12px;transition:border-color .15s;}
+.cf-card:hover{border-color:rgba(99,102,241,.4);}
+.cf-card-route{font-size:12px;font-weight:800;color:#e2e8f0;margin-bottom:4px;}
+.cf-card-meta{font-size:10.5px;color:rgba(255,255,255,.5);display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.cf-card-meta b{color:#34d399;}
+.cf-card-btn{width:100%;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.35);color:#34d399;
+  border-radius:9px;padding:7px 0;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;}
+.cf-card-btn:hover{background:rgba(52,211,153,.26);}
+
+.cf-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.cf-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:11px;
+  padding:9px 13px;color:#f1f5f9;font-size:12.5px;font-family:inherit;outline:none;transition:border-color .15s;}
+.cf-input:focus{border-color:rgba(99,102,241,.5);}
+.cf-input::placeholder{color:rgba(255,255,255,.32);}
+.cf-send{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:transform .15s;}
+.cf-send:hover{transform:scale(1.06);}
+.cf-send:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+@media (max-width:480px){
+  #conciergePanel{right:10px;bottom:86px;width:calc(100vw - 20px);height:min(70vh,520px);}
+  #conciergeFab{right:16px;bottom:16px;}
+}
+
 /* ── TIME FILTER BAR ── */
 .time-filter-bar{
   width:min(1100px,94vw);margin:18px auto 0;
@@ -2214,12 +2314,34 @@ nav a.ai-highlight{
   .hero-desc{ font-size:14px; }
 }
 </style>
-<!-- Leaflet: non-blocking CSS load + deferred JS (only needed for transit map) -->
+<!-- Leaflet: Sprint 4 perf hardening — was unconditionally fetched (CSS+JS)
+     on every single homepage visit even though most visitors never open a
+     route/transit map. Now genuinely lazy: _ensureLeaflet() (below) injects
+     the stylesheet+script on first actual use, called from
+     _startLeafletMap()/openTransitMap() before either touches `L`. -->
 <link rel="preconnect" href="https://unpkg.com">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script>
+let _leafletLoadPromise = null;
+function _ensureLeaflet(){
+  if(window.L) return Promise.resolve();
+  if(_leafletLoadPromise) return _leafletLoadPromise;
+  _leafletLoadPromise = new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => resolve();
+    script.onerror = () => { _leafletLoadPromise = null; reject(new Error('Không thể tải bản đồ')); };
+    document.head.appendChild(script);
+  });
+  return _leafletLoadPromise;
+}
+</script>
 <script src="/js/api.js"></script>
+<script src="/js/legalModal.js"></script>
+<script src="/js/routeInference.js"></script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u)return;if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');}})();
 </script>
@@ -2370,11 +2492,10 @@ nav a.ai-highlight{
     <a href="nha-xe.html">🚌 Nhà xe</a>
     <a href="booking.html">🎫 Đặt vé</a>
     <a href="profile.html">👤 Tài khoản</a>
-    <a href="hotro.html">🛟 Hỗ trợ</a>
+    <a href="hotro.html">🎧 Hỗ trợ</a>
   </nav>
   <div class="nav-right">
-    <div class="nav-greeting">Xin chào, <span class="nav-uname" id="headerUserName">Khách</span></div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -2770,6 +2891,15 @@ nav a.ai-highlight{
   <span class="tf-chip" onclick="setTimeFilter('18-24',this)">🌃 Tối (18–24h)</span>
 </div>
 
+<!-- ═══ PRICE FILTER (server-side) ═══ -->
+<div class="time-filter-bar">
+  <span class="tf-lbl">💰 Giá vé:</span>
+  <span class="tf-chip pf-chip active" onclick="setPriceFilter(null,null,this)">🌐 Tất cả</span>
+  <span class="tf-chip pf-chip" onclick="setPriceFilter(null,100000,this)">Dưới 100.000đ</span>
+  <span class="tf-chip pf-chip" onclick="setPriceFilter(100000,200000,this)">100.000–200.000đ</span>
+  <span class="tf-chip pf-chip" onclick="setPriceFilter(200000,null,this)">Trên 200.000đ</span>
+</div>
+
 <!-- ═══ TRIP LIST ═══ -->
 <div class="container">
   <div class="container-header">
@@ -2960,15 +3090,15 @@ nav a.ai-highlight{
         <a href="index.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🏠 Trang chủ</a>
         <a href="booking.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🎫 Đặt vé xe</a>
         <a href="profile.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'">👤 Tài khoản</a>
-        <a href="hotro.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🛟 Hỗ trợ</a>
+        <a href="hotro.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;display:flex;align-items:center;gap:7px;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'">🎧 Hỗ trợ</a>
       </div>
     </div>
     <div>
       <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.40);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:14px;">Chính sách</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">📋 Điều khoản sử dụng</span>
-        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">🔒 Chính sách bảo mật</span>
-        <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">💳 Hoàn vé & đổi vé</span>
+        <a href="/pages/legal/terms-of-service.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'" onclick="openLegalModal('terms');return false;">📋 Điều khoản sử dụng</a>
+        <a href="/pages/legal/privacy-policy.html" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'" onclick="openLegalModal('privacy');return false;">🔒 Chính sách bảo mật</a>
+        <a href="/pages/legal/terms-of-service.html#refund" style="color:rgba(255,255,255,.52);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;" onmouseover="this.style.color='#6366f1'" onmouseout="this.style.color='rgba(255,255,255,.52)'" onclick="openLegalModal('terms','refund');return false;">💳 Hoàn vé & đổi vé</a>
         <span style="color:rgba(255,255,255,.38);font-size:13px;font-weight:500;cursor:default;">🛡️ Bảo hiểm hành khách</span>
       </div>
     </div>
@@ -3036,11 +3166,11 @@ document.addEventListener("click",e=>{
 /* ── UTILS ── */
 function fmt(v){ if(!v) return "0 VNĐ"; return Number(v).toLocaleString("vi-VN")+" VNĐ"; }
 function fmtT(s){ if(!s) return "—"; const d=new Date(s); return d.toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
-function logout(){ localStorage.clear(); window.location.href="../auth/login.html"; }
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 
 /* ── Header username ── */
 (function(){
-  try{ const u=JSON.parse(localStorage.getItem("user")); if(u?.full_name) document.getElementById("headerUserName").textContent=u.full_name; }catch{}
+  try{ if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile"); }catch{}
 })();
 
 /* ── COUNTER + LIVE FLUCTUATION ── */
@@ -3130,8 +3260,8 @@ function toggleFeature(box){
 /* ── REVIEW SLIDER ── */
 const revEls=[...document.querySelectorAll(".review")];
 let revIdx=0;
-function nextRev(){ revEls[revIdx].classList.remove("active"); revIdx=(revIdx+1)%revEls.length; revEls[revIdx].classList.add("active"); }
-setInterval(nextRev,3800);
+function nextRev(){ if(!revEls.length) return; revEls[revIdx].classList.remove("active"); revIdx=(revIdx+1)%revEls.length; revEls[revIdx].classList.add("active"); }
+if(revEls.length) setInterval(nextRev,3800);
 
 /* ── SEARCH STATE (used by chatbot + AI booking) ── */
 let _searchDone=false;
@@ -3160,8 +3290,19 @@ async function searchTrips(){
   const o=resolveSearchTerm(document.getElementById("origin").value.trim());
   const d=resolveSearchTerm(document.getElementById("destination").value.trim());
   const dt=document.getElementById("date").value;
-  const bt=document.getElementById("busType").value;
-  const sp=document.getElementById("sortPrice").value;
+  /* Phase 2 fix: these used to read from a pair of hidden, dead <select>
+     elements (#busType/#sortPrice) that setBusTypeFilter()/setSortFilter()
+     never actually wrote to — the real, currently-active chip state lives
+     in _busTypeFilter/_sortMode (already used correctly by renderPage()'s
+     client-side filter/sort). The backend's minPrice/maxPrice server-side
+     filtering worked correctly for years; busType/sort silently never did
+     — the server always received bt='' and sp='' regardless of which chip
+     was active, so it never applied the WHERE b.bus_type=? / ORDER BY
+     clause the frontend chip implied; only the client-side re-filter in
+     renderPage() masked this by re-deriving the same visible result from
+     an unnecessarily large, backend-unfiltered/unsorted payload. */
+  const bt=_busTypeFilter;
+  const sp=_sortMode;
 
   // — Per-field validation —
   if(!o && !d){
@@ -3178,8 +3319,20 @@ async function searchTrips(){
     return;
   }
   if(dt){
+    /* Phase 2 hardening: new Date("YYYY-MM-DD") (no time component) parses
+       per the ECMAScript spec as UTC MIDNIGHT, not local midnight — for
+       Vietnam (UTC+7) that's local 07:00 the same day. Comparing that
+       against `today` (correctly local midnight via setHours) happens to
+       still produce the right past/future verdict today only because a
+       +7h shift never crosses a day boundary in this specific date-vs-date
+       comparison — an accidental correctness that depends on the offset
+       being positive and under 24h, not a provable one. Appending a local
+       time-of-day ('T00:00:00', no 'Z') makes both sides unambiguously
+       local, per the time contract established in Phase 1
+       (server/utils/dateTime.js) — matches this codebase's DATETIME
+       convention instead of relying on a coincidence. */
     const today=new Date(); today.setHours(0,0,0,0);
-    if(new Date(dt)<today){ showToast('Ngày đi không thể là ngày quá khứ','warning'); return; }
+    if(new Date(dt+'T00:00:00')<today){ showToast('Ngày đi không thể là ngày quá khứ','warning'); return; }
   }
 
   // — Loading state —
@@ -3196,13 +3349,28 @@ async function searchTrips(){
   _updateSearchContext(null);
 
   try{
+    let priceQS='';
+    if(_minPrice!=null) priceQS+=`&minPrice=${_minPrice}`;
+    if(_maxPrice!=null) priceQS+=`&maxPrice=${_maxPrice}`;
+    /* Personalized Search Ranking (Sprint 11) — passing user_id lets the
+       backend attach ai_match_score/ai_match_reason and re-rank by fit.
+       Guests (no getUserId()) simply omit the param — the API then
+       returns the exact same unranked list/shape as before. */
+    const uid=getUserId&&getUserId();
+    const uidQS=uid?`&user_id=${encodeURIComponent(uid)}`:'';
     const [tripsRes, transitRoutes] = await Promise.all([
-      fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}`),
+      fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}${priceQS}${uidQS}`),
       searchTransit(o, d, dt)
     ]);
+    if(!tripsRes.ok){
+      const errData=await tripsRes.json().catch(()=>({}));
+      showToast(errData.message||'Không thể tìm kiếm chuyến xe','error');
+      _isSearching=false; btn.innerHTML=origBtnHtml; btn.disabled=false;
+      return;
+    }
     const trips=await tripsRes.json();
     renderTrips(trips);
-    renderTransitResults(transitRoutes, 'time');
+    renderTransitResults(transitRoutes.routes, 'time', transitRoutes.failed);
     // Update search state
     _searchDone=true;
     _lastSearchOrigin=o;
@@ -3230,8 +3398,8 @@ function _updateSearchContext(ctx){
   if(!ctx){ if(bar) bar.style.display='none'; return; }
   const h=document.querySelector('.container-header h2');
   if(h){
-    if(ctx.count>0) h.innerHTML=`🚍 <span style="color:#f59e0b">${ctx.count}</span> chuyến: <span style="color:#a5b4fc">${ctx.origin}</span> → <span style="color:#a5b4fc">${ctx.dest}</span>${ctx.date?` · ${new Date(ctx.date+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})}` : ''}`;
-    else h.innerHTML=`🚍 Không tìm thấy chuyến: <span style="color:#a5b4fc">${ctx.origin}</span> → <span style="color:#a5b4fc">${ctx.dest}</span>`;
+    if(ctx.count>0) h.innerHTML=`🚍 <span style="color:#f59e0b">${ctx.count}</span> chuyến: <span style="color:#a5b4fc">${escapeHtml(ctx.origin)}</span> → <span style="color:#a5b4fc">${escapeHtml(ctx.dest)}</span>${ctx.date?` · ${new Date(ctx.date+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})}` : ''}`;
+    else h.innerHTML=`🚍 Không tìm thấy chuyến: <span style="color:#a5b4fc">${escapeHtml(ctx.origin)}</span> → <span style="color:#a5b4fc">${escapeHtml(ctx.dest)}</span>`;
   }
 }
 
@@ -3280,9 +3448,7 @@ function buildTripDesc(t) {
 function renderTrips(trips){
   allTripsData=trips||[];
   currentPage=1;
-  // update badge
-  const badge=document.getElementById("tripCountBadge");
-  if(badge) badge.textContent=allTripsData.length ? allTripsData.length+" chuyến" : "";
+  // tripCountBadge is kept in sync with the (filtered) count inside renderPage() itself
   renderPage();
 }
 
@@ -3312,16 +3478,65 @@ function renderPage(){
       return h>=h1&&h<h2;
     });
   }
-  if(_busTypeFilter) filtered=filtered.filter(t=>t.bus_type===_busTypeFilter);
+  /* Phase 2 fix: bus_type is free-text ("VIP Limousine 16 chỗ", "Giường
+     nằm 34 chỗ", "STANDARD", ...), not the clean NORMAL/VIP/LIMOUSINE the
+     chips imply — exact-match filtered out real buses for every chip
+     except literal "LIMOUSINE". Keyword-matched to mirror the identical
+     fix in tripController.js's searchTrips (server-side). */
+  if(_busTypeFilter==='VIP') filtered=filtered.filter(t=>/VIP/i.test(t.bus_type||''));
+  else if(_busTypeFilter==='LIMOUSINE') filtered=filtered.filter(t=>/LIMOUSINE/i.test(t.bus_type||''));
+  else if(_busTypeFilter==='NORMAL') filtered=filtered.filter(t=>!/VIP|LIMOUSINE/i.test(t.bus_type||''));
+  else if(_busTypeFilter) filtered=filtered.filter(t=>t.bus_type===_busTypeFilter);
+  /* Phase 2 fix: price filter now actually applies here (client-side, on
+     whatever is currently loaded in allTripsData), BEFORE pagination —
+     mirrors how _timeFilter/_busTypeFilter already worked correctly.
+     Numeric comparison against the raw base_price field, never a
+     formatted display string. Applied before the .slice() pagination
+     below, matching this function's existing filter-then-paginate order. */
+  if(_minPrice!=null) filtered=filtered.filter(t=>Number(t.base_price)>=_minPrice);
+  if(_maxPrice!=null) filtered=filtered.filter(t=>Number(t.base_price)<=_maxPrice);
   if(_sortMode==="asc") filtered=[...filtered].sort((a,b)=>Number(a.base_price)-Number(b.base_price));
   else if(_sortMode==="desc") filtered=[...filtered].sort((a,b)=>Number(b.base_price)-Number(a.base_price));
   else if(_sortMode==="dep") filtered=[...filtered].sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time));
   else if(_sortMode==="rating") filtered=[...filtered].sort((a,b)=>Number(b.avg_rating||0)-Number(a.avg_rating||0));
   const total=filtered.length;
+
+  /* Phase 2 fix: the empty-state message above only fired when
+     allTripsData itself was empty. If chip filters (time/bus-type/price)
+     narrow a non-empty allTripsData down to zero matches, execution fell
+     straight through to the pagination/render code below with an empty
+     `paginated` array — the .forEach() loop simply did nothing, leaving
+     list.innerHTML as "" with NO explanation shown to the user (a blank
+     panel, indistinguishable from a stuck loading state). This was latent
+     before this phase (price filtering never actually narrowed anything,
+     so total===0-while-allTripsData-nonempty could barely occur) and is
+     now directly reachable now that price/bus-type filtering actually
+     work — so it must be handled here explicitly. */
+  if(total===0){
+    list.innerHTML=`<div style="text-align:center;padding:55px 20px;">
+      <div style="font-size:56px;margin-bottom:14px;">🔍</div>
+      <p style="font-size:17px;font-weight:800;color:rgba(255,255,255,.75);margin-bottom:8px;">Không có chuyến nào khớp với bộ lọc hiện tại</p>
+      <p style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:20px;">Có ${allTripsData.length} chuyến tất cả — thử nới rộng bộ lọc giá / giờ / loại xe</p>
+      <button onclick="resetTripFilters()" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.30);color:#a5b4fc;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">↺ Xoá bộ lọc</button>
+    </div>`;
+    const badge=document.getElementById("tripCountBadge");
+    if(badge) badge.textContent="0 chuyến";
+    pgWrap.style.display="none";
+    return;
+  }
+
   const totalPages=Math.ceil(total/PAGE_SIZE)||1;
   const start=(currentPage-1)*PAGE_SIZE;
   const end=Math.min(start+PAGE_SIZE,total);
   const paginated=filtered.slice(start,end);
+
+  /* Phase 2 fix: tripCountBadge was only ever set once in renderTrips()
+     with the UNFILTERED count — after applying a chip filter it kept
+     showing the stale total (e.g. still "8184 chuyến" even filtered down
+     to a handful), a "wrong count reported" bug. Keep it in sync with the
+     actual filtered result on every render. */
+  const badge=document.getElementById("tripCountBadge");
+  if(badge) badge.textContent = allTripsData.length ? total+" chuyến" : "";
 
   const frag=document.createDocumentFragment();
   paginated.forEach(t=>{
@@ -3406,6 +3621,15 @@ function renderPage(){
       </div>`;
     }
 
+    /* AI Match Score badge (Sprint 11 — Personalized Search Ranking).
+       Only present when the backend actually computed a score for this
+       trip (a real, logged-in user with enough history) — absent for
+       guests/no-history users, matching the API's own additive-only
+       contract (see server/controllers/tripController.js searchTrips). */
+    const aiBadgeHtml = (t.ai_match_score!=null)
+      ? `<span class="tc-ai-badge" data-ai-reason="${escapeHtml(t.ai_match_reason||'')}" data-ai-detail="${escapeHtml(t.ai_match_detail||'')}" data-ai-score="${t.ai_match_score}" onclick="event.stopPropagation();toggleAiMatchPopover(this)">🤖 ${t.ai_match_score}% Phù hợp</span>`
+      : '';
+
     const card=document.createElement("div");
     card.className="trip-card" + (isVip ? " vip-card" : "");
     card.dataset.tripId=t.trip_id;
@@ -3415,6 +3639,7 @@ function renderPage(){
       <button class="tc-wish-btn" onclick="event.stopPropagation();toggleWishlist(${t.trip_id},this)" title="Lưu yêu thích">${isWished(t.trip_id)?'❤️':'🤍'}</button>
       <div class="tc-left">
         <div class="tc-topbar">
+          ${aiBadgeHtml}
           <span class="tc-badge ${isVip?'vip':'normal'}">${btLabel}</span>
           <span class="tc-price-tier ${priceTier.cls}">${priceTier.lbl}</span>
           <span class="tc-rating">★ ${rat}
@@ -3790,9 +4015,11 @@ async function _loadAISearchInsight(origin, dest){
   if(sbItems) sbItems.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,.35);font-style:italic">Đang phân tích tuyến…</span>';
 
   try{
-    const uid = typeof getUserId==='function' ? getUserId() : null;
-    const url = `/api/ai/search-insight?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}${uid?'&userId='+uid:''}`;
-    const data = await fetch(url).then(r=>r.json());
+    // Phase 2I: server derives the personalization target from the JWT
+    // (optionalAuth) — the old ?userId= query param is no longer trusted.
+    const token = typeof getAccessToken==='function' ? getAccessToken() : null;
+    const url = `/api/ai/search-insight?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}`;
+    const data = await fetch(url, token ? { headers: { Authorization: `Bearer ${token}` } } : {}).then(r=>r.json());
     const insights = data.insights||[];
 
     if(spinner) spinner.style.display='none';
@@ -3824,11 +4051,28 @@ async function _loadAISearchInsight(origin, dest){
 }
 
 /* ── PROVINCE SELECT DROPDOWN ── */
+// Sprint 4 perf: the province list rarely changes, so it's cached in
+// localStorage (24h TTL) to skip the /data/vietnam-location.json request
+// on every repeat visit.
+const PROVINCE_CACHE_KEY = 'sb_provinces_cache_v1';
+const PROVINCE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 (async function initProvSelect(){
   let provinces=[];
   try{
-    const r=await fetch("/data/vietnam-location.json");
-    provinces=Object.keys(await r.json());
+    let cities=null;
+    try{
+      const cached = JSON.parse(localStorage.getItem(PROVINCE_CACHE_KEY) || 'null');
+      if (cached && Array.isArray(cached.cities) && (Date.now() - cached.at) < PROVINCE_CACHE_TTL_MS) {
+        cities = cached.cities;
+      }
+    }catch(e){ /* corrupt cache entry — ignore, fetch fresh below */ }
+
+    if (!cities) {
+      const r=await fetch("/data/vietnam-location.json");
+      cities=Object.keys(await r.json());
+      try{ localStorage.setItem(PROVINCE_CACHE_KEY, JSON.stringify({ cities, at: Date.now() })); }catch(e){ /* storage full/unavailable — non-fatal */ }
+    }
+    provinces = cities;
   // Enrich dropdown with common city names used by bus operators
   const CITY_ALIASES=['Huế','Nha Trang','Đà Lạt','Vũng Tàu','Buôn Ma Thuột',
     'Quy Nhơn','Tuy Hòa','Phan Rang','Phan Thiết','Biên Hòa',
@@ -3935,6 +4179,85 @@ function setBusTypeFilter(type,chip){
   document.querySelectorAll('.sort-filter-bar .sf-chip[data-btype]').forEach(c=>c.classList.remove('active'));
   chip.classList.add('active');
   currentPage=1; renderPage();
+}
+
+/* Phase 2 addition: "Xoá bộ lọc" action shown on the filtered-to-zero
+   empty state — resets every chip-driven filter back to "Tất cả" and
+   re-renders. Mirrors exactly what each individual filter's own reset
+   chip (min=null,max=null / type='' / range='all' / mode='') already does. */
+function resetTripFilters(){
+  _timeFilter="all"; _busTypeFilter=""; _sortMode=""; _minPrice=null; _maxPrice=null;
+  document.querySelectorAll(".tf-chip").forEach(c=>c.classList.remove("active"));
+  const timeAll=document.querySelector('.tf-chip[onclick^="setTimeFilter(\'all\'"]');
+  if(timeAll) timeAll.classList.add("active");
+  const priceAll=document.querySelector('.pf-chip[onclick^="setPriceFilter(null,null"]');
+  if(priceAll) priceAll.classList.add("active");
+  document.querySelectorAll('.sort-filter-bar .sf-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.sort-filter-bar .sf-chip[data-sort=""], .sort-filter-bar .sf-chip[data-btype=""]').forEach(c=>c.classList.add('active'));
+  currentPage=1;
+  renderPage();
+}
+
+/* ── PRICE FILTER ──
+   Phase 2 fix: previously this ONLY re-fetched when _searchDone was true,
+   so on the default homepage trip listing (before any explicit origin/
+   destination search — the most common first interaction) clicking a
+   price chip set _minPrice/_maxPrice and visually activated the chip, but
+   renderPage() never read those variables at all — the displayed list
+   never changed. Root cause of the reported "lọc giá không hoạt động" bug.
+   Fix: always re-render immediately from the currently-loaded data (same
+   client-side pattern already used correctly by _busTypeFilter/_timeFilter
+   in renderPage()), in addition to the existing server-side re-fetch when
+   an explicit search is active (kept — it also refreshes transit results
+   and re-validates against the backend's authoritative filtering). */
+let _minPrice=null, _maxPrice=null;
+function setPriceFilter(min,max,chip){
+  _minPrice=min; _maxPrice=max;
+  document.querySelectorAll('.pf-chip').forEach(c=>c.classList.remove('active'));
+  if(chip) chip.classList.add('active');
+  if(_searchDone){
+    searchTrips();
+  }else{
+    currentPage=1;
+    renderPage();
+  }
+}
+
+/* ── AI MATCH SCORE POPOVER (Sprint 11 — Personalized Search Ranking) ── */
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+let _aiPopoverEl=null;
+function closeAiMatchPopover(){
+  if(_aiPopoverEl){_aiPopoverEl.remove();_aiPopoverEl=null;}
+  document.removeEventListener('click',_aiPopoverOutsideClick,true);
+}
+function _aiPopoverOutsideClick(e){
+  if(_aiPopoverEl && !_aiPopoverEl.contains(e.target)) closeAiMatchPopover();
+}
+function toggleAiMatchPopover(badgeEl){
+  if(_aiPopoverEl && _aiPopoverEl.dataset.forBadge===badgeEl.dataset.aiScore+badgeEl.dataset.aiReason){
+    closeAiMatchPopover();return;
+  }
+  closeAiMatchPopover();
+  const reason=badgeEl.dataset.aiReason;
+  const detail=badgeEl.dataset.aiDetail;
+  const pop=document.createElement('div');
+  pop.className='tc-ai-popover';
+  pop.dataset.forBadge=badgeEl.dataset.aiScore+badgeEl.dataset.aiReason;
+  pop.innerHTML=`
+    <div class="tc-ai-pop-head">🤖 ${badgeEl.dataset.aiScore}% Phù hợp với bạn</div>
+    ${reason?`<div class="tc-ai-pop-reason">${escapeHtml(reason)}</div>`:''}
+    ${detail?`<div class="tc-ai-pop-detail">${escapeHtml(detail)}</div>`:'<div class="tc-ai-pop-detail">Dựa trên lịch sử đặt vé của bạn.</div>'}
+  `;
+  document.body.appendChild(pop);
+  const r=badgeEl.getBoundingClientRect();
+  const popW=Math.min(280,window.innerWidth-24);
+  let left=r.left+window.scrollX;
+  if(left+popW>window.scrollX+window.innerWidth-12) left=window.scrollX+window.innerWidth-popW-12;
+  pop.style.cssText=`position:absolute;top:${r.bottom+window.scrollY+8}px;left:${left}px;width:${popW}px;`;
+  _aiPopoverEl=pop;
+  setTimeout(()=>document.addEventListener('click',_aiPopoverOutsideClick,true),0);
 }
 
 /* ── WISHLIST ── */
@@ -4349,8 +4672,9 @@ async function submitReview(){
   btn.disabled=true;
   btn.innerHTML='<span class="rm-submit-ico">⏳</span><span class="rm-submit-txt">Đang gửi...</span>';
   try{
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     const res=await fetch("/api/reviews",{
-      method:"POST", headers:{"Content-Type":"application/json"},
+      method:"POST", headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},
       body:JSON.stringify({
         user_id:user.user_id, trip_id:curTrip,
         rating:Number(selRating), comment:comment||null,
@@ -5009,7 +5333,7 @@ async function confirmSmartBook(){
   }
 
   function flashLightning(){
-    lc.clearRect(0,0,lc.width,lc.height);
+    lx.clearRect(0,0,lc.width,lc.height);
     // 1-2 bolts per flash
     const n=Math.random()<0.3?2:1;
     for(let b=0;b<n;b++){
@@ -5029,7 +5353,7 @@ async function confirmSmartBook(){
     const fade=setInterval(()=>{
       op-=0.18;
       lc.globalAlpha=Math.max(0,op);
-      if(op<=0){ clearInterval(fade); lc.clearRect(0,0,lc.width,lc.height); lc.globalAlpha=1; }
+      if(op<=0){ clearInterval(fade); lx.clearRect(0,0,lc.width,lc.height); lc.globalAlpha=1; }
     },30);
   }
 
@@ -5212,6 +5536,7 @@ async function confirmSmartBook(){
           <span>📍 Lộ trình</span>
           <span class="rte-sidebar-badge" id="rteStopCount2"></span>
         </div>
+        <div id="rteDataProvenance" style="font-size:10.5px;line-height:1.5;color:#94a3b8;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:6px 10px;margin:0 0 8px;"></div>
         <div class="rte-timeline" id="rteTimeline">
           <!-- built by JS -->
         </div>
@@ -5725,12 +6050,20 @@ function _closestWptIdx(hwyPts,geo){
 // backward compat
 function _closestQL1AIdx(geo){ return _closestWptIdx(QL1A_WAYPOINTS,geo); }
 
+/* Route-forensics fix: previously returned a bare array of points with no
+   way to tell a real highway-snapped segment from a straight-line
+   fallback — the map rendered both identically, silently implying the
+   straight line was road-following geometry. Still returns an array
+   (so the existing Leaflet/catmull-rom drawing code needs no rewrite),
+   but the array now also carries a non-index `hasFallback` property the
+   caller can check to show an honest "estimated geometry" indicator. */
 function buildRoadRoute(stops){
-  if(stops.length<2) return stops.map(s=>s.geo);
+  if(stops.length<2){ const r=stops.map(s=>s.geo); r.hasFallback=false; return r; }
   const result=[];
+  let hasFallback=false;
   for(let i=0;i<stops.length-1;i++){
     const fG=stops[i].geo, tG=stops[i+1].geo;
-    if(!fG[0]||!tG[0]){if(i===0)result.push(fG);result.push(tG);continue;}
+    if(!fG[0]||!tG[0]){if(i===0)result.push(fG);result.push(tG);hasFallback=true;continue;}
     // Tìm highway tốt nhất cho đoạn này
     let bestHwy=null, bestPts=null, bestScore=Infinity, bestFIdx=0, bestTIdx=0;
     for(const [hwyName,hwyPts] of Object.entries(HIGHWAY_DB)){
@@ -5751,49 +6084,18 @@ function buildRoadRoute(stops){
     } else {
       if(i===0) result.push(fG);
       result.push(tG);
+      hasFallback=true;
     }
   }
+  result.hasFallback=hasFallback;
   return result;
 }
 
-/* ── Highway 1 spine (North→South) ── */
-const HWY1=['Hà Nội','Hà Nam','Nam Định','Ninh Bình','Thanh Hóa',
-  'Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế',
-  'Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên',
-  'Khánh Hòa','Ninh Thuận','Bình Thuận','Đồng Nai','TP.HCM'];
-
-/* ── Known routes ── */
-const ROUTE_DB={
-  'hà nội|hải phòng':['Hà Nội','Hưng Yên','Hải Dương','Hải Phòng'],
-  'hải phòng|hà nội':['Hải Phòng','Hải Dương','Hưng Yên','Hà Nội'],
-  'hà nội|quảng ninh':['Hà Nội','Bắc Giang','Quảng Ninh'],
-  'hà nội|đà nẵng':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế','Đà Nẵng'],
-  'hà nội|huế':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Huế'],
-  'hà nội|tp.hcm':['Hà Nội','Thanh Hóa','Nghệ An','Quảng Bình','Huế','Đà Nẵng','Bình Định','Khánh Hòa','Bình Thuận','Đồng Nai','TP.HCM'],
-  'hà nội|hồ chí minh':['Hà Nội','Thanh Hóa','Nghệ An','Quảng Bình','Huế','Đà Nẵng','Bình Định','Khánh Hòa','Bình Thuận','Đồng Nai','TP.HCM'],
-  'tp.hcm|hà nội':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Bình Định','Đà Nẵng','Huế','Quảng Bình','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
-  'hồ chí minh|hà nội':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Bình Định','Đà Nẵng','Huế','Quảng Bình','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
-  'tp.hcm|đà nẵng':['TP.HCM','Đồng Nai','Bình Thuận','Khánh Hòa','Phú Yên','Bình Định','Quảng Ngãi','Quảng Nam','Đà Nẵng'],
-  'đà nẵng|tp.hcm':['Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Ninh Thuận','Bình Thuận','Đồng Nai','TP.HCM'],
-  'đà nẵng|hà nội':['Đà Nẵng','Huế','Quảng Trị','Quảng Bình','Hà Tĩnh','Nghệ An','Thanh Hóa','Ninh Bình','Hà Nội'],
-  'hà nội|vinh':['Hà Nội','Hà Nam','Ninh Bình','Thanh Hóa','Vinh'],
-  'vinh|hà nội':['Vinh','Thanh Hóa','Ninh Bình','Hà Nam','Hà Nội'],
-  'tp.hcm|đà lạt':['TP.HCM','Đồng Nai','Lâm Đồng','Đà Lạt'],
-  'đà lạt|tp.hcm':['Đà Lạt','Lâm Đồng','Đồng Nai','TP.HCM'],
-  'tp.hcm|cần thơ':['TP.HCM','Long An','Tiền Giang','Vĩnh Long','Cần Thơ'],
-  'cần thơ|tp.hcm':['Cần Thơ','Vĩnh Long','Tiền Giang','Long An','TP.HCM'],
-  'tp.hcm|nha trang':['TP.HCM','Đồng Nai','Bình Thuận','Nha Trang'],
-  'nha trang|tp.hcm':['Nha Trang','Bình Thuận','Đồng Nai','TP.HCM'],
-  'hà nội|nha trang':['Hà Nội','Ninh Bình','Thanh Hóa','Nghệ An','Huế','Đà Nẵng','Quảng Ngãi','Bình Định','Phú Yên','Nha Trang'],
-  'tp.hcm|buôn ma thuột':['TP.HCM','Đồng Nai','Lâm Đồng','Buôn Ma Thuột'],
-  'hà nội|buôn ma thuột':['Hà Nội','Thanh Hóa','Nghệ An','Huế','Đà Nẵng','Gia Lai','Buôn Ma Thuột'],
-  'tp.hcm|phan thiết':['TP.HCM','Đồng Nai','Phan Thiết'],
-  'hà nội|ninh bình':['Hà Nội','Hà Nam','Ninh Bình'],
-  'hà nội|nam định':['Hà Nội','Hà Nam','Nam Định'],
-  'hà nội|hải dương':['Hà Nội','Hưng Yên','Hải Dương'],
-};
-
-function normP(s){ return (s||'').toLowerCase().trim().replace(/thành phố\s*/,'').replace(/tỉnh\s*/,'').replace(/tp\.\s*/,'tp.').replace(/hcm|hồ chí minh/,'tp.hcm').replace('tp.tp.hcm','tp.hcm'); }
+/* HWY1 / ROUTE_DB / normP / inferRoute now live in /js/routeInference.js
+   (route-forensics fix — extracted so the logic is testable under Jest;
+   see tests/route_visualization_forensic_audit.md). Loaded as a plain
+   global-scope <script> above, so HWY1/ROUTE_DB/normP/inferRoute remain
+   accessible here exactly as before. */
 
 /* ── Search term normalization: official province → bus-industry name ── */
 const SEARCH_ALIAS={
@@ -5823,31 +6125,10 @@ function findGeo(name){
   return null;
 }
 
-function inferRoute(origin,dest){
-  const o=normP(origin),d=normP(dest);
-  const key=`${o}|${d}`;
-  if(ROUTE_DB[key]) return ROUTE_DB[key];
-
-  /* Try HWY1 spine */
-  const oIdx=HWY1.findIndex(p=>normP(p)===o||normP(p).includes(o)||o.includes(normP(p)));
-  const dIdx=HWY1.findIndex(p=>normP(p)===d||normP(p).includes(d)||d.includes(normP(p)));
-  if(oIdx>=0&&dIdx>=0){
-    const[s,e]=oIdx<dIdx?[oIdx,dIdx]:[dIdx,oIdx];
-    let stops=HWY1.slice(s,e+1);
-    if(stops.length>9){const step=(stops.length-1)/5;const r=[stops[0]];for(let i=1;i<5;i++)r.push(stops[Math.round(i*step)]);r.push(stops[stops.length-1]);stops=r;}
-    return oIdx<=dIdx?stops:[...stops].reverse();
-  }
-
-  /* Geographic fallback */
-  const oG=findGeo(origin),dG=findGeo(dest);
-  if(!oG||!dG) return [origin,dest];
-  const[oLat]=oG,[dLat]=dG;
-  const minL=Math.min(oLat,dLat),maxL=Math.max(oLat,dLat);
-  const between=Object.entries(PROVINCE_GEO)
-    .filter(([n,[lat]])=>normP(n)!==o&&normP(n)!==d&&lat>=minL-0.5&&lat<=maxL+0.5)
-    .sort(([,a],[,b])=>oLat>dLat?b[0]-a[0]:a[0]-b[0]).slice(0,5).map(([n])=>n);
-  return [origin,...between,dest];
-}
+/* inferRoute() now lives in /js/routeInference.js (route-forensics fix —
+   see tests/route_visualization_forensic_audit.md and the note above
+   findGeo()). Do NOT redeclare it here — that would shadow the tested
+   module version with an untested duplicate. */
 
 /* ── Canvas coordinate mapping ── */
 const VNB={minLat:8.3,maxLat:23.8,minLng:102.0,maxLng:110.8};
@@ -5884,18 +6165,91 @@ function _haverDist([lat1,lng1],[lat2,lng2]){
 }
 
 /* ── Open modal ── */
-function openRouteModal(tripId){
+/* Route-forensics fix — source-of-truth waterfall for the route-animation
+   modal's stop list (see tests/route_visualization_forensic_audit.md):
+
+   PRIORITY 1: real route_stop rows for this trip's route_id (DB-authoritative,
+               ordered by stop_order). Zero-coordinate placeholder rows
+               (a confirmed pre-existing data-quality defect isolated to
+               route_id=1's seed data — see the forensic report) are
+               filtered out defensively.
+   PRIORITY 2: (implicit) if route_stop exists but is empty after filtering,
+               fall through — do NOT fabricate.
+   PRIORITY 3: ROUTE_DB/HWY1 curated corridor via inferRoute() — real,
+               human-curated geography, but not specific to this exact
+               trip/route, so tagged estimated:true.
+   PRIORITY 4: origin/destination only, using the trip's own DB-authoritative
+               origin_lat/origin_lng/dest_lat/dest_lng (falling back to the
+               frontend PROVINCE_GEO lookup only if those are missing).
+               No intermediate stop is ever invented at this tier. */
+async function resolveRouteStops(t){
+  if(t.route_id){
+    try{
+      const res=await fetch(`/api/stops?route_id=${t.route_id}`);
+      if(res.ok){
+        const rows=await res.json();
+        const real=(Array.isArray(rows)?rows:[])
+          .filter(s=>s.lat!=null&&s.lng!=null&&Number(s.lat)!==0&&Number(s.lng)!==0)
+          .sort((a,b)=>(a.stop_order||0)-(b.stop_order||0));
+        if(real.length){
+          const mapped=real.map(s=>({name:s.stop_name,geo:[Number(s.lat),Number(s.lng)],estimated:false,real:true,stop_type:s.stop_type||null}));
+          /* Bug fix (2026-08-22): route_stop for a given route_id is
+             sometimes incomplete — it stops partway to the trip's real
+             destination instead of reaching it (confirmed on route_id=13,
+             TP.HCM→Nha Trang: route_stop's last row is "Bình Thuận",
+             188km short of Nha Trang's real dest_lat/dest_lng — the map
+             rendered a route that visibly stopped short, "chưa hiển thị
+             hết bản đồ"). This block previously trusted ANY non-empty
+             real route_stop list as complete, with zero check against the
+             trip's own authoritative destination coordinates — a data gap
+             here silently produced a truncated map for every affected
+             route, not just this one (confirmed 37 routes across the
+             seeded DB have >30km between their last route_stop and their
+             real destination). If the last real stop is meaningfully far
+             from the trip's actual destination, append the real
+             destination as one more point so the map always reaches
+             where the trip actually goes, regardless of how complete
+             route_stop happens to be for this route. */
+          const lastGeo=mapped[mapped.length-1].geo;
+          const destGeo=(t.dest_lat&&t.dest_lng)?[Number(t.dest_lat),Number(t.dest_lng)]:(findGeo(t.destination)||null);
+          if(destGeo&&(destGeo[0]||destGeo[1])){
+            const gapKm=_haverDist(lastGeo,destGeo);
+            if(gapKm>25){
+              mapped.push({name:t.destination,geo:destGeo,estimated:true,real:false,stop_type:null});
+            }
+          }
+          return mapped;
+        }
+      }
+    }catch(e){ /* network/API failure — fall through to lower priority tiers */ }
+  }
+
+  const curated=inferRoute(t.origin,t.destination);
+  if(curated&&curated.length>2){
+    return curated.map(name=>({name,geo:findGeo(name)||[0,0],estimated:true,real:false}));
+  }
+
+  const originGeo=(t.origin_lat&&t.origin_lng)?[Number(t.origin_lat),Number(t.origin_lng)]:(findGeo(t.origin)||[0,0]);
+  const destGeo  =(t.dest_lat&&t.dest_lng)?[Number(t.dest_lat),Number(t.dest_lng)]:(findGeo(t.destination)||[0,0]);
+  return [
+    {name:t.origin,geo:originGeo,estimated:false,real:false},
+    {name:t.destination,geo:destGeo,estimated:false,real:false}
+  ];
+}
+
+async function openRouteModal(tripId){
   const t=allTripsData.find(x=>x.trip_id===tripId);
   if(!t) return;
   RTE.trip=t;
   RTE.progress=0; RTE.playing=true; RTE.speed=1; RTE.speedVal=1;
-  const names=inferRoute(t.origin,t.destination);
-  RTE.stops=names.map(name=>({name,geo:findGeo(name)||[0,0]}));
+  RTE.stops=await resolveRouteStops(t);
+  const hasEstimated=RTE.stops.some(s=>s.estimated);
+  const hasReal=RTE.stops.some(s=>s.real);
 
   // Header
   document.getElementById('rtOrigin').textContent=t.origin;
   document.getElementById('rtDest').textContent=t.destination;
-  document.getElementById('rteStopCount').textContent=RTE.stops.length+' điểm';
+  document.getElementById('rteStopCount').textContent=RTE.stops.length+' điểm'+(hasEstimated?' (một phần ước tính)':'');
 
   // Stats bar
   const depMs=new Date(t.departure_time).getTime();
@@ -5914,6 +6268,13 @@ function openRouteModal(tripId){
   document.getElementById('rtStatPrice').textContent = fmtP(t._dynPrice||t.base_price);
   const sb2=document.getElementById('rteStopCount2');
   if(sb2) sb2.textContent=RTE.stops.length+' điểm';
+  // Honest data-provenance note — never let inferred/estimated points pass as confirmed stops.
+  const provEl=document.getElementById('rteDataProvenance');
+  if(provEl){
+    if(hasReal) provEl.innerHTML='✅ Điểm dừng thực tế từ dữ liệu tuyến';
+    else if(hasEstimated) provEl.innerHTML='⚠️ Các điểm giữa tuyến là <b>ước tính</b> theo hành lang giao thông chính, không phải điểm dừng đã xác nhận của chuyến này';
+    else provEl.innerHTML='ℹ️ Chưa có dữ liệu điểm dừng chi tiết cho tuyến này — chỉ hiển thị điểm đi/đến';
+  }
 
   document.getElementById('routeModal').style.display='flex';
   document.getElementById('rtePlayLbl').textContent='Pause';
@@ -6006,6 +6367,10 @@ function buildTimeline(){
       metaLines=`🚀 Điểm xuất phát · Km 0`;
     } else if(isLast){
       metaLines=`🏁 Điểm đến · Km ${realCumKm}`;
+    } else if(s.estimated){
+      /* Route-forensics fix: never label a heuristically-inferred
+         waypoint the same as a confirmed stop. */
+      metaLines=`⚠️ Điểm ước tính · Km ${realCumKm}<br>↕ +${segKm} km từ điểm trước`;
     } else {
       metaLines=`📍 Điểm dừng · Km ${realCumKm}<br>↕ +${segKm} km từ điểm trước`;
     }
@@ -6029,7 +6394,11 @@ function rteJumpTo(idx){
 /* ── Leaflet Real Map ── */
 let _lfMap=null, _lfBusMk=null, _lfProgLine=null;
 
-function _startLeafletMap(){
+async function _startLeafletMap(){
+  /* Sprint 4 perf: Leaflet is no longer loaded unconditionally on every
+     page visit — it's fetched on first actual use (opening this map).
+     Resolves immediately (no-op) on every call after the first. */
+  await _ensureLeaflet();
   const cv=document.getElementById('rteCanvas');
   cv.style.display='none';
   const lDiv=document.getElementById('rteLeaflet');
@@ -6092,6 +6461,16 @@ function _startLeafletMap(){
 
   // ── BUILD ROAD ROUTE — snap to QL1A/CT01 where applicable ──
   const roadPts = buildRoadRoute(stops);
+  // Route-forensics fix: surface when part of the drawn path is a straight-line
+  // estimate rather than a matched highway segment — never let it pass as real
+  // road geometry silently. Combined with the per-stop `estimated` flag already
+  // shown in the sidebar (rteDataProvenance / buildTimeline).
+  if(roadPts.hasFallback){
+    const provEl=document.getElementById('rteDataProvenance');
+    if(provEl && !provEl.innerHTML.includes('ước tính')){
+      provEl.innerHTML+='<br>⚠️ Một phần đường vẽ trên bản đồ là <b>ước tính đường thẳng</b>, không snap theo cao tốc thực tế.';
+    }
+  }
   // Light catmull-rom smoothing (less aggressive since points already follow road)
   function catmullRom(pts,tension,segments){
     tension=tension===undefined?0.3:tension;
@@ -6197,6 +6576,11 @@ function _startLeafletMap(){
     .bindTooltip(`<b>🏁 Điểm đến</b><br>${stops[stops.length-1].name}<br><span style="color:#94a3b8;font-size:10px;">📍 ${(lls[lls.length-1][0]).toFixed(4)}°N, ${(lls[lls.length-1][1]).toFixed(4)}°E</span>`,{direction:'left',className:'rte-tip'});
 
   // Intermediate stops
+  // Sprint 4: distinguish pickup/dropoff/both when the real route_stop
+  // data provides stop_type (routeStopController's getStopsByRoute already
+  // selects it — resolveRouteStops() now carries it through instead of
+  // discarding it). Falls back to the generic "stop" marker only when this
+  // specific route has no stop_type data at all — never fabricated.
   const totalDist=Number(RTE.trip.distance_km)||0;
   for(let i=1;i<stops.length-1&&i<lls.length-1;i++){
     const depMs=new Date(RTE.trip.departure_time).getTime();
@@ -6204,17 +6588,33 @@ function _startLeafletMap(){
     const ratio=i/(stops.length-1);
     const stopTime=new Date(depMs+durMs*ratio).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
     const kmEst=totalDist?Math.round(totalDist*ratio)+' km':'—';
-    L.circleMarker(lls[i],{radius:7,fillColor:'#6366f1',color:'#040d18',weight:2,opacity:1,fillOpacity:1})
-      .bindPopup(`<b>📍 ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}<br><span style="color:#94a3b8;font-size:10px;">📍 ${lls[i][0].toFixed(4)}°N, ${lls[i][1].toFixed(4)}°E</span>`)
+    const stype=stops[i].stop_type;
+    const stopLbl = stype==='PICKUP' ? '📥 Điểm đón' : stype==='DROPOFF' ? '📤 Điểm trả' : stype==='BOTH' ? '🔄 Đón & Trả' : '📍 Điểm dừng';
+    const stopClr = stype==='PICKUP' ? '#34d399' : stype==='DROPOFF' ? '#f59e0b' : '#6366f1';
+    L.circleMarker(lls[i],{radius:7,fillColor:stopClr,color:'#040d18',weight:2,opacity:1,fillOpacity:1})
+      .bindPopup(`<b>${stopLbl}: ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}<br><span style="color:#94a3b8;font-size:10px;">📍 ${lls[i][0].toFixed(4)}°N, ${lls[i][1].toFixed(4)}°E</span>`)
       .addTo(_lfMap)
-      .bindTooltip(`<b>📍 ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}`,{direction:'top',className:'rte-tip'});
+      .bindTooltip(`<b>${stopLbl}: ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}`,{direction:'top',className:'rte-tip'});
   }
 
   // ── ETC TOLL STATIONS — hiển thị trạm thu phí trên lộ trình ──
+  /* Bug fix: reported live on a long route (Hà Nội → Cần Thơ, 1221km,
+     10 stops) — at the zoom level fitBounds() picks for a route spanning
+     most of the country, toll stations sit only a few pixels apart on
+     screen (they're real, ~30-80km apart in the real world, but a
+     country-wide route packs dozens of them into one view), so their
+     badge labels piled up into an unreadable stack, exactly what the
+     screenshot showed. These badges are a minor road-detail overlay, not
+     part of the actual route/timeline — hiding them until the user
+     zooms in far enough to have room for them (the standard map-UX
+     pattern for POI density: labels appear as you zoom in, not before)
+     fixes the clutter without removing the information. */
+  const TOLL_MIN_ZOOM=7;
   const routeMinLat=Math.min(...lls.map(l=>l[0]))-0.5;
   const routeMaxLat=Math.max(...lls.map(l=>l[0]))+0.5;
   const routeMinLng=Math.min(...lls.map(l=>l[1]))-1.0;
   const routeMaxLng=Math.max(...lls.map(l=>l[1]))+1.0;
+  const tollMarkers=[];
   ETC_STATIONS.forEach(s=>{
     if(s.lat<routeMinLat||s.lat>routeMaxLat||s.lng<routeMinLng||s.lng>routeMaxLng) return;
     const isHighway=s.road==='CT01';
@@ -6228,10 +6628,20 @@ function _startLeafletMap(){
       </div>`,
       iconSize:[0,0],iconAnchor:[22,20],className:''
     });
-    L.marker([s.lat,s.lng],{icon:etcIco,zIndexOffset:150})
-      .bindTooltip(`<b>💳 ${s.name}</b><br><span style="color:#f59e0b;font-size:10px;">${s.road==='CT01'?'🛣️ Cao tốc CT01 (Bắc–Nam)':'🛤️ Quốc lộ 1A'}</span><br><span style="color:#94a3b8;font-size:9px;">Thu phí ETC tự động</span>`,{direction:'top',className:'rte-tip'})
-      .addTo(_lfMap);
+    const mk=L.marker([s.lat,s.lng],{icon:etcIco,zIndexOffset:150})
+      .bindTooltip(`<b>💳 ${s.name}</b><br><span style="color:#f59e0b;font-size:10px;">${s.road==='CT01'?'🛣️ Cao tốc CT01 (Bắc–Nam)':'🛤️ Quốc lộ 1A'}</span><br><span style="color:#94a3b8;font-size:9px;">Thu phí ETC tự động</span>`,{direction:'top',className:'rte-tip'});
+    tollMarkers.push(mk);
   });
+  function _updateTollVisibility(){
+    const show=_lfMap.getZoom()>=TOLL_MIN_ZOOM;
+    tollMarkers.forEach(mk=>{
+      const onMap=_lfMap.hasLayer(mk);
+      if(show&&!onMap) mk.addTo(_lfMap);
+      else if(!show&&onMap) _lfMap.removeLayer(mk);
+    });
+  }
+  _updateTollVisibility();
+  _lfMap.on('zoomend',_updateTollVisibility);
 
   // Animated bus marker
   const mkBus=L.divIcon({
@@ -6627,15 +7037,11 @@ window.addEventListener('scroll',()=>{
   if(btn) btn.classList.toggle('visible',window.scrollY>400);
 });
 
-/* ── LIVE ACTIVITY TICKER — synced with backend bookings ── */
+/* ── LIVE ACTIVITY TICKER — synced with backend bookings ──
+   Sprint 3: full_name masking ("Nguyễn Minh Tú" → "Tú N.") now happens
+   server-side (bookingController.getBookingsTicker's _maskName) — the
+   real name never reaches this page at all. ── */
 (function(){
-  /* ── Mask full_name for privacy: "Nguyễn Minh Tú" → "Tú N." ── */
-  function maskName(name){
-    if(!name) return 'Khách hàng';
-    const p=name.trim().split(/\s+/);
-    if(p.length===1) return p[0][0]+'***';
-    return p[p.length-1]+' '+p[0][0]+'.';
-  }
 
   /* ── Time-ago from booking_time ── */
   function timeAgo(dateStr){
@@ -6667,9 +7073,15 @@ window.addEventListener('scroll',()=>{
     const price=fmtVND(b.total_amount);
     const bus=busLabel(b.bus_type);
     const seats=b.seat_numbers?`ghế ${b.seat_numbers}`:'';
+    /* Sprint 3: /api/bookings/ticker already masks full_name server-side
+       (see bookingController.getBookingsTicker) — do NOT re-run maskName()
+       here, it would double-mask an already-masked "An N."-style value
+       into something wrong ("N. A."). Kept as a defensive fallback only
+       for the buildFallback() demo-data path below, which still uses raw
+       display names. */
     return `<span class="ticker-dot">
       <span class="tik-live"></span>
-      <span class="tik-name">${maskName(b.full_name)}</span>
+      <span class="tik-name">${b.full_name||'Khách hàng'}</span>
       <span style="color:rgba(220,240,255,.58)">${act}</span>
       <span class="tik-route">${b.origin} → ${b.destination}</span>
       ${bus?`<span style="background:rgba(99,102,241,.18);border:1px solid rgba(99,102,241,.30);border-radius:20px;padding:1px 8px;font-size:10.5px;color:#a5b4fc;font-weight:700">${bus}</span>`:''}
@@ -6681,17 +7093,21 @@ window.addEventListener('scroll',()=>{
 
   /* ── Fallback fake data if API unavailable ── */
   function buildFallback(){
+    /* Sprint 3: full_name here is pre-masked in the same "Given N."
+       style getBookingsTicker now applies server-side (see makeItem()
+       above — it no longer re-masks), so the offline demo fallback stays
+       visually consistent with real ticker data. */
     const fData=[
-      {full_name:"Nguyễn Minh Tuấn",origin:"Hà Nội",destination:"Đà Nẵng",status:"PAID",booking_time:new Date(Date.now()-5*60000).toISOString(),total_amount:280000,bus_type:"VIP",seat_numbers:"A3, A4"},
-      {full_name:"Trần Thị Lan Anh",origin:"Hồ Chí Minh",destination:"Đà Lạt",status:"CONFIRMED",booking_time:new Date(Date.now()-12*60000).toISOString(),total_amount:195000,bus_type:"NORMAL",seat_numbers:"B7"},
-      {full_name:"Lê Văn Hùng",origin:"Hà Nội",destination:"Hồ Chí Minh",status:"PAID",booking_time:new Date(Date.now()-28*60000).toISOString(),total_amount:650000,bus_type:"LIMOUSINE",seat_numbers:"2A"},
-      {full_name:"Phạm Thu Hà",origin:"Đà Nẵng",destination:"Nha Trang",status:"PAID",booking_time:new Date(Date.now()-45*60000).toISOString(),total_amount:230000,bus_type:"VIP",seat_numbers:"C5"},
-      {full_name:"Hoàng Quang Vinh",origin:"HCM",destination:"Cần Thơ",status:"CONFIRMED",booking_time:new Date(Date.now()-60*60000).toISOString(),total_amount:120000,bus_type:"NORMAL",seat_numbers:"D2"},
-      {full_name:"Ngô Thị Hoa",origin:"Hà Nội",destination:"Vinh",status:"PAID",booking_time:new Date(Date.now()-80*60000).toISOString(),total_amount:210000,bus_type:"VIP",seat_numbers:"A1"},
-      {full_name:"Bùi Văn Dũng",origin:"HCM",destination:"Vũng Tàu",status:"PAID",booking_time:new Date(Date.now()-95*60000).toISOString(),total_amount:85000,bus_type:"NORMAL",seat_numbers:"E8"},
-      {full_name:"Đặng Thị Mai",origin:"Đà Nẵng",destination:"Hội An",status:"CONFIRMED",booking_time:new Date(Date.now()-110*60000).toISOString(),total_amount:45000,bus_type:"NORMAL",seat_numbers:"B3"},
-      {full_name:"Vũ Thanh Tú",origin:"Hà Nội",destination:"Hải Phòng",status:"PAID",booking_time:new Date(Date.now()-130*60000).toISOString(),total_amount:95000,bus_type:"VIP",seat_numbers:"A6"},
-      {full_name:"Lý Thị Linh",origin:"HCM",destination:"Phú Quốc",status:"PAID",booking_time:new Date(Date.now()-155*60000).toISOString(),total_amount:380000,bus_type:"LIMOUSINE",seat_numbers:"1B"},
+      {full_name:"Tuấn N.",origin:"Hà Nội",destination:"Đà Nẵng",status:"PAID",booking_time:new Date(Date.now()-5*60000).toISOString(),total_amount:280000,bus_type:"VIP",seat_numbers:"A3, A4"},
+      {full_name:"Anh T.",origin:"Hồ Chí Minh",destination:"Đà Lạt",status:"CONFIRMED",booking_time:new Date(Date.now()-12*60000).toISOString(),total_amount:195000,bus_type:"NORMAL",seat_numbers:"B7"},
+      {full_name:"Hùng L.",origin:"Hà Nội",destination:"Hồ Chí Minh",status:"PAID",booking_time:new Date(Date.now()-28*60000).toISOString(),total_amount:650000,bus_type:"LIMOUSINE",seat_numbers:"2A"},
+      {full_name:"Hà P.",origin:"Đà Nẵng",destination:"Nha Trang",status:"PAID",booking_time:new Date(Date.now()-45*60000).toISOString(),total_amount:230000,bus_type:"VIP",seat_numbers:"C5"},
+      {full_name:"Vinh H.",origin:"HCM",destination:"Cần Thơ",status:"CONFIRMED",booking_time:new Date(Date.now()-60*60000).toISOString(),total_amount:120000,bus_type:"NORMAL",seat_numbers:"D2"},
+      {full_name:"Hoa N.",origin:"Hà Nội",destination:"Vinh",status:"PAID",booking_time:new Date(Date.now()-80*60000).toISOString(),total_amount:210000,bus_type:"VIP",seat_numbers:"A1"},
+      {full_name:"Dũng B.",origin:"HCM",destination:"Vũng Tàu",status:"PAID",booking_time:new Date(Date.now()-95*60000).toISOString(),total_amount:85000,bus_type:"NORMAL",seat_numbers:"E8"},
+      {full_name:"Mai Đ.",origin:"Đà Nẵng",destination:"Hội An",status:"CONFIRMED",booking_time:new Date(Date.now()-110*60000).toISOString(),total_amount:45000,bus_type:"NORMAL",seat_numbers:"B3"},
+      {full_name:"Tú V.",origin:"Hà Nội",destination:"Hải Phòng",status:"PAID",booking_time:new Date(Date.now()-130*60000).toISOString(),total_amount:95000,bus_type:"VIP",seat_numbers:"A6"},
+      {full_name:"Linh L.",origin:"HCM",destination:"Phú Quốc",status:"PAID",booking_time:new Date(Date.now()-155*60000).toISOString(),total_amount:380000,bus_type:"LIMOUSINE",seat_numbers:"1B"},
     ];
     return fData.map(b=>makeItem(b)).join('');
   }
@@ -6703,12 +7119,17 @@ window.addEventListener('scroll',()=>{
     inner.innerHTML=html+html;
   }
 
-  /* ── Fetch real bookings from backend ── */
-  fetch('/api/bookings')
+  /* ── Fetch real bookings from backend ──
+     Sprint 3: was /api/bookings — unauthenticated access to the full
+     platform ledger (every operator's revenue, every passenger's raw
+     full_name/email) just to render this decorative widget. Now the
+     dedicated public ticker endpoint: max 20 rows, pre-filtered to
+     non-canceled, name pre-masked, no PII fields selected at all. */
+  fetch('/api/bookings/ticker')
     .then(r=>r.ok?r.json():Promise.reject(r.status))
     .then(data=>{
       const valid=(Array.isArray(data)?data:[])
-        .filter(b=>b.status&&b.status!=='CANCELLED'&&b.origin&&b.destination&&b.full_name)
+        .filter(b=>b.status&&b.origin&&b.destination&&b.full_name)
         .sort((a,b)=>new Date(b.booking_time)-new Date(a.booking_time))
         .slice(0,20);
 
@@ -6724,6 +7145,157 @@ window.addEventListener('scroll',()=>{
 </script>
 
 <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</button>
+
+<!-- ══════════════════════════════════════════
+     Sprint 4 — AI Booking Concierge widget
+     ══════════════════════════════════════════ -->
+<button id="conciergeFab" onclick="cfToggle()" title="Trợ lý đặt vé AI" aria-label="Mở trợ lý đặt vé AI">
+  💬<span class="cf-badge"></span>
+</button>
+<div id="conciergePanel" role="dialog" aria-label="Trợ lý đặt vé AI">
+  <div class="cf-header">
+    <div class="cf-header-icon">🤖</div>
+    <div>
+      <div class="cf-header-title">Trợ lý Đặt vé AI</div>
+      <div class="cf-header-sub">Gõ yêu cầu bằng ngôn ngữ tự nhiên</div>
+    </div>
+    <button class="cf-close" onclick="cfToggle()" aria-label="Đóng">✕</button>
+  </div>
+  <div class="cf-messages" id="cfMessages"></div>
+  <div class="cf-input-row">
+    <input type="text" class="cf-input" id="cfInput" placeholder="VD: Hà Nội đi Đà Nẵng ngày mai tầm 8h tối..."
+           onkeydown="if(event.key==='Enter')cfSend();" maxlength="500" autocomplete="off">
+    <button class="cf-send" id="cfSendBtn" onclick="cfSend()" aria-label="Gửi">➤</button>
+  </div>
+</div>
+<script>
+/* ══════════════════════════════════════════
+   Sprint 4 — AI Booking Concierge widget logic.
+   Talks to POST /api/ai/concierge (server/ai/bookingConcierge.js), which
+   itself calls the real Sprint 2 search engine — every trip card rendered
+   here is a genuine row from the database, never client-side mock data.
+   ══════════════════════════════════════════ */
+(function(){
+  let _cfOpen = false;
+  let _cfBusy = false;
+  let _cfGreeted = false;
+
+  window.cfToggle = function(){
+    _cfOpen = !_cfOpen;
+    const panel = document.getElementById('conciergePanel');
+    panel.classList.toggle('open', _cfOpen);
+    if(_cfOpen){
+      if(!_cfGreeted){
+        _cfGreeted = true;
+        cfAppendMessage('ai', 'Xin chào! 👋 Mình là trợ lý đặt vé AI. Bạn muốn đi đâu? Ví dụ: "Tôi muốn đi từ Hà Nội đến Đà Nẵng tối mai tầm 8h, vé Limousine".');
+      }
+      setTimeout(()=>document.getElementById('cfInput').focus(), 200);
+    }
+  };
+
+  function cfAppendMessage(role, text){
+    const wrap = document.getElementById('cfMessages');
+    const el = document.createElement('div');
+    el.className = 'cf-msg ' + role;
+    el.textContent = text;
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+    return el;
+  }
+
+  function cfShowThinking(){
+    const wrap = document.getElementById('cfMessages');
+    const el = document.createElement('div');
+    el.className = 'cf-thinking';
+    el.id = 'cfThinking';
+    el.innerHTML = '<span></span><span></span><span></span>';
+    wrap.appendChild(el);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+  function cfHideThinking(){
+    const el = document.getElementById('cfThinking');
+    if(el) el.remove();
+  }
+
+  function cfBusTypeLabel(bt){
+    return {NORMAL:'Thường', VIP:'VIP', LIMOUSINE:'Limousine'}[bt] || bt || '';
+  }
+  function cfMoney(n){
+    return Number(n||0).toLocaleString('vi-VN') + 'đ';
+  }
+  function cfTime(s){
+    try{ return new Date(s).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}); }
+    catch{ return s; }
+  }
+
+  function cfRenderTripCards(trips){
+    const wrap = document.getElementById('cfMessages');
+    const cardsEl = document.createElement('div');
+    cardsEl.className = 'cf-cards';
+    trips.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'cf-card';
+      card.innerHTML = `
+        <div class="cf-card-route">🚌 ${t.origin} → ${t.destination}</div>
+        <div class="cf-card-meta">
+          <span>🕐 ${cfTime(t.departure_time)}</span>
+          <span>🏢 ${t.operator_name||'—'}</span>
+          <span>${cfBusTypeLabel(t.bus_type)}</span>
+          <span>💺 ${t.available_seats!=null?t.available_seats+' chỗ trống':''}</span>
+          <span><b>${cfMoney(t.base_price)}</b></span>
+        </div>
+        <button class="cf-card-btn">🎫 Chọn chuyến &amp; Đặt ghế ngay</button>
+      `;
+      card.querySelector('.cf-card-btn').addEventListener('click', () => {
+        // Sprint 4 requirement: hand off to the real booking flow with the
+        // exact same navigation contract already used everywhere else on
+        // this page (goBooking) — no context is lost, booking.html loads
+        // this trip_id directly.
+        if(typeof goBooking === 'function') goBooking(t.trip_id);
+        else window.location.href = `booking.html?tripId=${t.trip_id}`;
+      });
+      cardsEl.appendChild(card);
+    });
+    wrap.appendChild(cardsEl);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  window.cfSend = async function(){
+    if(_cfBusy) return;
+    const input = document.getElementById('cfInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    cfAppendMessage('user', text);
+    input.value = '';
+    _cfBusy = true;
+    document.getElementById('cfSendBtn').disabled = true;
+    cfShowThinking();
+
+    try{
+      const res = await fetch('/api/ai/concierge', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      cfHideThinking();
+      if(!res.ok){
+        cfAppendMessage('ai', data.message || 'Xin lỗi, mình gặp lỗi. Vui lòng thử lại.');
+      } else {
+        cfAppendMessage('ai', data.reply || '...');
+        if(Array.isArray(data.trips) && data.trips.length) cfRenderTripCards(data.trips);
+      }
+    }catch(e){
+      cfHideThinking();
+      cfAppendMessage('ai', 'Không thể kết nối máy chủ. Vui lòng thử lại.');
+    }finally{
+      _cfBusy = false;
+      document.getElementById('cfSendBtn').disabled = false;
+    }
+  };
+})();
+</script>
 
 <!-- ── PWA: Service Worker Registration ── -->
 <script>
@@ -6769,9 +7341,12 @@ async function loadAIRecommendations(){
   </div>`;
 
   try{
-    // Fetch personalized (requires login) + trending in parallel
+    // Fetch personalized (requires login) + trending in parallel.
+    // Phase 2I: /recommendations/me now derives the user from the JWT
+    // (server-side), so the token must be sent — no more ?userId= param.
+    const token = typeof getAccessToken==='function' ? getAccessToken() : null;
     const [recoRes, trendRes] = await Promise.allSettled([
-      uid ? fetch(`/api/recommendations/me?userId=${uid}`).then(r=>r.json()) : Promise.resolve(null),
+      (uid && token) ? fetch(`/api/recommendations/me`, { headers: { Authorization: `Bearer ${token}` } }).then(r=>r.json()) : Promise.resolve(null),
       fetch(`/api/recommendations/trending`).then(r=>r.json())
     ]);
 
@@ -7286,18 +7861,27 @@ async function searchTransit(origin, destination, date){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({origin, destination, date, mode:'time'})
     });
+    if(!res.ok) return { routes: [], failed: true };
     const data = await res.json();
-    return data.transit || [];
-  }catch(e){ return []; }
+    return { routes: data.transit || [], failed: false };
+  }catch(e){ return { routes: [], failed: true }; }
 }
 
 let _transitData = [];
 let _transitMode = 'time';
 
-function renderTransitResults(routes, mode){
+function renderTransitResults(routes, mode, failed){
   _transitData = routes || [];
   _transitMode = mode || 'time';
   const sec = document.getElementById('transitResultsSection');
+  const list = document.getElementById('transitList');
+  if(failed){
+    sec.style.display='block';
+    list.innerHTML = `<div style="padding:22px 16px;text-align:center;color:#94a3b8;font-size:13px">
+      ⚠️ Không thể tải gợi ý hành trình trung chuyển lúc này. Vui lòng thử tìm kiếm lại.
+    </div>`;
+    return;
+  }
   if(!_transitData.length){ sec.style.display='none'; return; }
   sec.style.display='block';
   _renderTransitList(_transitData);
@@ -7528,7 +8112,9 @@ function closeTransitMap(){
   if(transitLeafletMap){ transitLeafletMap.remove(); transitLeafletMap=null; }
 }
 
-function openTransitMap(route){
+async function openTransitMap(route){
+  /* Sprint 4 perf: same on-demand Leaflet load as _startLeafletMap(). */
+  await _ensureLeaflet();
   const modal = document.getElementById('transitMapModal');
   const legs   = route.legs||[];
   const colors = ['#6366f1','#4f46e5','#10b981','#f59e0b','#ef4444'];

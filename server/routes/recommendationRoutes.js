@@ -1,14 +1,32 @@
 'use strict';
 const express = require('express');
+const logger = require('../utils/logger');
 const router  = express.Router();
 const ctrl    = require('../controllers/passengerAIController');
+const { authenticate } = require('../middleware/authMiddleware');
+const cache   = require('../services/cacheManager');
 
-// GET /api/recommendations/me?userId=X
-router.get('/me', ctrl.getMyRecommendations);
+const TRENDING_CACHE_KEY = 'trips:trending';
+const TRENDING_TTL_MS = 30_000; // Sprint 12 — Cache-Aside; matches statsController's public-summary TTL rationale
+
+// Phase 2I: previously trusted ?userId= from the query string with zero
+// auth (any caller could read any user's recommendations + spending data).
+// "me" now means exactly that — the controller derives the target user
+// from req.user (the JWT), the query param is no longer read at all.
+router.get('/me', authenticate, ctrl.getMyRecommendations);
 
 // GET /api/recommendations/trending — top trips by booking count
 router.get('/trending', async (req, res) => {
   try {
+    const recommendations = await cache.getOrSet(TRENDING_CACHE_KEY, TRENDING_TTL_MS, computeTrending);
+    res.json({ recommendations });
+  } catch(e) {
+    logger.error('trending reco error', e);
+    res.json({ recommendations: [] });
+  }
+});
+
+async function computeTrending() {
     const db = require('../config/db');
     const [rows] = await db.query(`
       SELECT
@@ -60,11 +78,7 @@ router.get('/trending', async (req, res) => {
         user_history:    { score: 0, basis: '0 lần' },
       }
     }));
-    res.json({ recommendations });
-  } catch(e) {
-    console.error('trending reco error', e);
-    res.json({ recommendations: [] });
-  }
-});
+    return recommendations;
+}
 
 module.exports = router;

@@ -1,0 +1,238 @@
+{
+  "capturedAt": "2026-08-15T19:21:42.007Z",
+  "label": "after",
+  "counts": {
+    "users": 54,
+    "bus_operators": 8,
+    "buses": 53,
+    "seats": 349,
+    "routes": 1095,
+    "trips": 13401,
+    "bookings": 102,
+    "payments": 101,
+    "booking_details": 128,
+    "reviews": 55,
+    "operator_reviews": 1,
+    "loyalty_transactions": 14,
+    "support_requests": 31,
+    "password_reset_tokens": 0
+  },
+  "bookingStatusDistribution": [
+    {
+      "status": "PENDING",
+      "c": 9
+    },
+    {
+      "status": "PAID",
+      "c": 86
+    },
+    {
+      "status": "CANCELED",
+      "c": 7
+    }
+  ],
+  "protectedTrips": [
+    {
+      "trip_id": 4,
+      "status": null
+    },
+    {
+      "trip_id": 12,
+      "status": null
+    },
+    {
+      "trip_id": 15,
+      "status": "COMPLETED"
+    }
+  ],
+  "protectedBooking37": [
+    {
+      "booking_id": 37,
+      "status": "PAID",
+      "total_amount": 300000
+    }
+  ],
+  "backupTables": {
+    "trip_orphan_cleanup_backup_20260815": 1692,
+    "trip_status_recovery_backup_20260815": 48
+  },
+  "duplicateSeatPairs": [
+    {
+      "seat_id": 3,
+      "trip_id": 30,
+      "c": 2
+    },
+    {
+      "seat_id": 122,
+      "trip_id": 41,
+      "c": 2
+    },
+    {
+      "seat_id": 147,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 148,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 290,
+      "trip_id": 26,
+      "c": 2
+    }
+  ],
+  "operatorIdentity": [
+    {
+      "user_id": 46,
+      "email": "tuan.op@phuongtrang.com.vn",
+      "operator_id": 1
+    },
+    {
+      "user_id": 47,
+      "email": "operator@gmail.com",
+      "operator_id": null
+    },
+    {
+      "user_id": 48,
+      "email": "phuc.op@hoanglongasia.com",
+      "operator_id": 3
+    }
+  ],
+  "foreignKeys": [
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "booking_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "booking_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "seat_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_2",
+      "REFERENCED_TABLE_NAME": "seat",
+      "REFERENCED_COLUMN_NAME": "seat_id"
+    },
+    {
+      "TABLE_NAME": "bus",
+      "COLUMN_NAME": "operator_id",
+      "CONSTRAINT_NAME": "bus_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus_operator",
+      "REFERENCED_COLUMN_NAME": "operator_id"
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "fk_prt_user",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "payment",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "payment_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "review_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "review_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "route_stop",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "route_stop_ibfk_1",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "seat",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "seat_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_2",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "trip_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "trip_ibfk_2",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "users",
+      "COLUMN_NAME": "operator_id",
+      "CONSTRAINT_NAME": "fk_users_operator",
+      "REFERENCED_TABLE_NAME": "bus_operator",
+      "REFERENCED_COLUMN_NAME": "operator_id"
+    },
+    {
+      "TABLE_NAME": "user_behavior",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "user_behavior_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    }
+  ]
+}

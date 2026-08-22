@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const cache = require("../services/cacheManager");
+const logger = require('../utils/logger');
 
 /* ===============================
    THỐNG KÊ TỔNG QUAN
@@ -24,7 +26,7 @@ exports.getStats = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result[0]);
     } catch (err) {
-        console.error("GET STATS ERROR:", err);
+        logger.error("GET STATS ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -47,7 +49,7 @@ exports.getRevenue6Months = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error("GET REVENUE ERROR:", err);
+        logger.error("GET REVENUE ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -67,7 +69,7 @@ exports.getBookingsPerDay = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error("GET BOOKINGS PER DAY ERROR:", err);
+        logger.error("GET BOOKINGS PER DAY ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -91,7 +93,7 @@ exports.getTopRoutes = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error("GET TOP ROUTES ERROR:", err);
+        logger.error("GET TOP ROUTES ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -114,7 +116,7 @@ exports.getReviews = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error("GET REVIEWS ERROR:", err);
+        logger.error("GET REVIEWS ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -135,7 +137,7 @@ exports.getTopAIRecommendations = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -153,7 +155,7 @@ exports.getTopActiveUsers = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -169,7 +171,7 @@ exports.getPeakBookingHour = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -194,7 +196,7 @@ exports.getBusOccupancy = async (req, res) => {
         }));
         res.json(data);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -205,7 +207,7 @@ exports.getTripStatus = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -221,7 +223,7 @@ exports.getGrowthRate = async (req, res) => {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -584,7 +586,7 @@ exports.getNotifications = async (req, res) => {
         res.json(notifs.slice(0, 60));
 
     } catch (err) {
-        console.error('GET NOTIFICATIONS ERROR:', err);
+        logger.error('GET NOTIFICATIONS ERROR:', err);
         res.status(500).json({ message: 'DB error' });
     }
 };
@@ -630,7 +632,7 @@ exports.getAllBookings = async (req, res) => {
 
         res.json({ total, page: parseInt(page), limit: parseInt(limit), data: rows });
     } catch (err) {
-        console.error("GET ALL BOOKINGS ERROR:", err);
+        logger.error("GET ALL BOOKINGS ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -644,10 +646,34 @@ exports.updateBookingStatus = async (req, res) => {
         const { status } = req.body;
         if (!["PAID","PENDING","CANCELED"].includes(status))
             return res.status(400).json({ message: "status không hợp lệ" });
-        await db.query("UPDATE booking SET status = ? WHERE booking_id = ?", [status, id]);
+
+        /* Phase 1 hardening — same rule as bookingController.updateBookingStatus:
+           cancelling must atomically release any trip_seat_hold rows the
+           booking owns, or the seat is stuck un-bookable forever (the hold
+           table has no other cleanup path). */
+        if (status === "CANCELED") {
+            const conn = await db.getConnection();
+            try {
+                await conn.beginTransaction();
+                await conn.query("UPDATE booking SET status = ? WHERE booking_id = ?", [status, id]);
+                await conn.query("DELETE FROM trip_seat_hold WHERE booking_id=?", [id]);
+                await conn.commit();
+            } catch (err) {
+                await conn.rollback();
+                throw err;
+            } finally {
+                conn.release();
+            }
+        } else {
+            await db.query("UPDATE booking SET status = ? WHERE booking_id = ?", [status, id]);
+        }
+        await Promise.all([
+            cache.invalidate("trips:trending"),       // booking_count feeds the trending sort
+            cache.invalidate("stats:public-summary"), // totalPassengers/completionRate can shift
+        ]);
         res.json({ success: true, message: "Đã cập nhật trạng thái booking" });
     } catch (err) {
-        console.error("UPDATE BOOKING STATUS ERROR:", err);
+        logger.error("UPDATE BOOKING STATUS ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -664,7 +690,7 @@ exports.getAIRecommendations = async (req, res) => {
         const data = await ai.getTopRecommendedRoutes(10);
         res.json(data);
     } catch (err) {
-        console.error('GET AI RECOMMENDATIONS ERROR:', err);
+        logger.error('GET AI RECOMMENDATIONS ERROR:', err);
         res.json([]);
     }
 };
@@ -676,7 +702,7 @@ exports.getRevenueForecast = async (req, res) => {
         const data = await ai.forecastRevenue(days);
         res.json(data);
     } catch (err) {
-        console.error('GET REVENUE FORECAST ERROR:', err);
+        logger.error('GET REVENUE FORECAST ERROR:', err);
         res.json([]);
     }
 };
@@ -687,7 +713,7 @@ exports.getAnomalyDetection = async (req, res) => {
         const data = await ai.detectAnomalies();
         res.json(data);
     } catch (err) {
-        console.error('GET ANOMALY DETECTION ERROR:', err);
+        logger.error('GET ANOMALY DETECTION ERROR:', err);
         res.json([]);
     }
 };
@@ -698,7 +724,7 @@ exports.getBookingHeatmap = async (req, res) => {
         const data = await ai.getBookingHeatmap();
         res.json(data);
     } catch (err) {
-        console.error('GET BOOKING HEATMAP ERROR:', err);
+        logger.error('GET BOOKING HEATMAP ERROR:', err);
         res.json({ matrix: [], raw: [], days: [], hours: [] });
     }
 };
@@ -711,7 +737,7 @@ exports.getPricePrediction = async (req, res) => {
         const data = await ai.predictOptimalPrice(routeId, date || null);
         res.json(data);
     } catch (err) {
-        console.error('GET PRICE PREDICTION ERROR:', err);
+        logger.error('GET PRICE PREDICTION ERROR:', err);
         res.status(500).json({ message: 'DB error' });
     }
 };
@@ -724,7 +750,7 @@ exports.getTripDemandForecast = async (req, res) => {
         const data = await ai.forecastDemand(tripId);
         res.json(data);
     } catch (err) {
-        console.error('GET TRIP DEMAND FORECAST ERROR:', err);
+        logger.error('GET TRIP DEMAND FORECAST ERROR:', err);
         res.status(500).json({ message: 'DB error' });
     }
 };
@@ -737,7 +763,7 @@ exports.classifySupportTicket = async (req, res) => {
         const data = ai.classifySupportTicket(title || '', content || '');
         res.json(data);
     } catch (err) {
-        console.error('CLASSIFY SUPPORT TICKET ERROR:', err);
+        logger.error('CLASSIFY SUPPORT TICKET ERROR:', err);
         res.status(500).json({ message: 'Error' });
     }
 };
@@ -787,7 +813,7 @@ exports.getAllRoutes = async (req, res) => {
 
         res.json({ data: rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (err) {
-        console.error("GET ALL ROUTES ERROR:", err);
+        logger.error("GET ALL ROUTES ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -807,7 +833,7 @@ exports.getRouteById = async (req, res) => {
         if (!row) return res.status(404).json({ message: "Tuyến không tồn tại" });
         res.json(row);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -844,7 +870,7 @@ exports.createRoute = async (req, res) => {
         );
         res.status(201).json({ message: "Tạo tuyến thành công", route_id: result.insertId });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -882,7 +908,7 @@ exports.updateRoute = async (req, res) => {
         );
         res.json({ message: "Cập nhật tuyến thành công" });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -902,7 +928,7 @@ exports.updateRouteStatus = async (req, res) => {
         await db.query("UPDATE route SET status=? WHERE route_id=?", [status, req.params.id]);
         res.json({ message: "Cập nhật trạng thái thành công" });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -923,7 +949,7 @@ exports.deleteRoute = async (req, res) => {
         await db.query("DELETE FROM route WHERE route_id=?", [id]);
         res.json({ message: "Đã xóa tuyến", soft: false });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1001,7 +1027,7 @@ exports.importRoutesPreview = async (req, res) => {
             rows: results
         });
     } catch (err) {
-        console.error("IMPORT PREVIEW ERROR:", err);
+        logger.error("IMPORT PREVIEW ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1058,7 +1084,7 @@ exports.importRoutesConfirm = async (req, res) => {
             conn.release();
         }
     } catch (err) {
-        console.error("IMPORT CONFIRM ERROR:", err);
+        logger.error("IMPORT CONFIRM ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1110,7 +1136,7 @@ exports.getLocations = async (req, res) => {
         );
         res.json({ data: rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1139,7 +1165,7 @@ exports.createLocation = async (req, res) => {
         );
         res.status(201).json({ message: "Tạo địa điểm thành công", location_id: result.insertId });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1167,7 +1193,7 @@ exports.updateLocation = async (req, res) => {
         );
         res.json({ message: "Cập nhật địa điểm thành công" });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1183,7 +1209,7 @@ exports.updateLocationStatus = async (req, res) => {
         await db.query("UPDATE location SET status=? WHERE location_id=?", [status, req.params.id]);
         res.json({ message: "Cập nhật trạng thái thành công" });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ message: "DB error" });
     }
 };
@@ -1193,7 +1219,63 @@ exports.deleteLocation = async (req, res) => {
         await db.query("UPDATE location SET status='INACTIVE' WHERE location_id=?", [req.params.id]);
         res.json({ message: "Đã vô hiệu hóa địa điểm" });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Sprint 12 — Quick Demo Mode: 1-click "reset demo session" for the
+   thesis defense. Deliberately conservative — this does NOT wipe and
+   re-seed the whole database (routes/trips/users took a real seed run
+   to build and a full reseed is slow and risky to gate behind one
+   click). It only clears the kind of session noise that would look bad
+   live in front of a committee:
+     - stuck PENDING bookings (any age, not just the 15-min-old ones the
+       background cleanup job already catches) — releases their seat
+       holds via the same atomic pattern updateBookingStatus uses.
+     - the AI intent-predictor log (ai_intent_log) — a demo run's own
+       test clicks shouldn't show up as "real" traffic in the next demo.
+   PAID bookings, users, routes, trips, and reviews are never touched.
+═══════════════════════════════════════════════════════════ */
+exports.resetDemoData = async (req, res) => {
+    try {
+        const [pending] = await db.query("SELECT booking_id FROM booking WHERE status='PENDING'");
+        let canceled = 0;
+        for (const { booking_id } of pending) {
+            const conn = await db.getConnection();
+            try {
+                await conn.beginTransaction();
+                const [upd] = await conn.query(
+                    "UPDATE booking SET status='CANCELED' WHERE booking_id=? AND status='PENDING'",
+                    [booking_id]
+                );
+                if (upd.affectedRows === 1) {
+                    await conn.query("DELETE FROM trip_seat_hold WHERE booking_id=?", [booking_id]);
+                    await conn.commit();
+                    canceled++;
+                } else {
+                    await conn.rollback();
+                }
+            } catch (err) {
+                await conn.rollback();
+                logger.error(`[resetDemoData] Failed to cancel booking_id=${booking_id}:`, err.message);
+            } finally {
+                conn.release();
+            }
+        }
+
+        const [intentLogResult] = await db.query("DELETE FROM ai_intent_log").catch(() => [{ affectedRows: 0 }]);
+
+        await cache.clear(); // every cached read (trending, public stats) must reflect the reset state immediately
+
+        res.json({
+            message: "Đã khôi phục dữ liệu demo",
+            canceled_pending_bookings: canceled,
+            cleared_intent_logs: intentLogResult.affectedRows || 0,
+        });
+    } catch (err) {
+        logger.error("RESET DEMO DATA ERROR:", err);
         res.status(500).json({ message: "DB error" });
     }
 };

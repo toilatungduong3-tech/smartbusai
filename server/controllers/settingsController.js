@@ -1,5 +1,6 @@
 const fs   = require("fs");
 const path = require("path");
+const logger = require('../utils/logger');
 
 const SETTINGS_FILE = path.join(__dirname, "../config/settings.json");
 
@@ -22,7 +23,7 @@ exports.saveSettings = (req, res) => {
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2));
         res.json({ message: "Settings saved", settings: updated });
     } catch (err) {
-        console.error("Settings save error:", err);
+        logger.error("Settings save error:", err);
         res.status(500).json({ error: "Failed to save settings" });
     }
 };

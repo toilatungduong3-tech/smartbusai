@@ -675,7 +675,7 @@ router.get("/ai/anomalies",         admin.getAnomalyDetection);      // Anomaly 
 router.get("/ai/heatmap",           admin.getBookingHeatmap);        // Booking heatmap
 router.get("/ai/price-prediction",  admin.getPricePrediction);       // Price prediction
 router.get("/ai/trip-demand",       admin.getTripDemandForecast);    // Demand forecast
-router.post("/ai/classify-ticket",  admin.classifySupportTicket);    // NLP ticket classification
+router.post("/ai/classify-ticket",  admin.classifySupportTicket);    // Rule-based keyword ticket classification (corrected — was labeled "NLP" here; see server/ai/recommendation.js)
 ```
 
 Đây là các tính năng AI nâng cao — **nằm ngoài scope Sprint 3** nhưng đã được implement.

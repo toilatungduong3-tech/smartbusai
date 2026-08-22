@@ -1,0 +1,434 @@
+{
+  "capturedAt": "2026-08-15T18:50:51.492Z",
+  "label": "after",
+  "counts": {
+    "users": 54,
+    "bus_operators": 8,
+    "buses": 53,
+    "seats": 349,
+    "routes": 1095,
+    "trips": 13401,
+    "bookings": 102,
+    "payments": 101,
+    "booking_details": 128,
+    "reviews": 55,
+    "operator_reviews": 1,
+    "loyalty_transactions": 14,
+    "support_requests": 31,
+    "password_reset_tokens": 0
+  },
+  "bookingStatusDistribution": [
+    {
+      "status": "PENDING",
+      "c": 9
+    },
+    {
+      "status": "PAID",
+      "c": 86
+    },
+    {
+      "status": "CANCELED",
+      "c": 7
+    }
+  ],
+  "paymentStatusDistribution": [
+    {
+      "status": "SUCCESS",
+      "method": "BANK",
+      "c": 28
+    },
+    {
+      "status": "SUCCESS",
+      "method": "MOMO",
+      "c": 48
+    },
+    {
+      "status": "SUCCESS",
+      "method": "ZALOPAY",
+      "c": 15
+    },
+    {
+      "status": "FAILED",
+      "method": "BANK",
+      "c": 2
+    },
+    {
+      "status": "FAILED",
+      "method": "MOMO",
+      "c": 3
+    },
+    {
+      "status": "FAILED",
+      "method": "ZALOPAY",
+      "c": 3
+    },
+    {
+      "status": "COMPLETED",
+      "method": "VIETQR",
+      "c": 2
+    }
+  ],
+  "protectedTrips": [
+    {
+      "trip_id": 4,
+      "departure_time": null,
+      "arrival_time": "2026-06-17T11:00:00.000Z",
+      "status": null
+    },
+    {
+      "trip_id": 12,
+      "departure_time": null,
+      "arrival_time": "2026-03-31T07:30:00.000Z",
+      "status": null
+    },
+    {
+      "trip_id": 15,
+      "departure_time": null,
+      "arrival_time": null,
+      "status": "COMPLETED"
+    }
+  ],
+  "protectedBooking37": [
+    {
+      "booking_id": 37,
+      "status": "PAID",
+      "total_amount": 300000
+    }
+  ],
+  "protectedPayment37": [
+    {
+      "payment_id": 37,
+      "status": "SUCCESS",
+      "amount": 300000
+    }
+  ],
+  "protectedReview36": [
+    {
+      "review_id": 36,
+      "rating": 5
+    }
+  ],
+  "backupTables": {
+    "trip_orphan_cleanup_backup_20260815": 1692,
+    "trip_status_recovery_backup_20260815": 48
+  },
+  "duplicateSeatPairs": [
+    {
+      "seat_id": 3,
+      "trip_id": 30,
+      "c": 2
+    },
+    {
+      "seat_id": 122,
+      "trip_id": 41,
+      "c": 2
+    },
+    {
+      "seat_id": 147,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 148,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 290,
+      "trip_id": 26,
+      "c": 2
+    }
+  ],
+  "duplicateBookingCodes": [],
+  "foreignKeys": [
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "booking_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "booking_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "seat_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_2",
+      "REFERENCED_TABLE_NAME": "seat",
+      "REFERENCED_COLUMN_NAME": "seat_id"
+    },
+    {
+      "TABLE_NAME": "bus",
+      "COLUMN_NAME": "operator_id",
+      "CONSTRAINT_NAME": "bus_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus_operator",
+      "REFERENCED_COLUMN_NAME": "operator_id"
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "fk_prt_user",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "payment",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "payment_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "review_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "review_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "route_stop",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "route_stop_ibfk_1",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "seat",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "seat_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_2",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "trip_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "trip_ibfk_2",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "users",
+      "COLUMN_NAME": "operator_id",
+      "CONSTRAINT_NAME": "fk_users_operator",
+      "REFERENCED_TABLE_NAME": "bus_operator",
+      "REFERENCED_COLUMN_NAME": "operator_id"
+    },
+    {
+      "TABLE_NAME": "user_behavior",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "user_behavior_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    }
+  ],
+  "indexes": [
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "booking_code",
+      "COLUMN_NAME": "booking_code",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "booking_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "trip_id",
+      "COLUMN_NAME": "trip_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "user_id",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "INDEX_NAME": "booking_id",
+      "COLUMN_NAME": "booking_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "booking_detail_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "INDEX_NAME": "seat_id",
+      "COLUMN_NAME": "seat_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "bus",
+      "INDEX_NAME": "operator_id",
+      "COLUMN_NAME": "operator_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "bus",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "bus_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "bus_operator",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "operator_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "idx_token_hash",
+      "COLUMN_NAME": "token_hash",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "idx_user_id",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "payment",
+      "INDEX_NAME": "booking_id",
+      "COLUMN_NAME": "booking_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "payment",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "payment_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "seat",
+      "INDEX_NAME": "bus_id",
+      "COLUMN_NAME": "bus_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "seat",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "seat_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "users",
+      "INDEX_NAME": "idx_users_operator_id",
+      "COLUMN_NAME": "operator_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "users",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 0
+    }
+  ],
+  "triggers": [],
+  "usersColumns": [
+    "user_id",
+    "username",
+    "full_name",
+    "email",
+    "password_hash",
+    "phone",
+    "gender",
+    "birth_date",
+    "province",
+    "district",
+    "address_detail",
+    "role",
+    "operator_id",
+    "status",
+    "created_at",
+    "loyalty_points",
+    "loyalty_tier"
+  ],
+  "hasOperatorIdColumn": true,
+  "duplicateUserEmails": [],
+  "duplicateOperatorEmails": [],
+  "operatorRoleUsersWithNoMatch": [
+    {
+      "user_id": 46,
+      "username": null,
+      "email": "tuan.op@phuongtrang.com.vn"
+    },
+    {
+      "user_id": 47,
+      "username": null,
+      "email": "operator@gmail.com"
+    },
+    {
+      "user_id": 48,
+      "username": null,
+      "email": "phuc.op@hoanglongasia.com"
+    }
+  ]
+}

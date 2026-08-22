@@ -1,10 +1,13 @@
 'use strict';
+const logger = require('../utils/logger');
 
 /* ═══════════════════════════════════════════════════════════
    SmartBusAI — Loyalty Points Service
    1,000 VND spent = 1 point
    Tiers: Bronze/Silver/Gold/Diamond
 ═══════════════════════════════════════════════════════════ */
+
+const { AppError } = require('../utils/errors');
 
 const TIER_THRESHOLDS = { BRONZE: 0, SILVER: 500, GOLD: 2000, DIAMOND: 5000 };
 const EARN_RATE   = 1;   // 1 pt per 1,000 VND
@@ -64,10 +67,15 @@ async function awardPoints(db, userId, bookingId, amount) {
         try {
             await conn.beginTransaction();
 
-            // Get current points (handle missing column gracefully)
+            // Get current points (handle missing column gracefully).
+            // Phase 2I: FOR UPDATE locks the row for the duration of this
+            // transaction — without it, two awardPoints calls for the same
+            // user racing concurrently (e.g. two bookings paid at once)
+            // could both read the same stale balance and the second UPDATE
+            // would silently overwrite the first instead of adding to it.
             let currentPts = 0;
             try {
-                const [[u]] = await conn.query('SELECT loyalty_points FROM users WHERE user_id=?', [userId]);
+                const [[u]] = await conn.query('SELECT loyalty_points FROM users WHERE user_id=? FOR UPDATE', [userId]);
                 currentPts = Number(u?.loyalty_points) || 0;
             } catch (e) { currentPts = 0; }
 
@@ -96,7 +104,7 @@ async function awardPoints(db, userId, bookingId, amount) {
             conn.release();
         }
     } catch (e) {
-        console.error('[LoyaltyService] awardPoints error (non-critical):', e.message);
+        logger.error('[LoyaltyService] awardPoints error (non-critical):', e.message);
         return 0;
     }
 }
@@ -105,23 +113,32 @@ async function awardPoints(db, userId, bookingId, amount) {
 async function redeemPoints(db, userId, pointsToRedeem) {
     await ensureColumns(db);
     const pts = Math.floor(Number(pointsToRedeem));
-    if (pts <= 0) throw new Error('Số điểm không hợp lệ');
-
-    const [[u]] = await db.query(
-        'SELECT loyalty_points, loyalty_tier FROM users WHERE user_id=?', [userId]
-    );
-    if (!u) throw new Error('Không tìm thấy user');
-
-    const current = Number(u.loyalty_points) || 0;
-    if (current < pts) throw new Error(`Không đủ điểm (có ${current}, cần ${pts})`);
+    /* Phase 2I Step 3: `pts <= 0` alone does not catch NaN (all comparisons
+       against NaN are false in JS) — a non-numeric points value slipped
+       through to the query, which then leaked a raw MySQL error message
+       ("Unknown column 'NaN' in 'field list'") straight to the API client. */
+    if (!Number.isFinite(pts) || pts <= 0) throw new AppError(422, 'Số điểm không hợp lệ');
 
     const discountAmount = Math.floor(pts / REDEEM_RATE) * 10000;
-    const newPts  = current - pts;
-    const newTier = calculateTier(newPts);
 
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
+        /* Phase 2I: balance was previously read outside the transaction
+           with no row lock, then trusted for the UPDATE — two concurrent
+           redeem requests (double-click) could both read the same balance,
+           both pass the "enough points" check, and both deduct, letting a
+           user redeem the same points twice / go negative. SELECT ... FOR
+           UPDATE serializes concurrent redemptions for the same user. */
+        const [[u]] = await conn.query(
+            'SELECT loyalty_points FROM users WHERE user_id=? FOR UPDATE', [userId]
+        );
+        if (!u) throw new AppError(404, 'Không tìm thấy user');
+        const current = Number(u.loyalty_points) || 0;
+        if (current < pts) throw new AppError(409, `Không đủ điểm (có ${current}, cần ${pts})`);
+        const newPts  = current - pts;
+        const newTier = calculateTier(newPts);
+
         await conn.query(
             'UPDATE users SET loyalty_points=?, loyalty_tier=? WHERE user_id=?',
             [newPts, newTier, userId]

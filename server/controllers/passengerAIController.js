@@ -1,6 +1,18 @@
 'use strict';
 const db = require('../config/db');
 const ai = require('../ai/recommendation');
+const aiIntentPredictor = require('../services/aiIntentPredictor');
+const aiDemandForecaster = require('../services/aiDemandForecaster');
+const aiUserProfilingService = require('../services/aiUserProfilingService');
+const logger = require('../utils/logger');
+
+// Phase 2I: shared ownership check for the userId-scoped AI endpoints below
+// (mirrors canAccessBooking in bookingController.js) — self or ADMIN/OPERATOR.
+function _isSelfOrPrivileged(req, targetUserId) {
+    if (!req.user) return false;
+    if (req.user.role === 'ADMIN' || req.user.role === 'OPERATOR') return true;
+    return Number(targetUserId) === Number(req.user.user_id);
+}
 
 /* ═══════════════════════════════════════════════════════════
    SmartBusAI — Passenger-facing AI endpoints
@@ -445,6 +457,9 @@ async function _buildRecommendations(userId) {
 exports.getRecommendations = async (req, res) => {
     const userId = parseInt(req.params.userId);
     if (!userId) return res.status(400).json({ message: 'Invalid userId' });
+    if (!_isSelfOrPrivileged(req, userId)) {
+        return res.status(403).json({ message: 'Không có quyền truy cập dữ liệu này' });
+    }
 
     try {
         const recommendations = await _buildRecommendations(userId);
@@ -476,7 +491,7 @@ exports.getRecommendations = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[AI] getRecommendations error:', err.message);
+        logger.error('[AI] getRecommendations error:', err.message);
         res.status(500).json({ message: 'AI error', recommendations: [] });
     }
 };
@@ -486,8 +501,9 @@ exports.getRecommendations = async (req, res) => {
    Same engine, mounted at the new path for cleaner API design
 ═══════════════════════════════════════════════════════════ */
 exports.getMyRecommendations = async (req, res) => {
-    const userId = parseInt(req.query.userId || req.query.user_id);
-    if (!userId) return res.status(400).json({ message: 'userId query param required' });
+    // Phase 2I: userId now comes only from the authenticated JWT (req.user),
+    // never from the client-supplied query string — see recommendationRoutes.js.
+    const userId = req.user.user_id;
 
     try {
         const recommendations = await _buildRecommendations(userId);
@@ -501,7 +517,7 @@ exports.getMyRecommendations = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('[AI] getMyRecommendations error:', err.message);
+        logger.error('[AI] getMyRecommendations error:', err.message);
         res.status(500).json({ message: 'AI error', recommendations: [] });
     }
 };
@@ -581,7 +597,7 @@ exports.getTrending = async (req, res) => {
 
         res.json({ recommendations: result, type: 'trending', generated_at: new Date() });
     } catch (err) {
-        console.error('[AI] getTrending error:', err.message);
+        logger.error('[AI] getTrending error:', err.message);
         res.json({ recommendations: [] });
     }
 };
@@ -592,6 +608,9 @@ exports.getTrending = async (req, res) => {
 exports.getBehaviorProfile = async (req, res) => {
     const userId = parseInt(req.params.userId);
     if (!userId) return res.status(400).json({ message: 'Invalid userId' });
+    if (!_isSelfOrPrivileged(req, userId)) {
+        return res.status(403).json({ message: 'Không có quyền truy cập dữ liệu này' });
+    }
     try {
         const [
             [topRoutes], [hourDist], [dowDist], [busTypeDist], [searchDist], [recentSearches]
@@ -653,7 +672,7 @@ exports.getBehaviorProfile = async (req, res) => {
             search_patterns: searchDist, recent_searches: recentSearches,
             insights, generated_at: new Date() });
     } catch (err) {
-        console.error('[AI] getBehaviorProfile error:', err.message);
+        logger.error('[AI] getBehaviorProfile error:', err.message);
         res.status(500).json({ message: 'AI error' });
     }
 };
@@ -662,11 +681,15 @@ exports.getBehaviorProfile = async (req, res) => {
    GET /api/ai/search-insight?origin=X&destination=Y&userId=Z
 ═══════════════════════════════════════════════════════════ */
 exports.getSearchInsight = async (req, res) => {
-    const { origin, destination, userId } = req.query;
+    const { origin, destination } = req.query;
     if (!origin || !destination) return res.json({ insights: [] });
     try {
         const insights = [];
-        const uid = parseInt(userId) || null;
+        // Phase 2I: uid now comes only from optionalAuth's req.user (if a
+        // valid token was sent), never from the client-supplied ?userId=
+        // query param — previously any caller could read any other user's
+        // search/booking behavior for a given route.
+        const uid = req.user ? req.user.user_id : null;
 
         const [priceRows] = await db.query(`
             SELECT AVG(t.base_price) AS avg_price, MIN(t.base_price) AS min_price,
@@ -730,7 +753,102 @@ exports.getSearchInsight = async (req, res) => {
 
         res.json({ origin, destination, insights, generated_at: new Date() });
     } catch (err) {
-        console.error('[AI] getSearchInsight error:', err.message);
+        logger.error('[AI] getSearchInsight error:', err.message);
         res.json({ insights: [] });
+    }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Sprint 11 — Real Behavioral AI, Preference Learning & Booking
+   Intent Prediction.
+═══════════════════════════════════════════════════════════ */
+
+/* ── POST /api/ai/predict-intent ──
+   Public/optionalAuth: works for a logged-in user (user_id from JWT) or
+   an anonymous session (session_events only, no user_id) — booking
+   intent within a single session doesn't require an account. */
+exports.predictIntent = async (req, res) => {
+    try {
+        const { session_events, session_id } = req.body || {};
+        const userId = (req.user && req.user.user_id) || (req.body && req.body.user_id ? Number(req.body.user_id) : null);
+
+        if (!Array.isArray(session_events)) {
+            return res.status(400).json({ message: 'session_events phải là một mảng' });
+        }
+
+        const result = aiIntentPredictor.predictIntent({ session_events });
+        aiIntentPredictor.logIntent({ user_id: userId, session_id, result }); // best-effort, not awaited on the response path
+
+        res.json(result);
+    } catch (err) {
+        logger.error('[AI] predictIntent error:', err.message);
+        res.status(500).json({ message: 'AI error' });
+    }
+};
+
+/* ── GET /api/ai/demand-forecast — Admin/Operator ── */
+exports.demandForecast = async (req, res) => {
+    try {
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+        const forecast = await aiDemandForecaster.getDemandForecast({ limit });
+        res.json({ forecast, generated_at: new Date(), window_days: aiDemandForecaster.FORECAST_WINDOW_DAYS });
+    } catch (err) {
+        logger.error('[AI] demandForecast error:', err.message);
+        res.status(500).json({ message: 'AI error' });
+    }
+};
+
+/* ── GET /api/ai/behavioral-analytics — Admin/Operator ──
+   System-wide (not per-user) distribution for the dashboard's "Biểu đồ
+   Phân bố Nhu cầu Khách hàng" chart: real counts over the last 30 days
+   of PAID bookings, grouped into the same price/time/vehicle buckets
+   aiUserProfilingService uses per-user. */
+exports.getBehavioralAnalytics = async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT t.departure_time, t.base_price, bs.bus_type, bd.price AS seat_price
+            FROM booking b
+            JOIN trip t ON b.trip_id = t.trip_id
+            JOIN bus bs ON t.bus_id = bs.bus_id
+            LEFT JOIN booking_detail bd ON bd.booking_id = b.booking_id
+            WHERE b.status = 'PAID' AND b.booking_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        `);
+
+        const { classifyVehicleType, timeBucket } = aiUserProfilingService;
+
+        const priceBuckets = { 'duoi_100k': 0, '100k_200k': 0, '200k_400k': 0, 'tren_400k': 0 };
+        const timeBuckets = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+        const vehicleBuckets = { GIUONG_NAM: 0, LIMOUSINE: 0, GHE_NGOI: 0 };
+
+        rows.forEach(r => {
+            const price = Number(r.seat_price != null ? r.seat_price : r.base_price) || 0;
+            if (price < 100000) priceBuckets.duoi_100k++;
+            else if (price < 200000) priceBuckets['100k_200k']++;
+            else if (price < 400000) priceBuckets['200k_400k']++;
+            else priceBuckets.tren_400k++;
+
+            const hour = new Date(r.departure_time).getHours();
+            timeBuckets[timeBucket(hour)]++;
+
+            vehicleBuckets[classifyVehicleType(r.bus_type)]++;
+        });
+
+        const [intentLogRows] = await db.query(`
+            SELECT intent_log_id, user_id, intent_score, intent_level, dropoff_risk, recommended_action, created_at
+            FROM ai_intent_log ORDER BY created_at DESC LIMIT 50
+        `).catch(() => [[]]);
+
+        res.json({
+            sample_size: rows.length,
+            window_days: 30,
+            price_distribution: priceBuckets,
+            time_distribution: timeBuckets,
+            vehicle_distribution: vehicleBuckets,
+            recent_intent_log: intentLogRows,
+            generated_at: new Date(),
+        });
+    } catch (err) {
+        logger.error('[AI] getBehavioralAnalytics error:', err.message);
+        res.status(500).json({ message: 'AI error' });
     }
 };

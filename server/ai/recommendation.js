@@ -1,10 +1,20 @@
 'use strict';
 const db = require('../config/db');
+const logger = require('../utils/logger');
 
 /* ═══════════════════════════════════════════════════════════
    SmartBusAI — AI Recommendation & Analytics Engine
-   Algorithms: Collaborative Filtering, Linear Regression,
-   Demand Forecasting, NLP Classification
+   Algorithms: Collaborative Filtering (co-occurrence counting),
+   Linear Regression, Time-Decay Demand Forecasting,
+   Rule-based Keyword Classifier (support ticket routing)
+
+   Sprint 3 — thesis-compliance correction: this file previously called
+   the support-ticket classifier below "NLP Classification". It is not —
+   classifySupportTicket() does plain Vietnamese substring/keyword matching
+   against a static word list with canned response templates, no
+   tokenization, embeddings, or trained model of any kind. Every other
+   algorithm here is a genuine, real, DB-driven heuristic/statistical
+   technique (not mocked/hardcoded data) — just not machine learning.
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Utility: simple linear regression ─────────────────── */
@@ -109,7 +119,7 @@ async function getPersonalizedRoutes(userId, limit = 5) {
             reason: `Booked by ${Math.min(similarUsers.length, 10)}+ similar users`
         }));
     } catch (err) {
-        console.error('[AI] getPersonalizedRoutes error:', err.message);
+        logger.error('[AI] getPersonalizedRoutes error:', err.message);
         return [];
     }
 }
@@ -203,7 +213,7 @@ async function predictOptimalPrice(routeId, departureDate) {
             reasoning
         };
     } catch (err) {
-        console.error('[AI] predictOptimalPrice error:', err.message);
+        logger.error('[AI] predictOptimalPrice error:', err.message);
         return { basePrice: null, suggestedMin: null, suggestedMax: null,
                  demandFactor: 1.0, reasoning: 'Error during prediction' };
     }
@@ -289,13 +299,16 @@ async function forecastDemand(tripId) {
             data_points: historical.length
         };
     } catch (err) {
-        console.error('[AI] forecastDemand error:', err.message);
+        logger.error('[AI] forecastDemand error:', err.message);
         return { score: 0, level: 'LOW', estimated_occupancy: '0%' };
     }
 }
 
-/* ── 4. NLP SUPPORT CLASSIFICATION ──────────────────────
-   Vietnamese keyword-based ticket classifier              */
+/* ── 4. RULE-BASED KEYWORD CLASSIFIER (support tickets) ──
+   Vietnamese keyword/substring matching against a static word list,
+   canned response templates. Not NLP — no tokenization, stemming,
+   embeddings, or trained model. Renamed from "NLP Classification" —
+   Sprint 3 thesis-compliance correction (MASTER_COMPLETION_MATRIX.md). */
 function classifySupportTicket(title, content) {
     const keywords = {
         PAYMENT: {
@@ -439,7 +452,7 @@ async function forecastRevenue(days = 30) {
         }
         return result;
     } catch (err) {
-        console.error('[AI] forecastRevenue error:', err.message);
+        logger.error('[AI] forecastRevenue error:', err.message);
         return [];
     }
 }
@@ -546,7 +559,7 @@ async function detectAnomalies() {
 
         return anomalies;
     } catch (err) {
-        console.error('[AI] detectAnomalies error:', err.message);
+        logger.error('[AI] detectAnomalies error:', err.message);
         return [];
     }
 }
@@ -585,7 +598,7 @@ async function getBookingHeatmap() {
             hours: Array.from({ length: 24 }, (_, i) => i)
         };
     } catch (err) {
-        console.error('[AI] getBookingHeatmap error:', err.message);
+        logger.error('[AI] getBookingHeatmap error:', err.message);
         return { matrix: Array.from({ length: 7 }, () => Array(24).fill(0)), raw: [], days: [], hours: [] };
     }
 }
@@ -620,7 +633,7 @@ async function getTopRecommendedRoutes(limit = 10) {
 
         return sorted;
     } catch (err) {
-        console.error('[AI] getTopRecommendedRoutes error:', err.message);
+        logger.error('[AI] getTopRecommendedRoutes error:', err.message);
         return [];
     }
 }

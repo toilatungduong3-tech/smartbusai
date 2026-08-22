@@ -59,7 +59,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.22);}
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:15px;transition:background .2s;}
 .hdr-badge:hover{background:var(--glass2);}
@@ -69,11 +69,6 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .op-name{font-size:12px;font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* ═══ MAIN ═══ */
 .main{max-width:1440px;margin:0 auto;padding:28px 32px 60px;}
 
@@ -292,11 +287,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   </nav>
   <div class="hdr-actions">
     <div class="hdr-badge" title="Thông báo"><div class="badge-dot"></div></div>
-    <div class="op-chip">
-      <div class="op-avatar">🏢</div>
-      <span class="op-name" id="opNameChip">Nhà xe</span>
-    </div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -510,6 +501,9 @@ document.addEventListener("click",e=>{
 
 /* ── Utils ── */
 const API="/api";
+/* Phase 2I Step 4: dashboard endpoints now require ADMIN/OPERATOR and are
+   scoped server-side to the authenticated operator — attach the Bearer token. */
+function _authHeaders(){const t=typeof getAccessToken==="function"?getAccessToken():null;return t?{Authorization:`Bearer ${t}`}:{};}
 Chart.defaults.color="rgba(255,255,255,0.5)";
 Chart.defaults.borderColor="rgba(255,255,255,0.06)";
 Chart.defaults.font.family="Segoe UI";
@@ -517,7 +511,7 @@ Chart.defaults.font.size=11;
 
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
 function fmtDate(s){if(!s)return"—";try{return new Date(s).toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});}catch{return s;}}
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 
 function toast(msg,type="info"){
   const w=document.getElementById("toastWrap");
@@ -527,12 +521,18 @@ function toast(msg,type="info"){
   setTimeout(()=>{el.style.animation="toastOut .3s ease forwards";setTimeout(()=>el.remove(),320);},3000);
 }
 
-/* Operator name from localStorage */
-const opName=localStorage.getItem("operator_name")||"Nhà xe";
-document.getElementById("opNameChip").textContent=opName;
+if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
 // Show op name in page title
 (function(){
   const title=document.getElementById("pgTitle");
+  /* Bug fix: `opName` was referenced here but never declared anywhere in
+     this file — a bare ReferenceError thrown at page-load time, before
+     any KPI/chart data ever gets fetched. This IIFE runs synchronously
+     ahead of the loadStats()/loadRevenue()/... calls further down the
+     script, so the throw silently killed the rest of the script on every
+     load — the dashboard's "Đang tải dữ liệu..." placeholder was never a
+     network/timing issue, it just never got the chance to run. */
+  const opName=(typeof getUser==="function"?getUser():null)?.operator_name;
   if(title&&opName&&opName!=="Nhà xe")title.textContent="🚌 "+opName+" — Tổng quan";
 })();
 
@@ -554,7 +554,7 @@ function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];
 /* ── STATS ── */
 async function loadStats(){
   try{
-    const res=await fetch(`${API}/operators/dashboard/stats`);
+    const res=await fetch(`${API}/operators/dashboard/stats`,{headers:_authHeaders()});
     const d=await res.json();
     document.getElementById("todayRevenue").textContent=money(d.todayRevenue);
     document.getElementById("todayBookings").textContent=d.todayBookings??0;
@@ -602,7 +602,7 @@ async function loadStats(){
 async function loadRevenue(){
   destroyChart("rev");
   try{
-    const res=await fetch(`${API}/operators/dashboard/revenue`);
+    const res=await fetch(`${API}/operators/dashboard/revenue`,{headers:_authHeaders()});
     const data=await res.json();
     buildRevChart(data.map(d=>d.date),data.map(d=>d.revenue));
   }catch{
@@ -634,7 +634,7 @@ function buildRevChart(labels,data){
 async function loadRoutes(){
   destroyChart("route");
   try{
-    const res=await fetch(`${API}/operators/dashboard/routes`);
+    const res=await fetch(`${API}/operators/dashboard/routes`,{headers:_authHeaders()});
     const data=await res.json();
     buildRouteChart(data.map(d=>d.route),data.map(d=>d.count));
   }catch{
@@ -662,7 +662,7 @@ function buildRouteChart(labels,data){
 async function loadBookingStatus(){
   destroyChart("bkStatus");
   try{
-    const res=await fetch(`${API}/operators/dashboard/booking-status`);
+    const res=await fetch(`${API}/operators/dashboard/booking-status`,{headers:_authHeaders()});
     const d=await res.json();
     buildBkStatusChart([d.paid||0,d.pending||0,d.canceled||0]);
   }catch{
@@ -690,7 +690,7 @@ function buildBkStatusChart(data){
 /* ── SEAT OCCUPANCY ── */
 async function loadSeatOccupancy(){
   try{
-    const res=await fetch(`${API}/operators/dashboard/seat-occupancy`);
+    const res=await fetch(`${API}/operators/dashboard/seat-occupancy`,{headers:_authHeaders()});
     const data=await res.json();
     renderSeatOcc(data);
   }catch{
@@ -724,7 +724,7 @@ function renderSeatOcc(data){
 /* ── RECENT TRIPS ── */
 async function loadRecentTrips(){
   try{
-    const res=await fetch(`${API}/operators/dashboard/recent-trips`);
+    const res=await fetch(`${API}/operators/dashboard/recent-trips`,{headers:_authHeaders()});
     const data=await res.json();
     renderTrips(data);
   }catch{
@@ -760,7 +760,7 @@ function renderTrips(data){
 /* ── FLEET ── */
 async function loadFleet(){
   try{
-    const res=await fetch(`${API}/operators/dashboard/buses`);
+    const res=await fetch(`${API}/operators/dashboard/buses`,{headers:_authHeaders()});
     const data=await res.json();
     renderFleet(Array.isArray(data)?data:data.data||[]);
   }catch{
@@ -797,7 +797,7 @@ function renderFleet(data){
 /* ── REVIEWS ── */
 async function loadReviews(){
   try{
-    const res=await fetch(`${API}/operators/dashboard/reviews`);
+    const res=await fetch(`${API}/operators/dashboard/reviews`,{headers:_authHeaders()});
     const data=await res.json();
     renderReviews(data);
   }catch{

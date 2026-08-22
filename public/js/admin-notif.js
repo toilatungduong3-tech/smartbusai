@@ -208,7 +208,11 @@ document.addEventListener('click', function(e){
 /* ── Load from API ── */
 async function _load(){
   try{
-    const res = await fetch('/api/admin/notifications');
+    /* Phase 2I Step 4: this call had no Authorization header, so it always
+       hit /api/admin's authenticate+requireAdmin gate with a 401 — the
+       notification bell has been silently broken on every admin page. */
+    const _token = typeof getAccessToken === 'function' ? getAccessToken() : null;
+    const res = await fetch('/api/admin/notifications', _token ? { headers: { Authorization: `Bearer ${_token}` } } : {});
     if(!res.ok) return;
     _data = await res.json();
     _updateBadge();

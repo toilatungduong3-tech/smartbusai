@@ -365,6 +365,7 @@ body{
 }
 </style>
 <script src="/js/api.js"></script>
+<script src="/js/legalModal.js"></script>
 </head>
 <body>
 
@@ -527,8 +528,8 @@ body{
           <input type="checkbox" id="agreeTerms" name="agreeTerms"
             onclick="event.stopPropagation()">
           <label for="agreeTerms" onclick="event.preventDefault()">
-            Tôi đồng ý với <a href="#" onclick="event.stopPropagation()">Điều khoản dịch vụ</a>
-            và <a href="#" onclick="event.stopPropagation()">Chính sách bảo mật</a> của SmartBusAI
+            Tôi đồng ý với <a href="/pages/legal/terms-of-service.html" onclick="event.stopPropagation();openLegalModal('terms');return false;">Điều khoản dịch vụ</a>
+            và <a href="/pages/legal/privacy-policy.html" onclick="event.stopPropagation();openLegalModal('privacy');return false;">Chính sách bảo mật</a> của SmartBusAI
           </label>
         </div>
         <div class="err" id="termsError"></div>
@@ -544,6 +545,11 @@ body{
       <button class="google-btn" id="googleRegBtn" style="display:none" onclick="handleGoogleRegister()">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
         Đăng ký với Google
+      </button>
+
+      <button class="google-btn" id="facebookRegBtn" style="display:none;margin-top:10px;" onclick="handleFacebookRegister()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#1877F2" d="M48 24C48 10.7 37.3 0 24 0S0 10.7 0 24c0 12 8.8 22 20.3 23.8V31H14.2v-7h6.1v-5.3c0-6 3.6-9.3 9-9.3 2.6 0 5.3.5 5.3.5v5.9h-3c-3 0-3.9 1.9-3.9 3.7V24h6.6l-1.1 7h-5.5v16.8C39.2 46 48 36 48 24z"/></svg>
+        Đăng ký với Facebook
       </button>
 
     </div>
@@ -788,7 +794,7 @@ async function handleGoogleRegister(){
     return;
   }
   btn.disabled=true;
-  btn.innerHTML=`<span style="opacity:.6">Đang kết nối Google…</span>`;
+  btn.innerHTML=`<span class="oauth-spinner"></span><span style="opacity:.75">Đang kết nối Google…</span>`;
   google.accounts.id.prompt((n)=>{
     if(n.isNotDisplayed()||n.isSkippedMoment()) _resetGoogleBtn();
   });
@@ -817,7 +823,12 @@ async function _processGoogleCredential(credential){
     localStorage.setItem("user_id",data.user.user_id);
     if(data.accessToken)  localStorage.setItem("accessToken",data.accessToken);
     if(data.refreshToken) localStorage.setItem("refreshToken",data.refreshToken);
-    setTimeout(()=>{ window.location.href="/pages/passenger/index.html"; },800);
+    setTimeout(()=>{
+      const role=data.user.role;
+      if(role==="ADMIN")         window.location.href="/pages/admin/admin.html";
+      else if(role==="OPERATOR") window.location.href="/pages/operator/operator.html";
+      else                       window.location.href="/pages/passenger/index.html";
+    },800);
   }catch(e){
     document.getElementById("message").className="message error";
     document.getElementById("message").textContent="Không kết nối được server";
@@ -830,6 +841,93 @@ function _resetGoogleBtn(){
   if(!btn)return;
   btn.disabled=false;
   btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>Đăng ký với Google`;
+}
+
+/* ── FACEBOOK REGISTER — same architecture as Google above ── */
+let _fbReady=false, _fbAppId=null;
+
+async function _initFacebook(){
+  try{
+    const res=await fetch("/api/auth/facebook-config");
+    const {appId,configured}=await res.json();
+    if(!configured||!appId) return; // button already hidden by default
+    _fbAppId=appId;
+    document.getElementById("facebookRegBtn").style.display="flex";
+    document.getElementById("googleDivider").style.display="flex";
+  }catch(e){ /* not configured — keep hidden */ }
+}
+_initFacebook();
+
+async function _ensureFacebookSdk(){
+  if(_fbReady) return;
+  await new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://connect.facebook.net/en_US/sdk.js";
+    s.onload=resolve; s.onerror=reject;
+    document.head.appendChild(s);
+  });
+  FB.init({ appId:_fbAppId, cookie:true, xfbml:false, version:"v19.0" });
+  _fbReady=true;
+}
+
+async function handleFacebookRegister(){
+  const btn=document.getElementById("facebookRegBtn");
+  if(!_fbAppId){
+    document.getElementById("message").className="message error";
+    document.getElementById("message").textContent="⚠️ Facebook Login chưa sẵn sàng";
+    return;
+  }
+  btn.disabled=true;
+  const original=btn.innerHTML;
+  btn.innerHTML=`<span class="oauth-spinner"></span><span style="opacity:.75">Đang kết nối Facebook…</span>`;
+  try{
+    await _ensureFacebookSdk();
+    FB.login((response)=>{
+      if(response.authResponse && response.authResponse.accessToken){
+        _processFacebookToken(response.authResponse.accessToken);
+      }else{
+        btn.disabled=false; btn.innerHTML=original;
+      }
+    }, { scope:"public_profile,email" });
+  }catch(e){
+    document.getElementById("message").className="message error";
+    document.getElementById("message").textContent="Không tải được Facebook SDK";
+    btn.disabled=false; btn.innerHTML=original;
+  }
+}
+
+async function _processFacebookToken(accessToken){
+  const btn=document.getElementById("facebookRegBtn");
+  const original=`<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#1877F2" d="M48 24C48 10.7 37.3 0 24 0S0 10.7 0 24c0 12 8.8 22 20.3 23.8V31H14.2v-7h6.1v-5.3c0-6 3.6-9.3 9-9.3 2.6 0 5.3.5 5.3.5v5.9h-3c-3 0-3.9 1.9-3.9 3.7V24h6.6l-1.1 7h-5.5v16.8C39.2 46 48 36 48 24z"/></svg>Đăng ký với Facebook`;
+  try{
+    const res=await fetch("/api/auth/facebook",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({accessToken})
+    });
+    const data=await res.json();
+    if(!res.ok){
+      document.getElementById("message").className="message error";
+      document.getElementById("message").textContent=data.message||"Đăng ký Facebook thất bại";
+      btn.disabled=false; btn.innerHTML=original; return;
+    }
+    document.getElementById("message").className="message success";
+    document.getElementById("message").textContent="✅ Tài khoản Facebook đã liên kết! Đang chuyển hướng…";
+    localStorage.clear();
+    localStorage.setItem("user",JSON.stringify(data.user));
+    localStorage.setItem("user_id",data.user.user_id);
+    if(data.accessToken)  localStorage.setItem("accessToken",data.accessToken);
+    if(data.refreshToken) localStorage.setItem("refreshToken",data.refreshToken);
+    setTimeout(()=>{
+      const role=data.user.role;
+      if(role==="ADMIN")         window.location.href="/pages/admin/admin.html";
+      else if(role==="OPERATOR") window.location.href="/pages/operator/operator.html";
+      else                       window.location.href="/pages/passenger/index.html";
+    },800);
+  }catch(e){
+    document.getElementById("message").className="message error";
+    document.getElementById("message").textContent="Không kết nối được server";
+    btn.disabled=false; btn.innerHTML=original;
+  }
 }
 </script>
 </body>

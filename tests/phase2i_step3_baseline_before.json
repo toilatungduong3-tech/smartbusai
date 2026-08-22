@@ -1,0 +1,404 @@
+{
+  "capturedAt": "2026-08-15T07:10:47.600Z",
+  "label": "before",
+  "counts": {
+    "users": 54,
+    "trips": 13400,
+    "routes": 1095,
+    "bookings": 101,
+    "payments": 101,
+    "reviews": 55,
+    "operator_reviews": 1,
+    "loyalty_transactions": 14,
+    "support_requests": 31,
+    "password_reset_tokens": 0,
+    "seats": 349,
+    "buses": 53,
+    "operators": 8,
+    "search_logs": 99
+  },
+  "bookingStatusDistribution": [
+    {
+      "status": "PENDING",
+      "c": 8
+    },
+    {
+      "status": "PAID",
+      "c": 86
+    },
+    {
+      "status": "CANCELED",
+      "c": 7
+    }
+  ],
+  "paymentStatusDistribution": [
+    {
+      "status": "SUCCESS",
+      "method": "BANK",
+      "c": 28
+    },
+    {
+      "status": "SUCCESS",
+      "method": "MOMO",
+      "c": 48
+    },
+    {
+      "status": "SUCCESS",
+      "method": "ZALOPAY",
+      "c": 15
+    },
+    {
+      "status": "FAILED",
+      "method": "BANK",
+      "c": 2
+    },
+    {
+      "status": "FAILED",
+      "method": "MOMO",
+      "c": 3
+    },
+    {
+      "status": "FAILED",
+      "method": "ZALOPAY",
+      "c": 3
+    },
+    {
+      "status": "COMPLETED",
+      "method": "VIETQR",
+      "c": 2
+    }
+  ],
+  "tripStatusDistribution": [
+    {
+      "status": null,
+      "c": 2
+    },
+    {
+      "status": "OPEN",
+      "c": 13347
+    },
+    {
+      "status": "COMPLETED",
+      "c": 51
+    }
+  ],
+  "maxIds": {
+    "max_user_id": 54,
+    "max_trip_id": 15092,
+    "max_booking_id": 101,
+    "max_payment_id": 101,
+    "max_review_id": 55,
+    "max_loyalty_tx_id": 14,
+    "max_support_id": 31,
+    "max_reset_token_id": null
+  },
+  "loyaltyPointsTotal": "11365",
+  "loyaltyTransactionPointsSum": [
+    {
+      "type": "EARN",
+      "c": 14,
+      "points_sum": "11365"
+    }
+  ],
+  "protectedTrips": [
+    {
+      "trip_id": 4,
+      "bus_id": 1,
+      "route_id": null,
+      "departure_time": null,
+      "arrival_time": "2026-06-17T11:00:00.000Z",
+      "base_price": null,
+      "status": null
+    },
+    {
+      "trip_id": 12,
+      "bus_id": 1,
+      "route_id": null,
+      "departure_time": null,
+      "arrival_time": "2026-03-31T07:30:00.000Z",
+      "base_price": null,
+      "status": null
+    },
+    {
+      "trip_id": 15,
+      "bus_id": 1,
+      "route_id": null,
+      "departure_time": null,
+      "arrival_time": null,
+      "base_price": null,
+      "status": "COMPLETED"
+    }
+  ],
+  "protectedBooking37": [
+    {
+      "booking_id": 37,
+      "user_id": 37,
+      "guest_name": null,
+      "guest_phone": null,
+      "guest_email": null,
+      "booking_code": null,
+      "trip_id": 15,
+      "booking_time": "2025-02-22T02:00:00.000Z",
+      "total_amount": 300000,
+      "status": "PAID",
+      "payment_ref": null,
+      "extras": null,
+      "reminder_sent": 0
+    }
+  ],
+  "protectedPayment37": [
+    {
+      "payment_id": 37,
+      "booking_id": 37,
+      "method": "ZALOPAY",
+      "payment_time": null,
+      "amount": 300000,
+      "status": "SUCCESS"
+    }
+  ],
+  "protectedReview36": [
+    {
+      "review_id": 36,
+      "user_id": 37,
+      "trip_id": 15,
+      "rating": 5,
+      "comment": "Rất hài lòng! Đặt vé online dễ, lên xe thoải mái.",
+      "rating_time": null,
+      "rating_clean": null,
+      "rating_service": null,
+      "rating_comfort": null,
+      "tags": null,
+      "created_at": "2025-03-03T02:00:00.000Z"
+    }
+  ],
+  "backupTables": {
+    "trip_orphan_cleanup_backup_20260815": 1692,
+    "trip_status_recovery_backup_20260815": 48
+  },
+  "passwordResetTokens": {
+    "schemaExists": true,
+    "rows": []
+  },
+  "duplicateBookingCodes": [],
+  "indexes": [
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "booking_code",
+      "COLUMN_NAME": "booking_code",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "booking_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "trip_id",
+      "COLUMN_NAME": "trip_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "booking",
+      "INDEX_NAME": "user_id",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "idx_token_hash",
+      "COLUMN_NAME": "token_hash",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "idx_user_id",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "payment",
+      "INDEX_NAME": "booking_id",
+      "COLUMN_NAME": "booking_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "payment",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "payment_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "review",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "review_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "review",
+      "INDEX_NAME": "trip_id",
+      "COLUMN_NAME": "trip_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "review",
+      "INDEX_NAME": "user_id",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "seat",
+      "INDEX_NAME": "bus_id",
+      "COLUMN_NAME": "bus_id",
+      "NON_UNIQUE": 1
+    },
+    {
+      "TABLE_NAME": "seat",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "seat_id",
+      "NON_UNIQUE": 0
+    },
+    {
+      "TABLE_NAME": "users",
+      "INDEX_NAME": "PRIMARY",
+      "COLUMN_NAME": "user_id",
+      "NON_UNIQUE": 0
+    }
+  ],
+  "foreignKeys": [
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "ai_recommendation",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "ai_recommendation_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "booking_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "booking",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "booking_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "booking_detail",
+      "COLUMN_NAME": "seat_id",
+      "CONSTRAINT_NAME": "booking_detail_ibfk_2",
+      "REFERENCED_TABLE_NAME": "seat",
+      "REFERENCED_COLUMN_NAME": "seat_id"
+    },
+    {
+      "TABLE_NAME": "bus",
+      "COLUMN_NAME": "operator_id",
+      "CONSTRAINT_NAME": "bus_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus_operator",
+      "REFERENCED_COLUMN_NAME": "operator_id"
+    },
+    {
+      "TABLE_NAME": "password_reset_tokens",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "fk_prt_user",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "payment",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "payment_ibfk_1",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "trip_id",
+      "CONSTRAINT_NAME": "review_ibfk_2",
+      "REFERENCED_TABLE_NAME": "trip",
+      "REFERENCED_COLUMN_NAME": "trip_id"
+    },
+    {
+      "TABLE_NAME": "review",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "review_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "route_stop",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "route_stop_ibfk_1",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "seat",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "seat_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "booking_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_2",
+      "REFERENCED_TABLE_NAME": "booking",
+      "REFERENCED_COLUMN_NAME": "booking_id"
+    },
+    {
+      "TABLE_NAME": "support_request",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "support_request_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "bus_id",
+      "CONSTRAINT_NAME": "trip_ibfk_1",
+      "REFERENCED_TABLE_NAME": "bus",
+      "REFERENCED_COLUMN_NAME": "bus_id"
+    },
+    {
+      "TABLE_NAME": "trip",
+      "COLUMN_NAME": "route_id",
+      "CONSTRAINT_NAME": "trip_ibfk_2",
+      "REFERENCED_TABLE_NAME": "route",
+      "REFERENCED_COLUMN_NAME": "route_id"
+    },
+    {
+      "TABLE_NAME": "user_behavior",
+      "COLUMN_NAME": "user_id",
+      "CONSTRAINT_NAME": "user_behavior_ibfk_1",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "user_id"
+    }
+  ],
+  "triggers": []
+}

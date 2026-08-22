@@ -367,13 +367,24 @@ async function seedFull() {
   ];
 
   if (opIds.length < 5) {
-    const [users] = await db.query("SELECT user_id FROM users WHERE role='OPERATOR' LIMIT 10");
-    let userIdx = 0;
+    /* Phase 2I: this used to fetch existing role='OPERATOR' users and walk
+       through them round-robin (users[userIdx % users.length]) while
+       creating each bus_operator row below — but the computed userId was
+       never actually written anywhere, dead code. It looked like an
+       attempt to auto-link operator accounts to companies, which is
+       exactly the kind of guess this seeder must not make: a generic
+       seed script has no evidence for which real login account
+       administers which company. That linkage is now an explicit,
+       evidence-based relationship (users.operator_id -> bus_operator,
+       migrate_v8.sql) and must be established deliberately — see
+       migrate_v8.sql's data-reconciliation step — never inferred from row
+       order during seeding. Newly seeded bus_operator rows here
+       intentionally have no linked user; an unlinked OPERATOR account
+       fails closed (operatorScope.js) rather than falling back to
+       guessed or global access. */
     for (const [name, email, phone] of opNames) {
       const [existing] = await db.query('SELECT operator_id FROM bus_operator WHERE name=?', [name]);
       if (existing.length > 0) { opIds.push(existing[0].operator_id); continue; }
-      const userId = users[userIdx % users.length]?.user_id || null;
-      userIdx++;
       try {
         const [r] = await db.query(
           'INSERT INTO bus_operator (name, email, phone, status) VALUES (?,?,?,?)',
@@ -583,7 +594,7 @@ async function runSeedIfNeeded() {
   }
 }
 
-module.exports = { runSeedIfNeeded, seedFull };
+module.exports = { runSeedIfNeeded, seedFull, PROVINCES, BUS_STATIONS };
 
 // Chạy trực tiếp: node server/config/seed_full.js
 if (require.main === module) {

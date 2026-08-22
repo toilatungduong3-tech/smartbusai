@@ -1,0 +1,20 @@
+-- migrate_v22.sql
+-- Data-integrity fix (Operator/Passenger data-accuracy pass, 2026-08-22).
+--
+-- 40 buses across all 8 operators (bus_id 14-53, a contiguous block from an
+-- earlier seed run) were left with status='' — not NULL, not a valid
+-- ENUM('AVAILABLE','MAINTENANCE') value, just an empty string that the
+-- schema's enum silently coerces invalid input to. This meant those buses
+-- were counted in neither operator/vehicles.html's "AVAILABLE" nor
+-- "MAINTENANCE" KPI tiles (both do a strict status='...' match), even
+-- though they showed up in "Tổng số xe" (total) and rendered on the page —
+-- an operator with e.g. 9 real buses would see totals that didn't add up
+-- (4 AVAILABLE + 0 MAINTENANCE != 9 total).
+--
+-- Fixed forward to 'AVAILABLE': a bus with no explicit maintenance flag
+-- has always been assumed operational everywhere else in this codebase
+-- (busController.createBus defaults status to 'AVAILABLE' when unset — see
+-- `status||"AVAILABLE"` in its INSERT), so this makes the 40 pre-existing
+-- rows consistent with that same default rather than inventing new
+-- behavior.
+UPDATE bus SET status = 'AVAILABLE' WHERE status = '' OR status IS NULL;

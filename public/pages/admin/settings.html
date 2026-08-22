@@ -59,7 +59,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.25);}
 .hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--neon);margin-left:4px;box-shadow:0 0 5px var(--neon);}
 .hdr-logo-badge{font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(129,140,248,.16));border:1px solid rgba(99,102,241,.38);color:var(--neon);letter-spacing:.8px;box-shadow:0 0 10px rgba(99,102,241,.20);text-transform:uppercase;}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:16px;transition:background .2s;}
 .hdr-badge:hover{background:var(--glass2);}
@@ -69,11 +69,6 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .admin-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .admin-name{font-size:12px;font-weight:600;}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* MAIN */
 .main{max-width:1200px;margin:0 auto;padding:28px 32px 60px;}
 
@@ -307,6 +302,7 @@ select.form-control option{background:#0d1827;}
     <a href="operators.html">🚌 Nhà xe</a>
     <a href="support.html">🆘 Hỗ trợ</a>
     <a href="settings.html" class="active">⚙️ Cài đặt</a>
+    <a href="defense-dashboard.html">🎓 Bảo vệ ĐA</a>
   </nav>
   <div class="hdr-actions">
     <div class="hdr-badge" id="notifBell" onclick="adminNotif.toggle(this)" title="Thông báo" style="position:relative;">
@@ -314,11 +310,7 @@ select.form-control option{background:#0d1827;}
       <div class="badge-dot" id="notifDot" style="display:none;"></div>
       <span id="notifBadge" class="notif-count" style="display:none;"></span>
     </div>
-    <div class="admin-chip">
-      <div class="admin-avatar">👑</div>
-      <span class="admin-name" id="adminNameLabel">Admin</span>
-    </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -921,6 +913,22 @@ select.form-control option{background:#0d1827;}
           </div>
         </div>
 
+        <div class="s-card">
+          <div class="s-card-head">
+            <span class="s-card-ico">🎓</span>
+            <div><h3>Quick Demo Mode</h3><p>Khôi phục trạng thái sạch trước buổi bảo vệ đồ án</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="info-box">
+              <span class="info-box-ico">ℹ️</span>
+              <div class="info-box-text">Hủy các vé đang ở trạng thái "Chờ thanh toán" (mọi độ tuổi, giải phóng ghế) và xóa log AI Intent Predictor của các phiên thử trước đó. <b>Không</b> đụng đến vé đã thanh toán, người dùng, tuyến đường hay chuyến xe — đây không phải seed lại toàn bộ CSDL.</div>
+            </div>
+            <div class="btn-wrap">
+              <button class="btn btn-danger" id="resetDemoBtn" onclick="resetDemoData()">🎓 Khôi phục Demo (1-Click)</button>
+            </div>
+          </div>
+        </div>
+
       </div><!-- end panel-system -->
 
       <!-- ─── ROUTES MANAGEMENT ─── -->
@@ -1012,7 +1020,7 @@ document.addEventListener("click",e=>{
   setTimeout(()=>{window.location.href=h;},210);
 });
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 
 /* ── TOAST ── */
 function toast(msg,type="success"){
@@ -1475,6 +1483,26 @@ function confirmPurge(){
 }
 
 /* ══════════════════════════════════════════════
+   QUICK DEMO MODE (Sprint 12)
+══════════════════════════════════════════════ */
+async function resetDemoData(){
+  if(!confirm("Khôi phục dữ liệu demo?\n\nSẽ hủy mọi vé đang \"Chờ thanh toán\" (giải phóng ghế) và xóa log AI Intent Predictor.\nVé đã thanh toán, người dùng, tuyến đường và chuyến xe KHÔNG bị ảnh hưởng.")) return;
+  const btn=document.getElementById("resetDemoBtn");
+  const original=btn.textContent;
+  btn.disabled=true; btn.textContent="⏳ Đang khôi phục…";
+  try{
+    const r=await api.post("/admin/demo/reset",{});
+    toast(`✅ Đã khôi phục: hủy ${r.canceled_pending_bookings} vé chờ, xóa ${r.cleared_intent_logs} log AI`,"success");
+    addLog(`Admin khôi phục demo — hủy ${r.canceled_pending_bookings} vé chờ, xóa ${r.cleared_intent_logs} log AI`,"info");
+  }catch(e){
+    toast("❌ Lỗi khôi phục demo: "+e.message,"error");
+    addLog("Khôi phục demo thất bại","error");
+  }finally{
+    btn.disabled=false; btn.textContent=original;
+  }
+}
+
+/* ══════════════════════════════════════════════
    LOG SYSTEM — with timestamp tracking
 ══════════════════════════════════════════════ */
 let logData = [];
@@ -1643,9 +1671,7 @@ setInterval(_updateUptime, 1000);
 
 /* ── Admin name ── */
 (function(){
-  try{const u=JSON.parse(localStorage.getItem("user")||"{}");
-    if(u.full_name){const el=document.querySelector(".admin-name");if(el)el.textContent=u.full_name;}
-  }catch(e){}
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
 })();
 </script>
 <script src="/js/admin-notif.js"></script>

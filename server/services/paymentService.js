@@ -158,6 +158,74 @@ exports.parseVNPayBookingId = (query) => {
   return query.vnp_TxnRef?.match(/SB(\d+)T/)?.[1];
 };
 
+// ── ZaloPay ───────────────────────────────────────────────────────────────
+exports.createZaloPayPayment = ({ bookingId, amount, orderInfo }) => {
+  const { appId, key1, endpoint, callbackUrl } = cfg.zalopay;
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const appTransId = `${String(now.getFullYear()).slice(2)}${pad(now.getMonth()+1)}${pad(now.getDate())}_SB${bookingId}_${Date.now()}`;
+  const appTime = Date.now();
+  const appUser = 'smartbusai';
+  const item = '[]';
+  // bookingId travels in embed_data (same role as MoMo's extraData above) —
+  // ZaloPay's callback echoes embed_data back verbatim, so this is how
+  // zalopay/callback recovers which booking a payment belongs to.
+  const embedData = JSON.stringify({ bookingId });
+
+  // ZaloPay v2/create MAC — order-sensitive, field order below is fixed by
+  // ZaloPay's spec (app_id|app_trans_id|app_user|amount|app_time|embed_data|item).
+  const macInput = [appId, appTransId, appUser, amount, appTime, embedData, item].join('|');
+  const mac = crypto.createHmac('sha256', key1).update(macInput).digest('hex');
+
+  const body = new URLSearchParams({
+    app_id: String(appId), app_user: appUser, app_trans_id: appTransId,
+    app_time: String(appTime), amount: String(amount), item, embed_data: embedData,
+    description: orderInfo, bank_code: '', callback_url: callbackUrl, mac,
+  }).toString();
+
+  return new Promise((resolve, reject) => {
+    const url = new URL(endpoint);
+    const req = https.request({
+      hostname: url.hostname,
+      path:     url.pathname,
+      method:   'POST',
+      headers:  { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) },
+    }, res => {
+      let data = '';
+      res.on('data', d => data += d);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.return_code === 1 && json.order_url) resolve({ payUrl: json.order_url, orderId: appTransId });
+          else reject(new Error(json.return_message || json.sub_return_message || `ZaloPay error: ${json.return_code}`));
+        } catch(e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+};
+
+// ZaloPay's IPN body is { data: "<json string>", mac: "<hmac>" } — the mac
+// is computed over the raw `data` string itself (unlike MoMo/VNPay, which
+// sign a set of individual fields), per ZaloPay's callback spec.
+exports.verifyZaloPayCallback = (body) => {
+  const { key2 } = cfg.zalopay;
+  const { data, mac: received } = body || {};
+  if (!data || !received) return false;
+  const expected = crypto.createHmac('sha256', key2).update(data).digest('hex');
+  return expected === received;
+};
+
+exports.parseZaloPayCallbackData = (body) => {
+  try {
+    const parsed = JSON.parse(body.data);
+    const embedData = JSON.parse(parsed.embed_data || '{}');
+    return { bookingId: embedData.bookingId, amount: parsed.amount };
+  } catch { return {}; }
+};
+
 // ── VietQR (static bank transfer QR) ──────────────────────────────────────
 exports.getVietQRUrl = ({ amount, bookingId }) => {
   const { bankId, accountNo, accountName, template } = cfg.vietqr;

@@ -6,3 +6,15 @@ node_modules/
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Scratch/working directory used for one-off helper scripts during a
+# hardening pass — has its own node_modules, not part of the application.
+scratch_audit/
+
+# Jest run-summary artifacts (not source) and ad-hoc live-test-script
+# output that captures real minted JWT tokens / test account passwords —
+# never meant to be committed, regenerated on every manual test run.
+public/data/test-results.json
+tests/phase2i_step2_real_tokens.json
+tests/phase2i_step3_testdata.json
+tests/phase2i_step4_testdata.json

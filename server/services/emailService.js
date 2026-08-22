@@ -1,5 +1,6 @@
 'use strict';
 const nodemailer = require('nodemailer');
+const logger = require('../utils/logger');
 
 // Config: use environment variable or fallback to Gmail test account
 // For demo: use Ethereal (fake SMTP for testing)
@@ -25,8 +26,8 @@ async function getTransporter() {
             secure: false,
             auth: { user: testAccount.user, pass: testAccount.pass }
         });
-        console.log('📧 Email test account:', testAccount.user);
-        console.log('📧 Preview at: https://ethereal.email');
+        logger.info('📧 Email test account:', testAccount.user);
+        logger.info('📧 Preview at: https://ethereal.email');
     }
     return transporter;
 }
@@ -64,7 +65,7 @@ async function sendBookingConfirmation(booking) {
         <p>Vé của bạn đã được xác nhận thành công.</p>
         <div class="highlight">
             <p>🗺️ Tuyến: ${booking.origin} → ${booking.destination}</p>
-            <p>🕐 Khởi hành: ${new Date(booking.departure_time).toLocaleString('vi-VN')}</p>
+            <p>🕐 Khởi hành: ${new Date(booking.departure_time).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</p>
             <p>💺 Ghế: ${booking.seat_numbers || 'Chưa xác định'}</p>
             <p>💰 Tổng tiền: ${Number(booking.total_amount).toLocaleString('vi-VN')} VNĐ</p>
             <p>🎫 Mã vé: #${booking.booking_id}</p>
@@ -77,7 +78,7 @@ async function sendBookingConfirmation(booking) {
         subject: `✅ Xác nhận vé #${booking.booking_id} — ${booking.origin} → ${booking.destination}`,
         html: buildEmailHTML('Xác nhận đặt vé', content)
     });
-    console.log(`📧 Booking confirmation sent: ${nodemailer.getTestMessageUrl(info)}`);
+    logger.info(`📧 Booking confirmation sent: ${nodemailer.getTestMessageUrl(info)}`);
     return info;
 }
 
@@ -100,7 +101,7 @@ async function sendBookingCancellation(booking) {
         subject: `❌ Vé #${booking.booking_id} đã bị huỷ`,
         html: buildEmailHTML('Thông báo huỷ vé', content, '#e74c3c')
     });
-    console.log(`📧 Cancellation email sent: ${nodemailer.getTestMessageUrl(info)}`);
+    logger.info(`📧 Cancellation email sent: ${nodemailer.getTestMessageUrl(info)}`);
     return info;
 }
 
@@ -113,7 +114,7 @@ async function sendTripReminder(booking) {
         <p>Chuyến xe của bạn sẽ khởi hành trong <strong style="color:#f39c12">2 giờ nữa</strong>.</p>
         <div class="highlight" style="border-color:rgba(243,156,18,.3);background:rgba(243,156,18,.08);">
             <p style="color:#f39c12;">🗺️ ${booking.origin} → ${booking.destination}</p>
-            <p style="color:#f39c12;">🕐 ${new Date(booking.departure_time).toLocaleString('vi-VN')}</p>
+            <p style="color:#f39c12;">🕐 ${new Date(booking.departure_time).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</p>
             <p style="color:#f39c12;">💺 Ghế: ${booking.seat_numbers || '—'}</p>
         </div>
         <p>Vui lòng có mặt tại bến xe trước 30 phút.</p>
@@ -121,11 +122,33 @@ async function sendTripReminder(booking) {
     const info = await t.sendMail({
         from: '"SmartBusAI" <noreply@smartbusai.vn>',
         to: booking.email,
-        subject: `⏰ Nhắc nhở: Chuyến xe khởi hành lúc ${new Date(booking.departure_time).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}`,
+        subject: `⏰ Nhắc nhở: Chuyến xe khởi hành lúc ${new Date(booking.departure_time).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'})}`,
         html: buildEmailHTML('Nhắc nhở khởi hành', content, '#f39c12')
     });
-    console.log(`📧 Reminder sent: ${nodemailer.getTestMessageUrl(info)}`);
+    logger.info(`📧 Reminder sent: ${nodemailer.getTestMessageUrl(info)}`);
     return info;
 }
 
-module.exports = { sendBookingConfirmation, sendBookingCancellation, sendTripReminder };
+// Send password reset token (F-16)
+async function sendPasswordReset(user, rawToken) {
+    const t = await getTransporter();
+    const content = `
+        <h2>🔑 Yêu cầu đặt lại mật khẩu</h2>
+        <p>Xin chào <strong style="color:#fff">${user.full_name || user.email}</strong>,</p>
+        <p>Mã xác nhận đặt lại mật khẩu của bạn (có hiệu lực 15 phút):</p>
+        <div class="highlight">
+            <p style="font-size:20px;letter-spacing:2px;word-break:break-all;">${rawToken}</p>
+        </div>
+        <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+    `;
+    const info = await t.sendMail({
+        from: '"SmartBusAI" <noreply@smartbusai.vn>',
+        to: user.email,
+        subject: `🔑 Mã đặt lại mật khẩu SmartBusAI`,
+        html: buildEmailHTML('Đặt lại mật khẩu', content)
+    });
+    logger.info(`📧 Password reset token sent: ${nodemailer.getTestMessageUrl(info)}`);
+    return info;
+}
+
+module.exports = { sendBookingConfirmation, sendBookingCancellation, sendTripReminder, sendPasswordReset };

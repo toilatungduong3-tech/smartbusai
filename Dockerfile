@@ -1,28 +1,38 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+# SmartBusAI — production Dockerfile (multi-stage build).
+#
+# Stage 1 installs dependencies (including devDependencies, since some
+# projects need a build step here — this one doesn't, but keeping the
+# stage separate still pays off: it's the layer Docker caches across
+# rebuilds whenever only application code changes, not package.json).
+# Stage 2 copies only production node_modules + application source into a
+# clean, smaller final image — no devDependencies (jest/nodemon), no
+# .git, no test files, no build cache.
+
+FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package*.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# Stage 2: Production
-FROM node:20-alpine
+FROM node:20-alpine AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Cài wget để healthcheck
-RUN apk add --no-cache wget
+# Non-root user — the base image ships a pre-created `node` user/group,
+# reused here rather than defining a new one.
+COPY --from=deps /app/node_modules ./node_modules
+COPY server ./server
+COPY public ./public
+COPY package.json ./
 
-# Copy dependencies từ builder
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy source code
-COPY . .
-
-# Không copy .env (dùng biến môi trường từ docker-compose)
-RUN rm -f .env
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 2704
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD wget -qO- http://localhost:2704/api/auth/test || exit 1
+# Container-level health check, backed by the real GET /api/health
+# endpoint (Sprint 5) — reports unhealthy if the DB pool ping fails, not
+# just "the Node process is alive".
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://localhost:'+(process.env.PORT||2704)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["npm", "start"]
+CMD ["node", "server/server.js"]

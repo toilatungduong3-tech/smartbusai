@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Chính sách bảo mật — SmartBusAI</title>
+<style>
+:root{
+  --bg:#0d1326; --neon:#6366f1; --neon2:#818cf8;
+  --glass:rgba(255,255,255,0.05); --glass2:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.09);
+  --text:#f1f5f9; --text2:rgba(255,255,255,.62); --text3:rgba(255,255,255,.40);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html{background:var(--bg);}
+body{color:var(--text);min-height:100vh;line-height:1.7;}
+
+header{background:rgba(5,9,20,0.96);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);padding:0 32px;height:64px;
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(99,102,241,.35);flex-shrink:0;}
+.nav-logo-text{font-size:17px;font-weight:800;background:linear-gradient(90deg,#6366f1,#b4a9fd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.back-link{color:var(--text2);text-decoration:none;font-size:13px;font-weight:600;
+  padding:8px 16px;border-radius:9px;border:1px solid var(--border);transition:all .18s;}
+.back-link:hover{color:var(--neon2);border-color:rgba(99,102,241,.30);background:rgba(99,102,241,.08);}
+
+.main{max-width:820px;margin:0 auto;padding:48px 24px 100px;}
+.doc-head{margin-bottom:36px;}
+.doc-head h1{font-size:30px;font-weight:900;margin-bottom:10px;
+  background:linear-gradient(90deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.doc-meta{font-size:12.5px;color:var(--text3);}
+.doc-meta b{color:var(--text2);}
+
+.card{background:var(--glass);border:1px solid var(--border);border-radius:18px;
+  padding:26px 28px;margin-bottom:20px;}
+.card h2{font-size:18px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:9px;color:#fff;}
+.card h2 .num{width:26px;height:26px;border-radius:8px;background:rgba(99,102,241,.16);
+  border:1px solid rgba(99,102,241,.30);color:#a5b4fc;font-size:13px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card p{font-size:14px;color:var(--text2);margin-bottom:10px;}
+.card p:last-child{margin-bottom:0;}
+.card ul{margin:10px 0 10px 0;padding-left:0;list-style:none;}
+.card li{font-size:14px;color:var(--text2);margin-bottom:8px;padding-left:22px;position:relative;}
+.card li::before{content:"•";position:absolute;left:6px;color:var(--neon2);font-weight:900;}
+.card b{color:var(--text);}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.badge{background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.22);color:#2ecc71;
+  padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:6px;}
+
+.contact-box{background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(129,140,248,.05));
+  border:1px solid rgba(99,102,241,.22);border-radius:16px;padding:22px 24px;margin-top:32px;}
+.contact-box h3{font-size:15px;font-weight:800;margin-bottom:8px;color:#fff;}
+.contact-box p{font-size:13.5px;color:var(--text2);}
+.contact-box a{color:#a5b4fc;text-decoration:none;font-weight:700;}
+.contact-box a:hover{text-decoration:underline;}
+
+footer{text-align:center;padding:26px;color:var(--text3);font-size:12px;border-top:1px solid var(--border);}
+footer a{color:var(--text2);text-decoration:none;margin:0 8px;}
+footer a:hover{color:var(--neon2);}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/pages/passenger/index.html" class="nav-logo">
+    <div class="nav-logo-icon">🚌</div>
+    <span class="nav-logo-text">SmartBusAI</span>
+  </a>
+  <a href="/pages/passenger/index.html" class="back-link">← Về trang chủ</a>
+</header>
+
+<main class="main">
+  <div class="doc-head">
+    <h1>🔒 Chính sách bảo mật thông tin</h1>
+    <div class="doc-meta">Cập nhật lần cuối: <b>18/08/2026</b> · Áp dụng cho toàn bộ nền tảng SmartBusAI</div>
+  </div>
+
+  <div class="card">
+    <p>SmartBusAI cam kết bảo vệ dữ liệu cá nhân của Quý khách theo đúng quy định của <b>Nghị định số 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân</b> và pháp luật Việt Nam hiện hành. Chính sách này giải thích chúng tôi thu thập, sử dụng, lưu trữ và bảo vệ thông tin của Quý khách như thế nào khi sử dụng dịch vụ đặt vé xe khách của chúng tôi.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">1</span>Dữ liệu chúng tôi thu thập</h2>
+    <p>Để cung cấp dịch vụ đặt vé, chúng tôi thu thập các thông tin sau, chỉ trong phạm vi cần thiết cho mục đích đặt vé và chăm sóc khách hàng:</p>
+    <ul>
+      <li><b>Thông tin định danh:</b> Họ và tên, ngày sinh, giới tính, số CMND/CCCD (khi cần xác minh cho một số tuyến đặc thù).</li>
+      <li><b>Thông tin liên hệ:</b> Số điện thoại, địa chỉ email, địa chỉ đón/trả khách.</li>
+      <li><b>Thông tin tài khoản:</b> Tên đăng nhập, mật khẩu đã mã hoá, hoặc thông tin xác thực qua Google/Facebook (chỉ email, họ tên, ảnh đại diện công khai — chúng tôi không truy cập mật khẩu tài khoản Google/Facebook của Quý khách).</li>
+      <li><b>Lịch sử giao dịch:</b> Lịch sử chuyến đi, vé đã đặt, phương thức thanh toán đã sử dụng (không lưu trữ số thẻ ngân hàng đầy đủ).</li>
+      <li><b>Dữ liệu kỹ thuật:</b> Địa chỉ IP, loại thiết bị, thời gian truy cập — phục vụ mục đích bảo mật và chống gian lận.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">2</span>Mục đích sử dụng dữ liệu</h2>
+    <ul>
+      <li>Xử lý và xác nhận đơn đặt vé, xuất vé điện tử, gửi thông báo lịch trình.</li>
+      <li>Xác thực danh tính khi đăng nhập, phòng chống gian lận và truy cập trái phép.</li>
+      <li>Chăm sóc khách hàng, xử lý khiếu nại, yêu cầu hỗ trợ, hoàn/đổi vé.</li>
+      <li>Cải thiện chất lượng dịch vụ thông qua phân tích dữ liệu tổng hợp, ẩn danh (không dùng để định danh cá nhân).</li>
+      <li>Gửi thông tin khuyến mãi, ưu đãi — chỉ khi Quý khách đồng ý nhận thông báo, và có thể huỷ đăng ký bất kỳ lúc nào.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">3</span>Chia sẻ dữ liệu với bên thứ ba</h2>
+    <p><b>SmartBusAI cam kết không bán, cho thuê, hoặc trao đổi dữ liệu cá nhân của Quý khách cho bất kỳ bên thứ ba nào vì mục đích thương mại.</b> Dữ liệu chỉ được chia sẻ trong các trường hợp sau:</p>
+    <ul>
+      <li><b>Nhà xe vận tải:</b> Họ tên, số điện thoại hành khách và thông tin chuyến đi được chia sẻ với nhà xe thực hiện chuyến đi tương ứng — để phục vụ việc lên xe, liên hệ khi cần và xử lý sự cố.</li>
+      <li><b>Cổng thanh toán:</b> Khi Quý khách thanh toán qua MoMo, VNPay, ZaloPay hoặc chuyển khoản ngân hàng, thông tin giao dịch được xử lý trực tiếp bởi các cổng thanh toán này theo tiêu chuẩn bảo mật riêng của họ — SmartBusAI không lưu trữ số thẻ hoặc thông tin tài khoản ngân hàng đầy đủ.</li>
+      <li><b>Cơ quan nhà nước có thẩm quyền:</b> Khi có yêu cầu hợp pháp theo quy định pháp luật.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">4</span>Bảo mật thông tin thanh toán</h2>
+    <p>Mọi giao dịch thanh toán trên SmartBusAI được xử lý qua các đối tác cổng thanh toán uy tín (MoMo, VNPay, ZaloPay) đạt chuẩn bảo mật quốc tế:</p>
+    <div class="badge-row">
+      <span class="badge">🔐 Mã hoá SSL/TLS toàn bộ kết nối</span>
+      <span class="badge">🛡️ Đạt chuẩn PCI-DSS</span>
+      <span class="badge">✅ Xác thực chữ ký giao dịch HMAC</span>
+    </div>
+    <p style="margin-top:14px;">Mật khẩu tài khoản được mã hoá một chiều (bcrypt) trước khi lưu trữ — kể cả quản trị viên hệ thống cũng không thể xem được mật khẩu gốc của Quý khách.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">5</span>Quyền của Quý khách</h2>
+    <p>Theo Nghị định 13/2023/NĐ-CP, Quý khách có các quyền sau đối với dữ liệu cá nhân của mình:</p>
+    <ul>
+      <li><b>Quyền truy cập:</b> Xem lại thông tin cá nhân đã cung cấp tại trang Tài khoản.</li>
+      <li><b>Quyền chỉnh sửa:</b> Cập nhật, sửa đổi thông tin cá nhân bất kỳ lúc nào.</li>
+      <li><b>Quyền xoá dữ liệu:</b> Yêu cầu xoá tài khoản và dữ liệu cá nhân liên quan (trừ dữ liệu pháp luật yêu cầu lưu trữ, ví dụ hoá đơn giao dịch).</li>
+      <li><b>Quyền rút lại sự đồng ý:</b> Huỷ đăng ký nhận thông báo khuyến mãi bất kỳ lúc nào.</li>
+      <li><b>Quyền khiếu nại:</b> Liên hệ trực tiếp với SmartBusAI hoặc cơ quan quản lý nhà nước nếu phát hiện vi phạm.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">6</span>Thời gian lưu trữ dữ liệu</h2>
+    <p>Dữ liệu tài khoản được lưu trữ trong suốt thời gian Quý khách sử dụng dịch vụ. Dữ liệu giao dịch, hoá đơn được lưu trữ tối thiểu 5 năm theo quy định về kế toán và thuế. Khi Quý khách yêu cầu xoá tài khoản, dữ liệu định danh cá nhân sẽ được xoá hoặc ẩn danh hoá trong vòng 30 ngày làm việc, ngoại trừ các dữ liệu pháp luật bắt buộc lưu trữ.</p>
+  </div>
+
+  <div class="contact-box">
+    <h3>📩 Liên hệ về quyền riêng tư</h3>
+    <p>Nếu Quý khách có bất kỳ câu hỏi nào về chính sách bảo mật hoặc muốn thực hiện quyền của mình đối với dữ liệu cá nhân, vui lòng liên hệ:<br>
+    Email: <a href="mailto:privacy@smartbusai.vn">privacy@smartbusai.vn</a> · Hotline: <b>1900 1234</b> (7:00 – 22:00 mỗi ngày)</p>
+  </div>
+</main>
+
+<footer>
+  SmartBusAI © 2026 · <a href="/pages/legal/terms-of-service.html">Điều khoản sử dụng</a> · <a href="/pages/passenger/hotro.html">Hỗ trợ</a>
+</footer>
+
+</body>
+</html>

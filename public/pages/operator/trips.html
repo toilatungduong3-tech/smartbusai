@@ -59,7 +59,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.22);}
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:15px;transition:background .2s;}
 .hdr-badge:hover{background:var(--glass2);}
@@ -69,11 +69,6 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .op-name{font-size:12px;font-weight:600;}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* MAIN */
 .main{max-width:1440px;margin:0 auto;padding:28px 32px 60px;}
 
@@ -442,9 +437,33 @@ select.form-control option{background:#0d1827;}
 .sos-sev-btn.active-black{background:rgba(180,30,30,.25);border-color:rgba(200,50,50,.65);color:#ff6b6b;}
 .sos-sev-btn:hover{opacity:.82;}
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://unpkg.com">
 <script src="/js/api.js"></script>
+<script>
+/* Sprint 7 — same on-demand lazy-load pattern already proven for the
+   passenger homepage (Sprint 4): Leaflet is only ever used inside
+   openMapModal() (an operator clicking a specific trip's route-map
+   button), never at page load, so the previous unconditional <script>/
+   <link> tags cost every operator/trips.html visit ~150KB+ it usually
+   never needed. */
+let _leafletLoadPromise = null;
+function _ensureLeaflet(){
+  if(window.L) return Promise.resolve();
+  if(_leafletLoadPromise) return _leafletLoadPromise;
+  _leafletLoadPromise = new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => resolve();
+    script.onerror = () => { _leafletLoadPromise = null; reject(new Error('Không thể tải bản đồ')); };
+    document.head.appendChild(script);
+  });
+  return _leafletLoadPromise;
+}
+</script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role!=='OPERATOR'){window.location.replace(u.role==='ADMIN'?'/pages/admin/admin.html':'/pages/passenger/index.html');}})();
 </script>
@@ -476,11 +495,7 @@ select.form-control option{background:#0d1827;}
   </nav>
   <div class="hdr-actions">
     <div class="hdr-badge"><div class="badge-dot"></div></div>
-    <div class="op-chip">
-      <div class="op-avatar">🏢</div>
-      <span class="op-name" id="opNameChip">Nhà xe</span>
-    </div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -879,16 +894,34 @@ document.addEventListener("click",e=>{
 /* ── Utils ── */
 const _user      = JSON.parse(localStorage.getItem("user")||"{}");
 const _opId      = _user.operator_id || "";
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 const API        = "/api/trips"       + (_opId ? "?operator_id="+_opId : "");
 const API_RUNNING= "/api/trips/running"+ (_opId ? "?operator_id="+_opId : "");
 const API_BUS    = "/api/buses"       + (_opId ? "?operator_id="+_opId : "");
+/* Phase 2I Step 4: price/status updates hit tripRoutes.js, which already
+   requires ADMIN/OPERATOR — this page never attached the token, so both
+   buttons were silently broken (401) before this fix. */
+function _authHeaders(){const t=typeof getAccessToken==="function"?getAccessToken():null;return t?{Authorization:`Bearer ${t}`}:{};}
 let allTrips=[],runningTrips=[],filteredTrips=[],allBuses=[],currentPage=1,pageSize=10,editingId=null;
 let activeChip = ""; // tracks which chip is currently selected
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
 function fmtDT(s){if(!s)return"—";try{const d=new Date(s);return d.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");}catch{return s;}}
 function fmtTime(s){if(!s)return"—";try{const d=new Date(s);return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");}catch{return s;}}
+/* Phase 1 hardening: convert an API datetime (UTC-Z ISO string or a Date)
+   into the local-wall-clock "YYYY-MM-DDTHH:mm" text a <input
+   type="datetime-local"> expects. Never slice the raw ISO text directly —
+   that reads UTC digits into a field the browser treats as local, which
+   was MASTER_COMPLETION_MATRIX.md blocker #2 (7h corruption on every
+   trip edit). Shared by openEdit()/liveUpdateEta() so the conversion is
+   defined once. */
+function _toLocalInputValue(s){
+  if(!s)return"";
+  const d=new Date(s);
+  if(isNaN(d.getTime()))return"";
+  return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
 
 function toast(msg,type="info"){
   const w=document.getElementById("toastWrap");
@@ -901,7 +934,12 @@ function toast(msg,type="info"){
 /* ── Load Buses ── */
 async function loadBuses(){
   try{
-    const res=await fetch(API_BUS);
+    /* Sprint 3: GET /api/buses now requires auth and is server-side scoped
+       to the caller's own operator_id — the ?operator_id= query param this
+       file already built is now ignored for OPERATOR callers (the server
+       derives it from the token instead, never trusts the client), kept
+       harmless for ADMIN. */
+    const res=await fetch(API_BUS,{headers:_authHeaders()});
     const d=await res.json();
     allBuses=Array.isArray(d)?d:(d.data||[]);
     const sel=document.getElementById("f_bus");
@@ -1321,13 +1359,7 @@ function liveUpdateEta(id){
     _liveEtaTripId=id;
     const t=findTrip(id);
     document.getElementById("etaTripInfo").innerHTML=buildTripInfoHtml(t);
-    if(t&&t.arrival_time){
-      const d=new Date(t.arrival_time);
-      const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
-      document.getElementById("etaNewTime").value=local;
-    }else{
-      document.getElementById("etaNewTime").value="";
-    }
+    document.getElementById("etaNewTime").value=_toLocalInputValue(t&&t.arrival_time);
     document.getElementById("etaNote").value="";
     document.getElementById("liveEtaModal").style.display="flex";
   }catch(e){toast("Lỗi mở modal ETA: "+e.message,"error");}
@@ -1337,7 +1369,13 @@ async function saveLiveEta(){
   if(!newTime){toast("Vui lòng chọn giờ đến mới","error");return;}
   const reason=document.getElementById("etaReason").value;
   const note=document.getElementById("etaNote").value.trim();
-  const newArr=new Date(newTime).toISOString().replace("T"," ").slice(0,19);
+  // Phase 1 hardening: `newTime` from a <input type="datetime-local"> is
+  // already Vietnam-local wall-clock text ("YYYY-MM-DDTHH:mm") — the DB's
+  // DATETIME columns are local too (see server/utils/dateTime.js). Do NOT
+  // round-trip through new Date().toISOString(), which converts to UTC and
+  // silently shifts the stored arrival by the host's UTC offset (this was
+  // MASTER_COMPLETION_MATRIX.md blocker #3 — a 7h corruption on every save).
+  const newArr=newTime.replace("T"," ")+":00";
   try{
     const res=await api.put(`/trips/${_liveEtaTripId}`,{arrival_time:newArr}).catch(()=>null);
     if(res){
@@ -1357,7 +1395,7 @@ async function saveLiveEta(){
 /* ── Arrived ── */
 function liveDone(id){
   const t=findTrip(id);
-  const tripLabel=t?`${t.origin||""}→${t.destination||""} (${t.plate_number||""})`: `#${id}`;
+  const tripLabel=t?`${escapeHtml(t.origin)}→${escapeHtml(t.destination)} (${escapeHtml(t.plate_number)})`: `#${id}`;
   document.getElementById("confirmIco").textContent="✅";
   document.getElementById("confirmTitle").textContent="Xác nhận chuyến đã đến nơi?";
   document.getElementById("confirmMsg").innerHTML=`Chuyến <strong>${tripLabel}</strong> sẽ được đánh dấu <strong>COMPLETED</strong>.`;
@@ -1490,8 +1528,8 @@ function openEdit(id){
   document.getElementById("f_origin").value=t.origin||"";
   document.getElementById("f_dest").value=t.destination||"";
   document.getElementById("f_dist").value=t.distance_km||"";
-  document.getElementById("f_dep").value=t.departure_time?t.departure_time.slice(0,16):"";
-  document.getElementById("f_arr").value=t.arrival_time?t.arrival_time.slice(0,16):"";
+  document.getElementById("f_dep").value=_toLocalInputValue(t.departure_time);
+  document.getElementById("f_arr").value=_toLocalInputValue(t.arrival_time);
   document.getElementById("f_price").value=t.base_price||"";
   document.getElementById("f_status").value=t.status||"OPEN";
   document.getElementById("f_bustype").value=t.bus_type||"";
@@ -1527,13 +1565,13 @@ async function saveTrip(){
 /* ── Edit Price ── */
 function openEditPrice(id){
   const t=allTrips.find(x=>x.trip_id==id);if(!t)return;
-  document.getElementById("priceRouteLabel").innerHTML=`Tuyến: <strong>${t.origin} → ${t.destination}</strong> · Hiện tại: <strong style="color:var(--amber)">${money(t.base_price)}</strong>`;
+  document.getElementById("priceRouteLabel").innerHTML=`Tuyến: <strong>${escapeHtml(t.origin)} → ${escapeHtml(t.destination)}</strong> · Hiện tại: <strong style="color:var(--amber)">${money(t.base_price)}</strong>`;
   document.getElementById("newPriceInp").value=t.base_price||"";
   document.getElementById("priceSaveBtn").onclick=async()=>{
     const p=document.getElementById("newPriceInp").value;
     if(!p){toast("Nhập giá vé mới","error");return;}
     try{
-      await fetch(`${API}/price/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({price:p})});
+      await fetch(`${API}/price/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({price:p})});
       toast("Cập nhật giá vé thành công!");closeModal("priceModal");loadTrips();
     }catch{toast("Lỗi khi cập nhật giá","error");}
   };
@@ -1547,13 +1585,13 @@ function confirmAction(id,action){
   document.getElementById("confirmIco").textContent=isCancel?"⛔":"✅";
   document.getElementById("confirmTitle").textContent=isCancel?"Hủy chuyến xe này?":"Mở lại chuyến xe?";
   document.getElementById("confirmMsg").innerHTML=isCancel
-    ?`Chuyến <strong>${t.origin} → ${t.destination}</strong> sẽ chuyển sang CANCELED.<br>Booking liên quan có thể bị ảnh hưởng.`
-    :`Chuyến <strong>${t.origin} → ${t.destination}</strong> sẽ được mở lại thành OPEN.`;
+    ?`Chuyến <strong>${escapeHtml(t.origin)} → ${escapeHtml(t.destination)}</strong> sẽ chuyển sang CANCELED.<br>Booking liên quan có thể bị ảnh hưởng.`
+    :`Chuyến <strong>${escapeHtml(t.origin)} → ${escapeHtml(t.destination)}</strong> sẽ được mở lại thành OPEN.`;
   document.getElementById("confirmBtn").textContent=isCancel?"⛔ Hủy chuyến":"✅ Mở lại";
   document.getElementById("confirmBtn").onclick=async()=>{
     try{
       const newStatus=isCancel?"CANCELED":"OPEN";
-      await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:newStatus})});
+      await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:newStatus})});
       toast(isCancel?"Đã hủy chuyến xe":"Đã mở lại chuyến xe");
       closeModal("confirmModal");loadTrips();
     }catch{toast("Lỗi cập nhật trạng thái","error");}
@@ -1589,9 +1627,7 @@ document.querySelectorAll(".modal-overlay").forEach(ov=>{
 
 /* ── Operator name & live clock ── */
 (function(){
-  const nm=localStorage.getItem("operator_name")||"Nhà xe";
-  const chip=document.getElementById("opNameChip");
-  if(chip)chip.textContent=nm;
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
   function tick(){
     const d=new Date();const pad=n=>String(n).padStart(2,"0");
     const el=document.getElementById("tripClock");
@@ -1655,7 +1691,7 @@ function _haversineKm(c1, c2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
-function openMapModal(tripId) {
+async function openMapModal(tripId) {
   const t = allTrips.find(x => x.trip_id == tripId);
   if (!t) return;
 
@@ -1669,7 +1705,8 @@ function openMapModal(tripId) {
   modal.classList.add('open');
 
   // Slight delay so modal is visible before Leaflet initialises
-  setTimeout(() => {
+  setTimeout(async () => {
+    await _ensureLeaflet();
     if (_opMap) { _opMap.remove(); _opMap = null; }
 
     if (!c1 || !c2) {

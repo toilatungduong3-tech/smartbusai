@@ -78,4 +78,7 @@ router.delete("/locations/:id",       admin.deleteLocation);
 router.post("/routes/import/preview", admin.importRoutesPreview);
 router.post("/routes/import/confirm", admin.importRoutesConfirm);
 
+/* ── Demo Mode (Sprint 12) ── */
+router.post("/demo/reset",            admin.resetDemoData);
+
 module.exports = router;

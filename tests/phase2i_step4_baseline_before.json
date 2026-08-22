@@ -1,0 +1,104 @@
+{
+  "capturedAt": "2026-08-15T17:55:25.351Z",
+  "label": "before",
+  "counts": {
+    "users": 54,
+    "trips": 13400,
+    "routes": 1095,
+    "bookings": 102,
+    "payments": 101,
+    "reviews": 55,
+    "operator_reviews": 1,
+    "loyalty_transactions": 14,
+    "support_requests": 31,
+    "password_reset_tokens": 0,
+    "seats": 349,
+    "buses": 53,
+    "operators": 8
+  },
+  "bookingStatusDistribution": [
+    {
+      "status": "PENDING",
+      "c": 9
+    },
+    {
+      "status": "PAID",
+      "c": 86
+    },
+    {
+      "status": "CANCELED",
+      "c": 7
+    }
+  ],
+  "protectedTrips": [
+    {
+      "trip_id": 4,
+      "departure_time": null,
+      "arrival_time": "2026-06-17T11:00:00.000Z",
+      "status": null
+    },
+    {
+      "trip_id": 12,
+      "departure_time": null,
+      "arrival_time": "2026-03-31T07:30:00.000Z",
+      "status": null
+    },
+    {
+      "trip_id": 15,
+      "departure_time": null,
+      "arrival_time": null,
+      "status": "COMPLETED"
+    }
+  ],
+  "protectedBooking37": [
+    {
+      "booking_id": 37,
+      "status": "PAID",
+      "total_amount": 300000
+    }
+  ],
+  "protectedPayment37": [
+    {
+      "payment_id": 37,
+      "status": "SUCCESS",
+      "amount": 300000
+    }
+  ],
+  "protectedReview36": [
+    {
+      "review_id": 36,
+      "rating": 5
+    }
+  ],
+  "backupTables": {
+    "trip_orphan_cleanup_backup_20260815": 1692,
+    "trip_status_recovery_backup_20260815": 48
+  },
+  "duplicateSeatPairs": [
+    {
+      "seat_id": 3,
+      "trip_id": 30,
+      "c": 2
+    },
+    {
+      "seat_id": 122,
+      "trip_id": 41,
+      "c": 2
+    },
+    {
+      "seat_id": 147,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 148,
+      "trip_id": 35,
+      "c": 2
+    },
+    {
+      "seat_id": 290,
+      "trip_id": 26,
+      "c": 2
+    }
+  ]
+}

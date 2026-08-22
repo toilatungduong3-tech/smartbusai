@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <meta name="theme-color" content="#6366f1">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="/icons/icon.svg">
 <link rel="stylesheet" href="/css/style.css">
@@ -115,26 +116,18 @@ header{
   background:linear-gradient(90deg,#6366f1,#b4a9fd);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
-.nav-links{ display:flex; align-items:center; gap:4px; }
+.nav-links{ display:flex; align-items:center; gap:6px; }
 .nav-links a{
   text-decoration:none; color:rgba(220,235,255,0.62);
-  font-weight:600; font-size:13px; padding:7px 14px; border-radius:10px;
+  font-weight:600; font-size:13px; padding:8px 15px; border-radius:10px;
   border:1px solid transparent; transition:all .18s;
   display:flex; align-items:center; gap:5px;
 }
 .nav-links a:hover{ color:#6366f1; background:rgba(99,102,241,.07); border-color:rgba(99,102,241,.20); }
 .nav-links a.active{ color:#818cf8; background:rgba(0,212,255,.10); border-color:rgba(0,212,255,.25); font-weight:700; }
-.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; overflow:visible !important;min-width:0;}
 .nav-greeting{ font-size:13px; color:rgba(185,210,230,0.68); font-weight:500; white-space:nowrap; }
 .nav-greeting .nav-uname{ font-weight:800; color:#daf0f8; }
-.btn-logout{
-  background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
-  color:#e74c3c; padding:7px 15px; border-radius:9px;
-  font-weight:700; font-size:12.5px; cursor:pointer;
-  transition:all .20s; font-family:inherit; white-space:nowrap;
-}
-.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; border-color:rgba(231,76,60,.50); }
-
 /* =====================================================
    HERO STRIP
 ===================================================== */
@@ -1705,8 +1698,9 @@ header{
 }
 </style>
 <script src="/js/api.js"></script>
+<script src="/js/legalModal.js"></script>
 <script>
-(function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');}})();
+(function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');return;}})();
 </script>
 </head>
 
@@ -1739,11 +1733,10 @@ header{
     <a href="nha-xe.html">🚌 Nhà xe</a>
     <a href="booking.html">🎫 Đặt vé</a>
     <a href="profile.html" class="active">👤 Tài khoản</a>
-    <a href="hotro.html">🛟 Hỗ trợ</a>
+    <a href="hotro.html">🎧 Hỗ trợ</a>
   </nav>
   <div class="nav-right">
-    <div class="nav-greeting">Xin chào, <span class="nav-uname" id="headerUserName">Khách</span></div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -2439,9 +2432,9 @@ async function loadProfile(){
     document.getElementById("qGender").textContent  = u.gender||"—";
     document.getElementById("qProv").textContent    = u.province||"—";
 
-    if(u.avatar){
-      document.getElementById("heroAvt").src = u.avatar;
-      document.getElementById("sbAvt").src   = u.avatar;
+    if(u.avatar_url){
+      document.getElementById("heroAvt").src = u.avatar_url;
+      document.getElementById("sbAvt").src   = u.avatar_url;
     }
     // Member since badge
     const createdAt=u.created_at||u.createdAt||u.joined_at;
@@ -2598,7 +2591,10 @@ async function changePassword(){
   const nw=document.getElementById("pw_new").value;
   const cf=document.getElementById("pw_confirm").value;
   if(!cur){showToast("⚠️ Nhập mật khẩu hiện tại","error");return;}
-  if(nw.length<6){showToast("⚠️ Mật khẩu mới tối thiểu 6 ký tự","error");return;}
+  if(nw.length<8){showToast("⚠️ Mật khẩu mới tối thiểu 8 ký tự","error");return;}
+  if(!/[A-Z]/.test(nw)){showToast("⚠️ Mật khẩu mới cần ít nhất 1 chữ hoa","error");return;}
+  if(!/[0-9]/.test(nw)){showToast("⚠️ Mật khẩu mới cần ít nhất 1 chữ số","error");return;}
+  if(!/[^A-Za-z0-9]/.test(nw)){showToast("⚠️ Mật khẩu mới cần ít nhất 1 ký tự đặc biệt","error");return;}
   if(nw!==cf){showToast("⚠️ Xác nhận mật khẩu không khớp","error");return;}
   try{
     const res=await authFetch(`/api/users/${userId}/password`,{
@@ -2640,11 +2636,10 @@ async function deleteAccount(){
   }catch(e){ showToast("❌ Lỗi kết nối máy chủ","error"); }
 }
 
-/* ── LOGOUT ── */
-function logout(){
-  localStorage.removeItem("user_id");
-  window.location="../auth/login.html";
-}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout
+   for real server-side token revocation, this page previously shadowed it
+   with a client-only localStorage.removeItem("user_id") that didn't even
+   clear the "user"/accessToken/refreshToken keys. */
 
 /* ── BOOKINGS ── */
 let allBk=[];
@@ -3873,26 +3868,42 @@ function _initAvatarUpload(){
   inp.parentNode.replaceChild(fresh,inp);
   fresh.addEventListener('change',async function(){
     const file=this.files[0]; if(!file) return;
+    if(file.size>2*1024*1024){
+      showToast('⚠️ Ảnh quá lớn — tối đa 2MB','error');
+      this.value='';
+      return;
+    }
     // Immediate preview
     const reader=new FileReader();
-    reader.onload=e=>{
-      document.getElementById('heroAvt').src=e.target.result;
-      document.getElementById('sbAvt').src=e.target.result;
+    reader.onload=async e=>{
+      const dataUrl=e.target.result;
+      document.getElementById('heroAvt').src=dataUrl;
+      document.getElementById('sbAvt').src=dataUrl;
+      try{
+        const res=await authFetch(`/api/users/${userId}/avatar`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({image_base64:dataUrl})
+        });
+        const d=await res.json();
+        if(res.ok && d.avatar_url){
+          document.getElementById('heroAvt').src=d.avatar_url;
+          document.getElementById('sbAvt').src=d.avatar_url;
+          // Sync localStorage user object + every topbar dropdown on this page
+          try{
+            const u=JSON.parse(localStorage.getItem('user')||'{}');
+            u.avatar_url=d.avatar_url;
+            localStorage.setItem('user',JSON.stringify(u));
+            if(typeof refreshProfileDropdowns==='function') refreshProfileDropdowns();
+          }catch(_){}
+          showToast('✅ Ảnh đại diện đã được cập nhật!','success');
+          _addActivity('🖼️','<b>Đổi ảnh đại diện</b>');
+        } else {
+          showToast(d.message||'❌ Không thể tải ảnh lên','error');
+        }
+      }catch{ showToast('❌ Lỗi kết nối máy chủ','error'); }
     };
     reader.readAsDataURL(file);
-    // Attempt server upload
-    try{
-      const fd=new FormData(); fd.append('avatar',file);
-      const res=await authFetch(`/api/users/${userId}/avatar`,{method:'POST',body:fd});
-      if(res.ok){
-        const d=await res.json();
-        if(d.avatar){document.getElementById('heroAvt').src=d.avatar;document.getElementById('sbAvt').src=d.avatar;}
-        showToast('✅ Ảnh đại diện đã được cập nhật!','success');
-      } else {
-        showToast('📸 Ảnh đại diện đã đổi (lưu tạm)','success');
-      }
-    }catch{showToast('📸 Ảnh đại diện đã đổi','success');}
-    _addActivity('🖼️','<b>Đổi ảnh đại diện</b>');
   });
 }
 
@@ -3941,6 +3952,7 @@ window.addEventListener("scroll",()=>{
 
 /* ── INIT ── */
 document.addEventListener("DOMContentLoaded", async ()=>{
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
   await loadLocations();
   await loadProfile();
   loadBookings();
@@ -5166,5 +5178,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<footer style="text-align:center;padding:22px 20px;margin-top:20px;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.32);font-size:12px;">
+  SmartBusAI © 2026 ·
+  <a href="/pages/legal/terms-of-service.html" style="color:rgba(255,255,255,.45);text-decoration:none;margin:0 6px;" onclick="openLegalModal('terms');return false;">Điều khoản sử dụng</a> ·
+  <a href="/pages/legal/privacy-policy.html" style="color:rgba(255,255,255,.45);text-decoration:none;margin:0 6px;" onclick="openLegalModal('privacy');return false;">Chính sách bảo mật</a>
+</footer>
 </body>
 </html>

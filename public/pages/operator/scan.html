@@ -43,7 +43,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 /* ═══ HEADER ═══ */
 .hdr{position:sticky;top:0;z-index:3000;height:var(--hh);display:flex;align-items:center;
   background:rgba(8,14,32,0.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--border);padding:0 32px;gap:12px;}
+  border-bottom:1px solid var(--border);padding:0 32px;gap:12px;overflow:visible !important;min-width:0;}
 .hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
 .hdr-logo-ic{width:34px;height:34px;border-radius:9px;font-size:18px;
   background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;
@@ -58,11 +58,6 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.22);}
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;margin-left:8px;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* ═══ MAIN ═══ */
 .main{max-width:900px;margin:0 auto;padding:32px 24px 80px;}
 .pg-head{margin-bottom:28px;}
@@ -161,7 +156,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
     <a href="/pages/operator/revenue.html">Doanh thu</a>
     <a href="/pages/operator/scan.html" class="active">🔍 Quét vé</a>
   </nav>
-  <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+  <div class="sb-profile" id="sbProfile"></div>
 </header>
 
 <!-- MAIN -->
@@ -204,7 +199,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 
 <script src="/js/api.js"></script>
 <script>
-(function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role!=='OPERATOR'){window.location.replace(u.role==='ADMIN'?'/pages/admin/admin.html':'/pages/passenger/index.html');}})();
+(function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role!=='OPERATOR'){window.location.replace(u.role==='ADMIN'?'/pages/admin/admin.html':'/pages/passenger/index.html');return;}if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");})();
 </script>
 <!-- html5-qrcode CDN -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -306,9 +301,15 @@ async function doVerify(qrData){
   box.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text2);font-size:14px;">⏳ Đang xác thực...</div>`;
 
   try {
+    /* Sprint 7: this endpoint now requires auth (closes a documented
+       Phase 2I gap — it returns the passenger's full_name/email). */
+    const token = typeof getAccessToken === "function" ? getAccessToken() : null;
     const res = await fetch('/api/bookings/verify-qr', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ qr_data: qrData })
     });
     const data = await res.json();
@@ -404,12 +405,10 @@ function showToast(msg, type){
   _toastTimer = setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
-// ── Logout ──
-function logout(){
-  localStorage.removeItem('user');
-  localStorage.removeItem('user_id');
-  window.location.href='/pages/auth/login.html';
-}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout
+   for real server-side token revocation, this page previously shadowed it
+   with a client-only partial localStorage removal (missed accessToken/
+   refreshToken entirely, and never told the server). */
 </script>
 </body>
 </html>

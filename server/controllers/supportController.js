@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { sendError } = require("../utils/errors");
 
 /* ─────────────────────────────────────────
    POST /api/support/requests
@@ -6,10 +7,13 @@ const db = require("../config/db");
 ───────────────────────────────────────── */
 exports.createRequest = async (req, res) => {
     try {
-        const { user_id, booking_id, type, title, content } = req.body;
+        // Phase 2I: user_id now comes from the authenticated JWT, not the
+        // request body — previously any caller could submit a support
+        // request impersonating any other user_id.
+        const user_id = req.user.user_id;
+        const { booking_id, type, title, content } = req.body;
 
         // Validate bắt buộc
-        if (!user_id)  return res.status(400).json({ message: "user_id là bắt buộc" });
         if (!type)     return res.status(400).json({ message: "type là bắt buộc" });
         if (!title)    return res.status(400).json({ message: "title là bắt buộc" });
         if (!content)  return res.status(400).json({ message: "content là bắt buộc" });
@@ -38,8 +42,7 @@ exports.createRequest = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("[createRequest]", err);
-        res.status(500).json({ message: "Lỗi server", error: err.message });
+        sendError(res, err, "createRequest");
     }
 };
 
@@ -53,6 +56,14 @@ exports.getUserRequests = async (req, res) => {
 
         if (!user_id || isNaN(user_id)) {
             return res.status(400).json({ message: "user_id không hợp lệ" });
+        }
+
+        // Phase 2I: previously any caller could read any other user's
+        // support-request history (titles, content, admin replies — often
+        // sensitive/complaint content) just by changing this URL param.
+        const isPrivileged = req.user.role === "ADMIN" || req.user.role === "OPERATOR";
+        if (!isPrivileged && Number(req.user.user_id) !== Number(user_id)) {
+            return res.status(403).json({ message: "Không có quyền truy cập dữ liệu này" });
         }
 
         const [rows] = await db.query(
@@ -83,8 +94,7 @@ exports.getUserRequests = async (req, res) => {
         res.json(mapped);
 
     } catch (err) {
-        console.error("[getUserRequests]", err);
-        res.status(500).json({ message: "Lỗi server", error: err.message });
+        sendError(res, err, "getUserRequests");
     }
 };
 
@@ -126,8 +136,7 @@ exports.getAllRequests = async (req, res) => {
         res.json(mapped);
 
     } catch (err) {
-        console.error("[getAllRequests]", err);
-        res.status(500).json({ message: "Lỗi server", error: err.message });
+        sendError(res, err, "getAllRequests");
     }
 };
 
@@ -162,7 +171,6 @@ exports.replyRequest = async (req, res) => {
         res.json({ success: true, message: "Đã cập nhật yêu cầu" });
 
     } catch (err) {
-        console.error("[replyRequest]", err);
-        res.status(500).json({ message: "Lỗi server", error: err.message });
+        sendError(res, err, "replyRequest");
     }
 };

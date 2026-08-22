@@ -5,7 +5,17 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "jest tests/"
+    "test": "jest tests/",
+    "test:e2e": "jest --config jest.e2e.config.js",
+    "db:sanitize": "node server/config/sanitize_data.js",
+    "db:sanitize:dry-run": "node server/config/sanitize_data.js --dry-run",
+    "db:seed-stops": "node server/config/generate_route_stops.js"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/tests/e2e/"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -14,23 +24,26 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
     "google-auth-library": "^10.9.1",
     "helmet": "^8.1.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.18.2",
     "nodemailer": "^8.0.4",
     "openai": "^6.25.0",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.3",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "jest": "^30.4.2",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

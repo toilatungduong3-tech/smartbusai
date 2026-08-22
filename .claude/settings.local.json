@@ -22,7 +22,9 @@
       "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'textarea-wrap|_initUser|getUser' | Select-Object LineNumber,Line\")",
       "Bash(powershell -command \"Select-String -Path 'D:\\\\smartbusai\\\\public\\\\pages\\\\passenger\\\\hotro.html' -Pattern 'uiName|uiEmail|userInfoRow|headerUserName|Đang tải|Khách' | Select-Object LineNumber,Line\")",
       "Bash(node --input-type=module)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(awk 'NR>=7680 && NR<=7765 && /^function |^async function /{print NR\": \"$0}' public/pages/passenger/index.html)",
+      "Bash(npx jest *)"
     ]
   }
 }

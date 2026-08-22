@@ -42,16 +42,149 @@ function requireRole(role, redirectTo = "/pages/auth/login.html") {
     return true;
 }
 
-/* ── Logout ── */
+/* ── Logout ──
+   Sprint 7: POST /api/auth/logout now requires the Bearer token (it
+   revokes server-side by user_id, decoded from the token) — captured
+   into a variable BEFORE clearing localStorage, since the fetch below is
+   dispatched after the clears below it in source order but this value is
+   read synchronously up front either way. Sent best-effort: local
+   storage is always cleared and the redirect always happens even if the
+   revocation call fails (network down, token already expired, etc.) —
+   the tokens still naturally expire within 15m/7d regardless. */
 function logout() {
+    const tokenAtLogout = getAccessToken();
     _userCache = null; _userCacheKey = null;
     localStorage.removeItem("user");
     localStorage.removeItem("user_id");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    fetch(API_BASE + "/auth/logout", { method: "POST" }).catch(() => {});
+    if (tokenAtLogout) {
+        fetch(API_BASE + "/auth/logout", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${tokenAtLogout}` },
+        }).catch(() => {});
+    }
     window.location.href = "/pages/auth/login.html";
 }
+
+/* ── Shared Topbar Profile Dropdown (Sprint 8) ──
+   Fixes a real, measured overflow bug: the old always-expanded
+   "avatar + name" chip + separate logout button together needed ~250px
+   of topbar width with no responsive collapse — on a real 1280px
+   viewport the logout button's right edge landed 159px past the visible
+   viewport edge (measured via getBoundingClientRect() against the real
+   running admin.html before this fix; see SPRINT8_FINAL_REPORT.md).
+   One shared implementation, called from every admin/operator/passenger
+   topbar, instead of duplicating bespoke chip markup per page — CSS is
+   in /css/style.css (.sb-profile*).
+
+   Usage: <div class="sb-profile" id="sbProfile"></div> in the topbar,
+   then initProfileDropdown('sbProfile') after the page's own header
+   markup is in the DOM. */
+function _sbAvatarHtml(sizeClass, avatarUrl, initial) {
+    if (avatarUrl) {
+        return `<div class="${sizeClass}" style="background-image:url('${avatarUrl.replace(/'/g, "%27")}')"></div>`;
+    }
+    return `<div class="${sizeClass}">${initial}</div>`;
+}
+
+function _sbRoleLabel(role) {
+    return { ADMIN: 'Quản trị viên', OPERATOR: 'Nhà xe', PASSENGER: 'Hành khách' }[role] || role || '';
+}
+
+/* Role-aware "personal page" link — omitted entirely for a role with no
+   real equivalent (operators have no dedicated profile/settings page
+   today) rather than link somewhere that doesn't serve this purpose. */
+function _sbPersonalPageUrl(role) {
+    if (role === 'ADMIN') return '/pages/admin/settings.html';
+    if (role === 'PASSENGER') return '/pages/passenger/profile.html';
+    return null;
+}
+
+let _sbDropdownCloseHandler = null;
+
+function initProfileDropdown(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const user = getUser();
+    if (!user) {
+        // Guest — no session to show a profile chip for. Previously this
+        // returned here and left the container permanently empty, which
+        // removed the only way to reach the login page from the topbar on
+        // every page that uses this component (a real regression, not the
+        // intended "acceptable gap" — a guest still needs a way in).
+        container.classList.add('sb-profile');
+        container.innerHTML = `<a href="/pages/auth/login.html" class="sb-profile-trigger" style="text-decoration:none;padding:6px 16px;">
+            <span style="font-size:12.5px;font-weight:700;color:#fff;">Đăng nhập</span>
+        </a>`;
+        return;
+    }
+
+    const initial = (user.full_name || user.email || '?').trim().charAt(0).toUpperCase();
+    const displayName = user.full_name || user.email || 'Người dùng';
+    const personalUrl = _sbPersonalPageUrl(user.role);
+
+    container.classList.add('sb-profile');
+    container.innerHTML = `
+      <button type="button" class="sb-profile-trigger" id="${containerId}Trigger" aria-haspopup="true" aria-expanded="false">
+        ${_sbAvatarHtml('sb-profile-avatar', user.avatar_url, initial)}
+        <span class="sb-profile-chevron">▾</span>
+      </button>
+      <div class="sb-profile-menu" id="${containerId}Menu" role="menu">
+        <div class="sb-profile-menu-header">
+          ${_sbAvatarHtml('sb-profile-menu-avatar', user.avatar_url, initial)}
+          <div class="sb-profile-menu-info">
+            <div class="sb-profile-menu-name">${displayName}</div>
+            <div class="sb-profile-menu-email">${user.email || ''}</div>
+            <span class="sb-profile-menu-role">${_sbRoleLabel(user.role)}</span>
+          </div>
+        </div>
+        ${personalUrl ? `<a class="sb-profile-menu-item" href="${personalUrl}">👤 Trang cá nhân / Cài đặt</a>` : ''}
+        <div class="sb-profile-menu-sep"></div>
+        <button type="button" class="sb-profile-menu-item sb-danger" id="${containerId}LogoutBtn">🚪 Đăng xuất</button>
+      </div>
+    `;
+
+    const trigger = document.getElementById(`${containerId}Trigger`);
+    const menu = document.getElementById(`${containerId}Menu`);
+    const logoutBtn = document.getElementById(`${containerId}LogoutBtn`);
+
+    function closeMenu() {
+        menu.classList.remove('open');
+        trigger.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+    }
+    function toggleMenu(e) {
+        e.stopPropagation();
+        const willOpen = !menu.classList.contains('open');
+        menu.classList.toggle('open', willOpen);
+        trigger.classList.toggle('open', willOpen);
+        trigger.setAttribute('aria-expanded', String(willOpen));
+    }
+
+    trigger.addEventListener('click', toggleMenu);
+    logoutBtn.addEventListener('click', () => { if (typeof logout === 'function') logout(); });
+
+    // Close on outside click / Escape — one shared document-level listener,
+    // replaced (not stacked) if initProfileDropdown() is ever called again.
+    if (_sbDropdownCloseHandler) document.removeEventListener('click', _sbDropdownCloseHandler);
+    _sbDropdownCloseHandler = (e) => { if (!container.contains(e.target)) closeMenu(); };
+    document.addEventListener('click', _sbDropdownCloseHandler);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+}
+
+/* Sprint 8 — Avatar Sync Engine: re-renders every .sb-profile on the
+   CURRENT page immediately after a profile avatar change, without a full
+   reload. Cross-tab/cross-page sync (other already-open tabs) happens
+   via the native `storage` event, wired below — localStorage writes only
+   fire `storage` in OTHER tabs, never the tab that wrote it, which is
+   exactly why this function exists to handle the local case explicitly. */
+function refreshProfileDropdowns() {
+    document.querySelectorAll('.sb-profile[id]').forEach(el => initProfileDropdown(el.id));
+}
+window.addEventListener('storage', (e) => {
+    if (e.key === 'user') refreshProfileDropdowns();
+});
 
 /* ── Token refresh ── */
 async function _doTokenRefresh() {

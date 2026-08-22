@@ -2,6 +2,8 @@
 
 const db = require('../config/db');
 const { searchWithTransit, getPopularTransferPoints } = require('../ai/transitRouter');
+const { isConnectionError } = require('../utils/dbErrors');
+const logger = require('../utils/logger');
 
 /* ═══════════════════════════════════════════════════
    POST /api/search/transit
@@ -39,7 +41,19 @@ exports.transitSearch = async (req, res) => {
             transit:       result.transit
         });
     } catch (err) {
-        console.error('[searchController] transitSearch error:', err);
+        logger.error('[searchController] transitSearch error:', err);
+        /* Sprint 12 — Graceful Degradation: same rationale as
+           tripController.searchTrips — a dropped DB connection returns a
+           labeled, retryable 503 with the same {direct,transit} shape a
+           real empty result would have, not a bare 500. */
+        if (isConnectionError(err)) {
+            return res.status(503).json({
+                degraded: true,
+                message: 'Không thể kết nối cơ sở dữ liệu, vui lòng thử lại sau giây lát.',
+                origin, destination, date: date || null, mode,
+                direct_count: 0, transit_count: 0, direct: [], transit: [],
+            });
+        }
         return res.status(500).json({ message: 'Search error' });
     }
 };
@@ -122,7 +136,7 @@ exports.getSearchAnalytics = async (req, res) => {
             transit_popular: transitPoints
         });
     } catch (err) {
-        console.error('[searchController] getSearchAnalytics error:', err);
+        logger.error('[searchController] getSearchAnalytics error:', err);
         return res.status(500).json({ message: 'Analytics error' });
     }
 };

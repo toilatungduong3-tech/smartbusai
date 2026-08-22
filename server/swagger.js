@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./utils/logger');
 /* ═══════════════════════════════════════════════════════════
    SmartBusAI — Swagger / OpenAPI 3.0 Documentation
    Accessible at: GET /api-docs
@@ -30,7 +31,8 @@ const swaggerSpec = {
     { name: 'Operators', description: 'Quản lý nhà xe' },
     { name: 'Support',   description: 'Hỗ trợ khách hàng' },
     { name: 'Seats',     description: 'Quản lý ghế xe' },
-    { name: 'Buses',     description: 'Quản lý xe buýt' }
+    { name: 'Buses',     description: 'Quản lý xe buýt' },
+    { name: 'Ops',       description: 'Vận hành & giám sát hệ thống (health-check, uptime, DB pool)' }
   ],
   components: {
     securitySchemes: {
@@ -238,6 +240,37 @@ const swaggerSpec = {
         }
       }
     },
+    '/api/bookings/ticker': {
+      get: {
+        tags: ['Bookings'], summary: 'Ticker công khai trên trang chủ (Sprint 3 — tách khỏi GET /api/bookings đầy đủ)',
+        description: 'Public, không cần đăng nhập. Giới hạn cứng 20 dòng gần nhất, chỉ trả về các trường hiển thị trên UI — không có email/số điện thoại/booking_id/user_id/phương thức thanh toán. `full_name` được ẩn danh phía server (ví dụ "Nguyễn Văn An" → "An N.") trước khi rời server, không phải ẩn danh phía client.',
+        responses: {
+          200: {
+            description: 'Tối đa 20 booking gần nhất (đã ẩn danh)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      full_name:    { type: 'string', example: 'An N.' },
+                      booking_time: { type: 'string', format: 'date-time' },
+                      total_amount: { type: 'number' },
+                      status:       { type: 'string', enum: ['PENDING','PAID','CANCELED'] },
+                      origin:       { type: 'string' },
+                      destination:  { type: 'string' },
+                      bus_type:     { type: 'string' },
+                      seat_numbers: { type: 'string', example: 'A1, A2' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/bookings/{id}/pay': {
       post: {
         tags: ['Bookings'], summary: 'Thanh toán vé (PENDING → PAID)',
@@ -345,6 +378,55 @@ const swaggerSpec = {
       }
     },
     /* ── AI ── */
+    '/api/ai/concierge': {
+      post: {
+        tags: ['AI'], summary: 'AI Booking Concierge — đặt vé bằng ngôn ngữ tự nhiên tiếng Việt (Sprint 4)',
+        description: 'Public, không cần đăng nhập. Rule-based Vietnamese NLU (regex/keyword matching, không phải mô hình huấn luyện) trích xuất điểm đi/điểm đến/ngày/loại xe/khung giờ/số vé từ một câu tự do, sau đó gọi thẳng cùng một SQL search engine với `GET /api/trips/search` (không có dữ liệu mock độc lập nào). Nếu thiếu điểm đi hoặc điểm đến, trả về câu hỏi làm rõ thay vì tìm kiếm.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object', required: ['message'],
+                properties: {
+                  message: { type: 'string', maxLength: 500, example: 'Tôi muốn đi từ Hà Nội đến Đà Nẵng tối mai tầm 8h, vé Limousine' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Phản hồi AI — kèm intent trích xuất và danh sách chuyến thật (nếu có đủ thông tin)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    reply: { type: 'string' },
+                    intent: {
+                      type: 'object', nullable: true,
+                      properties: {
+                        origin:       { type: 'string', nullable: true },
+                        destination:  { type: 'string', nullable: true },
+                        travel_date:  { type: 'string', format: 'date', nullable: true },
+                        bus_type:     { type: 'string', enum: ['LIMOUSINE','VIP','NORMAL'], nullable: true },
+                        time_window:  { type: 'object', nullable: true },
+                        seat_count:   { type: 'integer', nullable: true }
+                      }
+                    },
+                    trips:     { type: 'array', items: { $ref: '#/components/schemas/Trip' } },
+                    needsInfo: { type: 'array', items: { type: 'string', enum: ['origin','destination'] } }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'Thiếu nội dung tin nhắn' },
+          422: { description: 'Tin nhắn quá dài (tối đa 500 ký tự)' }
+        }
+      }
+    },
     '/api/admin/ai/recommendations': {
       get: {
         tags: ['AI'], summary: 'Gợi ý tuyến đường cá nhân hoá (Collaborative Filtering)',
@@ -382,7 +464,7 @@ const swaggerSpec = {
     },
     '/api/admin/ai/classify-ticket': {
       post: {
-        tags: ['AI','Support'], summary: 'Phân loại ticket hỗ trợ bằng NLP (tiếng Việt)',
+        tags: ['AI','Support'], summary: 'Phân loại ticket hỗ trợ bằng rule-based keyword classifier (tiếng Việt)',
         requestBody: {
           content: {
             'application/json': {
@@ -468,6 +550,213 @@ const swaggerSpec = {
           }
         }
       }
+    },
+    /* ── OPS ── */
+    '/api/health': {
+      get: {
+        tags: ['Ops'], summary: 'Health-check sản xuất (Sprint 5) — trạng thái DB pool, RAM, uptime',
+        description: 'Public (không cần đăng nhập — endpoint giám sát/ops, không có PII). Mọi số liệu là giá trị đo thực tại thời điểm gọi (real-time ping tới DB, process.memoryUsage(), process.uptime()) — không có số liệu tĩnh/giả lập.',
+        responses: {
+          200: {
+            description: 'Hệ thống khoẻ mạnh hoặc chậm (degraded — DB ping > 200ms)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status:          { type: 'string', enum: ['healthy','degraded','down'] },
+                    timestamp:       { type: 'string', format: 'date-time' },
+                    uptime_seconds:  { type: 'integer' },
+                    database: {
+                      type: 'object',
+                      properties: {
+                        connected: { type: 'boolean' },
+                        ping_ms:   { type: 'integer', nullable: true },
+                        pool: {
+                          type: 'object', nullable: true,
+                          properties: {
+                            total:  { type: 'integer' },
+                            idle:   { type: 'integer' },
+                            active: { type: 'integer' },
+                            limit:  { type: 'integer', nullable: true }
+                          }
+                        }
+                      }
+                    },
+                    memory_mb: {
+                      type: 'object',
+                      properties: {
+                        rss: { type: 'number' }, heap_used: { type: 'number' },
+                        heap_total: { type: 'number' }, external: { type: 'number' }
+                      }
+                    },
+                    node_version: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          503: { description: 'DB không kết nối được (status: "down")' }
+        }
+      }
+    },
+
+    /* ── STATS (public) ── */
+    '/api/stats/public-summary': {
+      get: {
+        tags: ['Ops'], summary: 'Số liệu công khai trang đăng nhập (Cache-Aside, 30s TTL)',
+        responses: {
+          200: { description: 'Tổng quan hệ thống', content: { 'application/json': { schema: { type: 'object', properties: {
+            totalRoutes: { type: 'integer' }, totalPassengers: { type: 'integer' },
+            avgRating: { type: 'string' }, completionRate: { type: 'number', nullable: true },
+          } } } } },
+          500: { description: 'Lỗi CSDL', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+        }
+      }
+    },
+
+    /* ── STOPS ── */
+    '/api/stops/nearest': {
+      get: {
+        tags: ['Trips'], summary: 'Điểm đón/trả gần nhất theo GPS (Haversine)',
+        parameters: [
+          { in: 'query', name: 'lat', required: true, schema: { type: 'number' } },
+          { in: 'query', name: 'lng', required: true, schema: { type: 'number' } },
+          { in: 'query', name: 'route_id', schema: { type: 'integer' } },
+          { in: 'query', name: 'type', schema: { type: 'string', enum: ['PICKUP', 'DROPOFF'] } },
+        ],
+        responses: { 200: { description: 'Danh sách điểm dừng sắp xếp theo khoảng cách tăng dần (WAYPOINT bị loại trừ)' } }
+      }
+    },
+
+    /* ── SEATS ── */
+    '/api/seats/trip/{tripId}': {
+      get: {
+        tags: ['Seats'], summary: 'Sơ đồ ghế của một chuyến xe',
+        parameters: [{ in: 'path', name: 'tripId', required: true, schema: { type: 'integer' } }],
+        responses: {
+          200: { description: 'Danh sách ghế', content: { 'application/json': { schema: { type: 'array', items: { type: 'object', properties: {
+            seat_id: { type: 'integer' }, seat_number: { type: 'string' }, seat_type: { type: 'string', enum: ['NORMAL', 'VIP'] },
+            isBooked: { type: 'integer', enum: [0, 1] },
+          } } } } } }
+        }
+      }
+    },
+
+    /* ── REVIEWS ── */
+    '/api/reviews': {
+      post: {
+        tags: ['Reviews'], summary: 'Gửi đánh giá chuyến đi', security: [{ BearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['trip_id', 'rating'], properties: {
+          trip_id: { type: 'integer' }, rating: { type: 'integer', minimum: 1, maximum: 5 }, comment: { type: 'string' },
+          rating_time: { type: 'integer' }, rating_clean: { type: 'integer' }, rating_service: { type: 'integer' }, rating_comfort: { type: 'integer' },
+        } } } } },
+        responses: { 201: { description: 'Đã lưu đánh giá' }, 400: { description: 'Rating không hợp lệ' } }
+      }
+    },
+
+    /* ── SUPPORT ── */
+    '/api/support': {
+      post: {
+        tags: ['Support'], summary: 'Gửi yêu cầu hỗ trợ', security: [{ BearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+          type: { type: 'string', enum: ['GENERAL', 'BOOKING', 'PAYMENT', 'REFUND', 'TECHNICAL', 'COMPLAINT', 'OTHER'] },
+          title: { type: 'string' }, content: { type: 'string' }, booking_id: { type: 'integer', nullable: true },
+        } } } } },
+        responses: { 201: { description: 'Đã tạo yêu cầu hỗ trợ' } }
+      }
+    },
+
+    /* ── OPERATORS ── */
+    '/api/operators': {
+      get: { tags: ['Operators'], summary: 'Danh sách nhà xe', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Danh sách nhà xe' } } },
+      post: { tags: ['Operators'], summary: 'Tạo nhà xe mới (Admin)', security: [{ BearerAuth: [] }], responses: { 201: { description: 'Đã tạo' } } }
+    },
+    '/api/operators/dashboard/stats': {
+      get: { tags: ['Operators'], summary: 'Thống kê tổng quan cho nhà xe (doanh thu, chuyến, đặt vé)', security: [{ BearerAuth: [] }], responses: { 200: { description: 'KPI dashboard nhà xe' } } }
+    },
+
+    /* ── BUSES ── */
+    '/api/buses': {
+      get: { tags: ['Buses'], summary: 'Danh sách xe buýt', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Danh sách xe' } } },
+      post: { tags: ['Buses'], summary: 'Thêm xe mới', security: [{ BearerAuth: [] }], responses: { 201: { description: 'Đã tạo xe' } } }
+    },
+
+    /* ── SEARCH (transit + analytics) ── */
+    '/api/search/transit': {
+      post: {
+        tags: ['Trips'], summary: 'Tìm hành trình trung chuyển (BFS có trọng số, tối đa 3 chặng)',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['origin', 'destination'], properties: {
+          origin: { type: 'string' }, destination: { type: 'string' }, date: { type: 'string', format: 'date' },
+          mode: { type: 'string', enum: ['time', 'cost', 'hops'], default: 'time' },
+        } } } } },
+        responses: {
+          200: { description: 'Danh sách phương án (direct + transit)' },
+          503: { description: 'Mất kết nối CSDL — trả về degraded:true thay vì lỗi 500 (Graceful Degradation, Pillar 2)' }
+        }
+      }
+    },
+    '/api/search/analytics': {
+      get: { tags: ['Admin'], summary: 'Top tuyến tìm kiếm nhiều nhất + lượt tìm theo thời gian (EPIC 8)', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Thống kê tìm kiếm' } } }
+    },
+
+    /* ── LOCATIONS ── */
+    '/api/locations': {
+      get: { tags: ['Admin'], summary: 'Danh sách địa điểm/bến xe kèm GPS', responses: { 200: { description: 'Danh sách địa điểm' } } }
+    },
+
+    /* ── AI (Sprint 11/12 additions) ── */
+    '/api/ai/predict-intent': {
+      post: {
+        tags: ['AI'], summary: 'Dự đoán điểm ý định đặt vé trong phiên (rule-based scoring, không phải mô hình huấn luyện)',
+        description: 'Public/optionalAuth — hoạt động cho cả khách vãng lai. Rate-limited 30 req/phút/IP.',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['session_events'], properties: {
+          session_events: { type: 'array', items: { type: 'object', properties: { type: { type: 'string', enum: ['SEARCH', 'VIEW_TRIP', 'SELECT_SEAT', 'START_PAYMENT', 'COMPLETE_BOOKING', 'CANCEL'] }, timestamp: { type: 'string', format: 'date-time' } } } },
+        } } } } },
+        responses: { 200: { description: 'Kết quả dự đoán', content: { 'application/json': { schema: { type: 'object', properties: {
+          intent_score: { type: 'number', example: 77 }, intent_level: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
+          dropoff_risk: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] }, recommended_action: { type: 'string', example: 'HOLD_SEAT' },
+        } } } } } }
+      }
+    },
+    '/api/ai/demand-forecast': {
+      get: { tags: ['AI', 'Admin'], summary: 'Dự báo nhu cầu theo tuyến (heuristic thống kê, 7 ngày tới)', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Danh sách dự báo theo tuyến' } } }
+    },
+    '/api/ai/behavioral-analytics': {
+      get: { tags: ['AI', 'Admin'], summary: 'Phân bố hành vi hệ thống (giá/khung giờ/loại xe) + log AI Intent Predictor', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Thống kê hành vi toàn hệ thống' } } }
+    },
+    '/api/recommendations/trending': {
+      get: { tags: ['AI'], summary: 'Top tuyến phổ biến (public, Cache-Aside 30s TTL)', responses: { 200: { description: 'Danh sách tuyến phổ biến' } } }
+    },
+
+    /* ── ADMIN: routes/locations CRUD + demo mode ── */
+    '/api/admin/all-routes': {
+      get: { tags: ['Admin'], summary: 'Danh sách tất cả tuyến đường (quản trị)', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Danh sách tuyến' } } }
+    },
+    '/api/admin/routes': {
+      post: { tags: ['Admin'], summary: 'Tạo tuyến đường mới', security: [{ BearerAuth: [] }], responses: { 201: { description: 'Đã tạo tuyến' } } }
+    },
+    '/api/admin/routes/import/preview': {
+      post: {
+        tags: ['Admin'], summary: 'Xem trước import hàng loạt tuyến đường từ CSV/Excel (đã parse thành JSON ở Frontend)',
+        security: [{ BearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: {
+          rows: { type: 'array', maxItems: 500, items: { type: 'object', properties: { origin: { type: 'string' }, destination: { type: 'string' }, distance_km: { type: 'number' } } } },
+        } } } } },
+        responses: { 200: { description: 'Kết quả kiểm tra từng dòng (lỗi, trùng lặp)' }, 400: { description: 'Không có dữ liệu hoặc vượt quá 500 dòng' } }
+      }
+    },
+    '/api/admin/routes/import/confirm': {
+      post: { tags: ['Admin'], summary: 'Xác nhận import các dòng hợp lệ vào CSDL', security: [{ BearerAuth: [] }], responses: { 200: { description: 'Số dòng đã import thành công' } } }
+    },
+    '/api/admin/demo/reset': {
+      post: {
+        tags: ['Admin'], summary: 'Khôi phục Demo 1-Click — huỷ vé PENDING tồn đọng + xoá log AI thử nghiệm (không đụng dữ liệu thật)',
+        security: [{ BearerAuth: [] }],
+        responses: { 200: { description: 'Kết quả khôi phục', content: { 'application/json': { schema: { type: 'object', properties: {
+          message: { type: 'string' }, canceled_pending_bookings: { type: 'integer' }, cleared_intent_logs: { type: 'integer' },
+        } } } } } }
+      }
     }
   }
 };
@@ -515,5 +804,5 @@ module.exports = function setupSwagger(app) {
       tryItOutEnabled: true
     }
   }));
-  console.log('📚 [Swagger] API docs available at /api-docs');
+  logger.info('📚 [Swagger] API docs available at /api-docs');
 };

@@ -28,4 +28,17 @@ module.exports = {
     accountName: process.env.VIETQR_ACCOUNT_NAME || 'SMARTBUS AI',
     template:    'compact2',
   },
+  // ZaloPay Sandbox — app_id/key1/key2/endpoint below are ZaloPay's own
+  // published sandbox demo app (from their public integration docs, same
+  // "vendor's own test credentials, not a leaked secret" status as the
+  // MoMo/VNPay defaults above). Swap for real merchant credentials from
+  // the ZaloPay Merchant Portal before processing real money.
+  zalopay: {
+    appId:       process.env.ZALOPAY_APP_ID  || '2553',
+    key1:        process.env.ZALOPAY_KEY1    || 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
+    key2:        process.env.ZALOPAY_KEY2    || 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
+    endpoint:    'https://sb-openapi.zalopay.vn/v2/create',
+    callbackUrl: `${BASE_URL}/api/payment/zalopay/callback`,
+    redirectUrl: `${BASE_URL}/api/payment/zalopay/return`,
+  },
 };

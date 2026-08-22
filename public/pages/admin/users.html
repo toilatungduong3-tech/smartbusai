@@ -92,7 +92,7 @@ body{ color:var(--text); background:transparent; overflow-x:hidden; animation:pa
 .hdr-nav a.active{ color:var(--neon); background:rgba(99,102,241,.10); border-color:rgba(99,102,241,.25); }
 .hdr-nav a.active::after{ content:""; display:inline-block; width:4px; height:4px; border-radius:50%; background:var(--neon); margin-left:4px; box-shadow:0 0 5px var(--neon); }
 .hdr-logo-badge{ font-size:8.5px; font-weight:900; padding:3px 8px; border-radius:6px; background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(129,140,248,.16)); border:1px solid rgba(99,102,241,.38); color:var(--neon); letter-spacing:.8px; box-shadow:0 0 10px rgba(99,102,241,.20); text-transform:uppercase; }
-.hdr-actions{ display:flex; align-items:center; gap:8px; margin-left:16px; flex-shrink:0; }
+.hdr-actions{ display:flex; align-items:center; gap:8px; margin-left:16px; flex-shrink:0; overflow:visible !important;min-width:0;}
 .hdr-badge{
   position:relative; background:var(--glass); border:1px solid var(--border);
   border-radius:8px; padding:7px 10px; cursor:pointer; font-size:16px;
@@ -103,13 +103,6 @@ body{ color:var(--text); background:transparent; overflow-x:hidden; animation:pa
 .admin-chip{ display:flex; align-items:center; gap:7px; background:var(--glass); border:1px solid var(--border); border-radius:20px; padding:5px 12px 5px 6px; }
 .admin-avatar{ width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#6366f1); display:flex; align-items:center; justify-content:center; font-size:13px; }
 .admin-name{ font-size:12px; font-weight:600; color:var(--text); }
-.btn-logout{
-  background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
-  color:#e74c3c; padding:7px 14px; border-radius:9px; font-size:12px; font-weight:700;
-  cursor:pointer; font-family:"Segoe UI",Arial,sans-serif; transition:all .2s;
-}
-.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; }
-
 /* ═══════════════════════════════════════════
    MAIN LAYOUT
 ═══════════════════════════════════════════ */
@@ -642,6 +635,7 @@ select.form-control option{ background:#0d1827; }
     <a href="operators.html">🚌 Nhà xe</a>
     <a href="support.html">🆘 Hỗ trợ</a>
     <a href="settings.html">⚙️ Cài đặt</a>
+    <a href="defense-dashboard.html">🎓 Bảo vệ ĐA</a>
   </nav>
   <div class="hdr-actions" style="margin-left:16px;">
     <button class="hdr-tool-btn" id="cmdPaletteBtn">🔍 <span class="hdr-tool-key">Ctrl K</span></button>
@@ -650,11 +644,7 @@ select.form-control option{ background:#0d1827; }
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,.65)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
       <div class="badge-dot" id="notifDot" style="display:none;"></div>
     </div>
-    <div class="admin-chip">
-      <div class="admin-avatar">👑</div>
-      <span class="admin-name" id="adminNameLabel">Admin</span>
-    </div>
-    <button class="btn-logout" onclick="doLogout()">🚪 Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -933,11 +923,20 @@ select.form-control option{ background:#0d1827; }
         </div>
         <div class="form-group">
           <label>Vai trò</label>
-          <select class="form-control" id="f_role">
+          <select class="form-control" id="f_role" onchange="toggleOperatorField()">
             <option value="PASSENGER">🧍 Hành khách</option>
             <option value="OPERATOR">🚌 Nhà xe</option>
             <option value="ADMIN">👑 Admin</option>
           </select>
+        </div>
+      </div>
+      <div class="form-row" id="operatorFieldRow" style="display:none;">
+        <div class="form-group" style="flex:1;">
+          <label>Nhà xe liên kết</label>
+          <select class="form-control" id="f_operator_id">
+            <option value="">— Chưa liên kết —</option>
+          </select>
+          <div class="form-hint">Tài khoản OPERATOR chỉ quản lý được dữ liệu của nhà xe được liên kết ở đây. Chưa liên kết → không truy cập được dashboard/xe/ghế cho tới khi admin gán.</div>
         </div>
       </div>
       <div class="form-row">
@@ -1124,6 +1123,12 @@ function fmtDate(s){ if(!s) return "—"; try{ return new Date(s).toLocaleDateSt
 function getInitials(name){ if(!name) return "?"; return name.trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
 const avatarPairs=[["#6366f1","#6366f1"],["#818cf8","#6366f1"],["#2ecc71","#818cf8"],["#fd79a8","#6366f1"],["#f39c12","#e17055"],["#6366f1","#818cf8"],["#818cf8","#fd79a8"],["#55efc4","#818cf8"]];
 function getAvatarStyle(id){ const p=avatarPairs[(id||0)%avatarPairs.length]; return `--ava-a:${p[0]};--ava-b:${p[1]}`; }
+/* Phase 2I: full_name/email/operator_name are user-controlled (editable via
+   profile, or set at registration) and rendered via innerHTML below —
+   escaped at each interpolation site rather than at load time, since the
+   same fields are also assigned to form .value (which needs the raw text,
+   not HTML-escaped entities). */
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 /* ── Toast ── */
 function toast(msg,type="success"){
@@ -1150,8 +1155,10 @@ function animateCounter(elId,to,duration=900){
   requestAnimationFrame(run);
 }
 
-/* ── doLogout ── */
-function doLogout(){ localStorage.clear(); window.location.href="../auth/login.html"; }
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout
+   for real server-side token revocation, this page previously shadowed it
+   with a client-only localStorage.clear() under a differently-named
+   doLogout() function. */
 
 /* ══════════════════════════════════════════
    DATA LOADING
@@ -1426,16 +1433,16 @@ function renderTable(){
             <div class="u-status-ring ${isActive?"active":"blocked"}"></div>
           </div>
           <div>
-            <div class="u-name">${u.full_name||"—"}</div>
+            <div class="u-name">${escapeHtml(u.full_name)||"—"}</div>
             <div class="u-meta">
-              <span class="u-email">${u.email||"—"}</span>
+              <span class="u-email">${escapeHtml(u.email)||"—"}</span>
               <span class="u-id">#${u.user_id}</span>
             </div>
           </div>
         </div>
       </td>
       <td style="color:var(--text2);font-size:13px;">${u.phone||"—"}</td>
-      <td><span class="bdg ${rc}">${rl}</span></td>
+      <td><span class="bdg ${rc}">${rl}</span>${u.role==="OPERATOR"?`<div style="font-size:11px;color:var(--text3);margin-top:3px;">${u.operator_name?"🔗 "+escapeHtml(u.operator_name):"⚠️ Chưa liên kết"}</div>`:""}</td>
       <td>
         <span class="bdg ${isActive?"bdg-active":"bdg-blocked"}">
           <span class="sdot ${isActive?"sdot-active":"sdot-blocked"}"></span>
@@ -1580,12 +1587,12 @@ function viewUser(id){
   const gMap={male:"Nam",female:"Nữ",other:"Khác",MALE:"Nam",FEMALE:"Nữ"};
   const items=[
     ["🆔 Mã người dùng",`#${u.user_id}`],
-    ["📱 Số điện thoại",u.phone||"—"],
+    ["📱 Số điện thoại",escapeHtml(u.phone)||"—"],
     ["⚧ Giới tính",gMap[u.gender]||"—"],
     ["🎂 Ngày sinh",fmtDate(u.birth_date)],
-    ["🏙 Tỉnh/TP",u.province||"—"],
-    ["🏘 Quận/Huyện",u.district||"—"],
-    ["🏠 Địa chỉ",u.address_detail||"—","full"],
+    ["🏙 Tỉnh/TP",escapeHtml(u.province)||"—"],
+    ["🏘 Quận/Huyện",escapeHtml(u.district)||"—"],
+    ["🏠 Địa chỉ",escapeHtml(u.address_detail)||"—","full"],
     ["📅 Ngày tạo tài khoản",fmtDate(u.created_at)],
   ];
   document.getElementById("vGrid").innerHTML=items.map(([l,v,cls=""])=>
@@ -1594,6 +1601,22 @@ function viewUser(id){
 
   document.getElementById("vEditBtn").onclick=()=>{ closeModal("viewModal"); openEdit(id); };
   document.getElementById("viewModal").classList.add("open");
+}
+
+/* ── Operator link field (Phase 2I: users.operator_id) ── */
+let _allOperators=null;
+async function _ensureOperatorsLoaded(){
+  if(_allOperators) return _allOperators;
+  try{ _allOperators=await api.get('/operators'); }catch{ _allOperators=[]; }
+  const sel=document.getElementById("f_operator_id");
+  const opts=_allOperators.map(o=>`<option value="${o.operator_id}">${o.name}</option>`).join("");
+  sel.innerHTML=`<option value="">— Chưa liên kết —</option>${opts}`;
+  return _allOperators;
+}
+function toggleOperatorField(){
+  const isOp=document.getElementById("f_role").value==="OPERATOR";
+  document.getElementById("operatorFieldRow").style.display=isOp?"":"none";
+  if(isOp) _ensureOperatorsLoaded();
 }
 
 function openAdd(){
@@ -1606,6 +1629,8 @@ function openAdd(){
   document.getElementById("f_status").value="ACTIVE";
   document.getElementById("f_gender").value="";
   document.getElementById("f_birth").value="";
+  document.getElementById("f_operator_id").value="";
+  toggleOperatorField();
   document.getElementById("formModal").classList.add("open");
 }
 
@@ -1626,6 +1651,8 @@ function openEdit(id){
   document.getElementById("f_district").value=u.district||"";
   document.getElementById("f_address").value=u.address_detail||"";
   document.getElementById("f_password").value="";
+  toggleOperatorField();
+  _ensureOperatorsLoaded().then(()=>{ document.getElementById("f_operator_id").value=u.operator_id||""; });
   document.getElementById("formModal").classList.add("open");
 }
 
@@ -1640,16 +1667,22 @@ async function saveUser(){
   if(!fn){ validateField(document.getElementById("f_fullname")); toast("Vui lòng nhập họ và tên","error"); return; }
   if(!em){ validateField(document.getElementById("f_email")); toast("Vui lòng nhập email","error"); return; }
 
+  const role=document.getElementById("f_role").value;
   const data={
     full_name:fn, email:em,
     phone:document.getElementById("f_phone").value.trim()||null,
-    role:document.getElementById("f_role").value,
+    role,
     status:document.getElementById("f_status").value,
     gender:document.getElementById("f_gender").value||null,
     birth_date:document.getElementById("f_birth").value||null,
     province:document.getElementById("f_province").value.trim()||null,
     district:document.getElementById("f_district").value.trim()||null,
     address_detail:document.getElementById("f_address").value.trim()||null,
+    /* Phase 2I: operator_id sent explicitly whenever role=OPERATOR (empty
+       selection -> null, unassigned); omitted entirely for non-OPERATOR
+       roles so the server leaves any existing link untouched rather than
+       silently clearing it on an unrelated edit. */
+    ...(role==="OPERATOR" ? { operator_id: document.getElementById("f_operator_id").value || null } : {}),
   };
   const pw=document.getElementById("f_password").value;
   if(pw){ if(pw.length<6){ toast("Mật khẩu phải ≥ 6 ký tự","error"); return; } data.password=pw; }
@@ -1677,7 +1710,7 @@ async function toggleStatus(id,currentStatus){
 /* ── Delete ── */
 function confirmDelete(id,name){
   document.getElementById("confirmTitle").textContent="Xóa người dùng?";
-  document.getElementById("confirmMsg").innerHTML=`Bạn sắp xóa <span class="confirm-target">${name}</span>.<br>Hành động này <strong>không thể hoàn tác</strong>.`;
+  document.getElementById("confirmMsg").innerHTML=`Bạn sắp xóa <span class="confirm-target">${escapeHtml(name)}</span>.<br>Hành động này <strong>không thể hoàn tác</strong>.`;
   document.getElementById("confirmDelBtn").onclick=async()=>{
     try{
       await api.delete(`/users/${id}`);
@@ -1784,8 +1817,8 @@ document.addEventListener("keydown",e=>{
   try{
     const u=JSON.parse(localStorage.getItem("user")||"{}");
     if(!u||!u.user_id){ window.location.href="../auth/login.html"; return; }
-    if(u.full_name) document.getElementById("adminNameLabel").textContent=u.full_name;
   }catch(e){}
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
 
   /* Live clock */
   (function tick(){

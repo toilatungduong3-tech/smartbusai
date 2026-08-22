@@ -98,9 +98,10 @@ h1{font-size:26px;font-weight:900;margin-bottom:10px;letter-spacing:-.3px;}
 <script src="/js/api.js"></script>
 <script>
 const p = new URLSearchParams(location.search);
-const status    = p.get('status') || 'failed';
-const bookingId = p.get('bookingId');
-const method    = p.get('method') || '';
+const status      = p.get('status') || 'failed';
+const bookingId   = p.get('bookingId');
+const method      = p.get('method') || '';
+const bookingCode = p.get('bookingCode') || '';
 
 const METHOD_LABEL = { momo:'Ví MoMo 💜', vnpay:'VNPay 💙', vietqr:'Chuyển khoản 🏦' };
 const card = document.getElementById('card');
@@ -126,13 +127,21 @@ if (status === 'success') {
 }
 
 // Load booking info
+// Phase 2I: booking_code now comes from the redirect URL itself (the
+// caller already has it at this point — see booking.html and the
+// vnpay/return · momo/return handlers) rather than from
+// /api/payment/status/:bookingId, which used to leak it for any
+// booking_id with zero auth — a direct bypass of the F-13/F-17 fix.
+if (bookingCode) {
+  document.getElementById('infoBox').style.display = '';
+  document.getElementById('bookingCode').textContent = bookingCode;
+}
 if (bookingId) {
   fetch(`/api/payment/status/${bookingId}`)
     .then(r => r.json())
     .then(d => {
-      if (d.booking_code) {
+      if (d.status && bookingCode) {
         document.getElementById('infoBox').style.display = '';
-        document.getElementById('bookingCode').textContent = d.booking_code;
         document.getElementById('bookingStatus').textContent =
           d.status === 'PAID' ? '✅ Đã thanh toán' :
           d.status === 'PENDING' ? '⏳ Chờ thanh toán' : d.status;

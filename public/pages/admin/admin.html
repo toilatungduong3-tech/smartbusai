@@ -96,7 +96,7 @@ body.leaving{opacity:0;transition:opacity .22s;}
   background:rgba(231,76,60,.22);border:1px solid rgba(231,76,60,.38);color:#e74c3c;
   margin-left:2px;}
 /* Right section */
-.hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto;}
+.hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto;overflow:visible !important;min-width:0;}
 /* Clock */
 .hdr-clock{
   font-size:12px;font-weight:800;color:rgba(99,102,241,.60);
@@ -156,13 +156,6 @@ body.leaving{opacity:0;transition:opacity .22s;}
 .admin-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;}
 .admin-role-lbl{font-size:9px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.3px;margin-top:0;}
 /* Logout */
-.btn-logout{
-  display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;
-  border:1px solid rgba(231,76,60,.26);cursor:pointer;font-size:12px;
-  font-weight:700;font-family:"Segoe UI",Arial,sans-serif;
-  background:rgba(231,76,60,.09);color:#e74c3c;transition:all .20s;}
-.btn-logout:hover{background:rgba(231,76,60,.24);color:#fff;border-color:rgba(231,76,60,.50);}
-
 /* ════ COMMAND PALETTE ════ */
 .cmd-overlay{
   position:fixed;inset:0;z-index:9500;
@@ -550,6 +543,7 @@ tbody tr:hover td{background:rgba(99,102,241,.025);}
     <a href="operators.html">🚌 Nhà xe</a>
     <a href="support.html">🆘 Hỗ trợ</a>
     <a href="settings.html">⚙️ Cài đặt</a>
+    <a href="defense-dashboard.html">🎓 Bảo vệ ĐA</a>
   </nav>
   <div class="hdr-actions" style="margin-left:16px;">
     <button class="hdr-tool-btn" id="cmdPaletteBtn" title="Command Palette (Ctrl+K)">🔍 <span class="hdr-tool-key">Ctrl K</span></button>
@@ -559,14 +553,7 @@ tbody tr:hover td{background:rgba(99,102,241,.025);}
       <div class="badge-dot" id="notifDot" style="display:none;"></div>
       <span id="notifBadge" class="notif-count" style="display:none;"></span>
     </div>
-    <div class="admin-chip">
-      <div class="admin-avatar">👑</div>
-      <div class="admin-chip-info">
-        <span class="admin-name" id="adminNameLabel">Admin</span>
-        <span class="admin-role-lbl">ADMIN</span>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -761,6 +748,44 @@ tbody tr:hover td{background:rgba(99,102,241,.025);}
       </div>
       <div class="gc cc"><div class="cc-head"><div><div class="cc-title">Hành vi theo giờ</div><div class="cc-sub">User action time distribution</div></div><span class="cc-badge cb-p">Area</span></div><canvas id="behaviorHourChart"></canvas></div>
     </div>
+
+    <!-- ▌ Sprint 11 — Real Behavioral AI, Preference Learning & Booking Intent Prediction ▌
+         Extends this existing "AI & Hành vi" tab rather than adding a
+         separate third AI-flavored tab (this admin dashboard already has
+         both "AI & Hành vi" and "AI Engine" — a further tab would fragment
+         an already AI-heavy nav for no real benefit; see SPRINT11_FINAL_REPORT.md). -->
+    <div class="sec-head" style="margin:26px 0 14px;">
+      <div><div class="sec-title">🤖 AI Behavioral Analytics & Demand Forecast</div><div class="sec-sub">Real behavior-derived preference vectors, booking-intent scoring, and a rule-based demand heuristic — no fabricated numbers (see aiUserProfilingService.js / aiIntentPredictor.js / aiDemandForecaster.js)</div></div>
+    </div>
+
+    <div class="cg2" style="margin-bottom:20px;">
+      <div class="gc cc"><div class="cc-head"><div><div class="cc-title">Phân bố mức giá (30 ngày)</div><div class="cc-sub">Vé PAID theo khoảng giá</div></div><span class="cc-badge cb-a">Bar</span></div><canvas id="aiPriceDistChart"></canvas></div>
+      <div class="gc cc"><div class="cc-head"><div><div class="cc-title">Khung giờ ưa thích</div><div class="cc-sub">Sáng / Chiều / Tối / Đêm khuya</div></div><span class="cc-badge cb-p">Doughnut</span></div><canvas id="aiTimeDistChart"></canvas></div>
+      <div class="gc cc"><div class="cc-head"><div><div class="cc-title">Loại xe ưa thích</div><div class="cc-sub">Giường nằm / Limousine / Ghế ngồi</div></div><span class="cc-badge cb-g">Doughnut</span></div><canvas id="aiVehicleDistChart"></canvas></div>
+    </div>
+
+    <div class="cg2" style="margin-bottom:20px;">
+      <div class="gc gc-pad">
+        <div class="sec-head" style="margin-bottom:12px;">
+          <div><div class="sec-title">🔥 Demand Forecast Heatmap</div><div class="sec-sub">7 ngày tới — xếp theo nguy cơ cháy vé</div></div>
+          <span class="cc-badge cb-r" id="ai-forecast-badge">—</span>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Tuyến</th><th>Ngày</th><th>Xu hướng nhu cầu</th><th>Nguy cơ cháy vé</th></tr></thead>
+          <tbody id="aiForecastTable"><tr><td colspan="4"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></td></tr></tbody>
+        </table></div>
+      </div>
+      <div class="gc gc-pad">
+        <div class="sec-head" style="margin-bottom:12px;">
+          <div><div class="sec-title">📡 Real-time Log — AI Intent Predictor</div><div class="sec-sub">50 phiên gần nhất, POST /api/ai/predict-intent</div></div>
+          <span class="cc-badge cb-a" id="ai-intent-badge">—</span>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Thời gian</th><th>User</th><th>Score</th><th>Mức độ</th><th>Rủi ro rời bỏ</th><th>Hành động đề xuất</th></tr></thead>
+          <tbody id="aiIntentLogTable"><tr><td colspan="6"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
   </div>
 
   <!-- ▌ PANEL REVIEWS ▌ -->
@@ -844,7 +869,13 @@ tbody tr:hover td{background:rgba(99,102,241,.025);}
     </div>
     <div class="cg31" style="margin-bottom:20px;">
       <div class="gc gc-pad">
-        <div class="sec-head"><div><div class="sec-title">Tất cả tuyến đường</div><div class="sec-sub" id="rtInfo">Đang tải…</div></div><span class="cc-badge cb-b" id="rtCountBadge">—</span></div>
+        <div class="sec-head">
+          <div><div class="sec-title">Tất cả tuyến đường</div><div class="sec-sub" id="rtInfo">Đang tải…</div></div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button onclick="openImportModal()" style="padding:8px 16px;border-radius:10px;border:1px solid rgba(46,204,113,.30);background:rgba(46,204,113,.10);color:#2ecc71;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;transition:all .2s;" onmouseover="this.style.background='rgba(46,204,113,.18)'" onmouseout="this.style.background='rgba(46,204,113,.10)'">📥 Import CSV/Excel</button>
+            <span class="cc-badge cb-b" id="rtCountBadge">—</span>
+          </div>
+        </div>
         <div class="tw"><table>
           <thead><tr><th>#</th><th>Tuyến đường</th><th>Km</th><th>Chuyến xe</th><th>Lượt đặt</th><th>Doanh thu</th><th>Nhà xe</th></tr></thead>
           <tbody id="routesTable"><tr><td colspan="7"><div class="empty"><div class="empty-ico">⏳</div>Đang tải…</div></td></tr></tbody>
@@ -1068,7 +1099,7 @@ document.addEventListener("click",e=>{
   setTimeout(()=>{window.location.href=h;},230);
 });
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 
 /* CHART DEFAULTS */
 Chart.defaults.color="rgba(255,255,255,0.48)";
@@ -1084,6 +1115,10 @@ function barOpts(yCb,h){const o=lineOpts(yCb);o.scales.x.grid={display:false};if
 function dnutOpts(){return{responsive:true,maintainAspectRatio:true,cutout:"66%",plugins:{legend:{position:"bottom",labels:{boxWidth:11,padding:12}},tooltip:{...TTP}}};}
 
 const $=id=>document.getElementById(id);
+/* Phase 2I: reviewer name/route/comment come from the reviews API — the
+   comment and (indirectly) the reviewer name are attacker-controllable by
+   any passenger (POST /api/reviews) and rendered via innerHTML below. */
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function fmt(v){return Number(v||0).toLocaleString("vi-VN")+"đ";}
 function fmtD(s){const d=new Date(s);return isNaN(d)?"—":d.toLocaleDateString("vi-VN");}
 function fmtDT(s){const d=new Date(s);return isNaN(d)?"—":d.toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
@@ -1278,6 +1313,69 @@ async function loadAI(){
   const bh=(behH||[]).reduce((a,d)=>{a[d.hour]=(a[d.hour]||0)+d.count;return a;},{});
   const c=$("behaviorHourChart").getContext("2d");
   new Chart($("behaviorHourChart"),{type:"line",data:{labels:hrs.map(h=>h+":00"),datasets:[{data:hrs.map(h=>bh[h]||0),borderColor:"#fd79a8",backgroundColor:mkg(c,"rgba(253,121,168,0.26)","rgba(253,121,168,0.02)"),borderWidth:2,tension:.4,pointRadius:2,fill:true}]},options:{...lineOpts(),plugins:{legend:{display:false}}}});
+  loadAiBehavioral();
+}
+
+/* ── Sprint 11: AI Behavioral Analytics & Demand Forecast ── */
+async function loadAiBehavioral(){
+  const [analytics, forecastRes] = await Promise.all([
+    req("ai/behavioral-analytics"),
+    req("ai/demand-forecast?limit=15"),
+  ]);
+
+  if(analytics){
+    const pd=analytics.price_distribution||{};
+    new Chart($("aiPriceDistChart"),{type:"bar",data:{
+      labels:["<100K","100K–200K","200K–400K",">400K"],
+      datasets:[{data:[pd.duoi_100k||0,pd["100k_200k"]||0,pd["200k_400k"]||0,pd.tren_400k||0],backgroundColor:PAL,borderRadius:7,barThickness:26}]
+    },options:{...barOpts(),plugins:{legend:{display:false}}}});
+
+    const td=analytics.time_distribution||{};
+    new Chart($("aiTimeDistChart"),{type:"doughnut",data:{
+      labels:["Sáng (5–11h)","Chiều (11–17h)","Tối (17–22h)","Đêm khuya"],
+      datasets:[{data:[td.morning||0,td.afternoon||0,td.evening||0,td.night||0],backgroundColor:PAL,borderWidth:0}]
+    },options:dnutOpts()});
+
+    const vd=analytics.vehicle_distribution||{};
+    new Chart($("aiVehicleDistChart"),{type:"doughnut",data:{
+      labels:["Giường nằm","Limousine","Ghế ngồi"],
+      datasets:[{data:[vd.GIUONG_NAM||0,vd.LIMOUSINE||0,vd.GHE_NGOI||0],backgroundColor:PAL,borderWidth:0}]
+    },options:dnutOpts()});
+
+    const log=analytics.recent_intent_log||[];
+    set("ai-intent-badge",log.length+" phiên");
+    $("aiIntentLogTable").innerHTML = log.length
+      ? log.map(l=>{
+          const lvlColor = l.intent_level==="HIGH" ? "#2ecc71" : l.intent_level==="MEDIUM" ? "#f39c12" : "#8ab0c0";
+          const riskColor = l.dropoff_risk==="HIGH" ? "#e74c3c" : l.dropoff_risk==="MEDIUM" ? "#f39c12" : "#2ecc71";
+          return `<tr>
+            <td style="color:#8ab0c0;font-size:12px;">${fmtDT(l.created_at)}</td>
+            <td style="font-size:12px;">${l.user_id?"#"+l.user_id:"Khách"}</td>
+            <td style="font-weight:800;">${(+l.intent_score).toFixed(1)}</td>
+            <td><span style="color:${lvlColor};font-weight:700;">${l.intent_level}</span></td>
+            <td><span style="color:${riskColor};font-weight:700;">${l.dropoff_risk}</span></td>
+            <td style="font-size:11.5px;color:rgba(255,255,255,.55);">${l.recommended_action}</td>
+          </tr>`;
+        }).join("")
+      : `<tr><td colspan="6"><div class="empty"><div class="empty-ico">📡</div>Chưa có phiên nào được ghi nhận</div></td></tr>`;
+  }
+
+  const forecast = forecastRes?.forecast || [];
+  set("ai-forecast-badge", forecast.length+" tuyến");
+  $("aiForecastTable").innerHTML = forecast.length
+    ? forecast.map(f=>{
+        const risk=+f.sellout_risk_pct||0;
+        const riskColor = risk>=70?"#e74c3c":risk>=40?"#f39c12":"#2ecc71";
+        const trend = f.demand_change_pct==null ? '<span style="color:rgba(255,255,255,.35);">— chưa đủ dữ liệu</span>'
+          : `<span style="color:${f.demand_change_pct>=0?'#2ecc71':'#e74c3c'};font-weight:700;">${f.demand_change_pct>=0?'▲':'▼'} ${Math.abs(f.demand_change_pct)}%</span>`;
+        return `<tr>
+          <td><b>${escapeHtml(f.origin)}</b><span style="color:rgba(255,255,255,.35);"> → </span><b>${escapeHtml(f.destination)}</b></td>
+          <td style="color:#8ab0c0;font-size:12px;">${fmtDT(f.forecast_date)}</td>
+          <td>${trend}</td>
+          <td><div class="prog-track" style="width:90px;display:inline-block;vertical-align:middle;"><div class="prog-fill" style="width:${risk}%;background:${riskColor};"></div></div> <b style="color:${riskColor};">${risk}%</b></td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="4"><div class="empty"><div class="empty-ico">🔥</div>Không có chuyến sắp tới để dự báo</div></td></tr>`;
 }
 
 /* REVIEWS */
@@ -1287,7 +1385,7 @@ async function loadReviews(){
   const total=data.length,avg=(data.reduce((s,r)=>s+(r.rating||0),0)/total).toFixed(1);
   const pos=data.filter(r=>r.rating>=4).length,neg=data.filter(r=>r.rating<=2).length;
   set("rvAvg",avg+"★");set("rvTotal",total.toLocaleString());set("rvPositive",pos.toLocaleString());set("rvNegative",neg.toLocaleString());
-  $("reviewsList").innerHTML=data.slice(0,10).map(r=>`<div class="rev-card"><div class="rev-top"><div class="rev-name">${r.user||"Ẩn danh"}</div><div class="rev-stars">${"⭐".repeat(r.rating||0)}</div></div><div class="rev-route">${r.origin||""}${r.destination?" → "+r.destination:""}</div><div class="rev-comment">${r.comment||"(không có nhận xét)"}</div><div class="rev-date">${fmtDT(r.created_at)}</div></div>`).join("");
+  $("reviewsList").innerHTML=data.slice(0,10).map(r=>`<div class="rev-card"><div class="rev-top"><div class="rev-name">${escapeHtml(r.user)||"Ẩn danh"}</div><div class="rev-stars">${"⭐".repeat(r.rating||0)}</div></div><div class="rev-route">${escapeHtml(r.origin)||""}${r.destination?" → "+escapeHtml(r.destination):""}</div><div class="rev-comment">${escapeHtml(r.comment)||"(không có nhận xét)"}</div><div class="rev-date">${fmtDT(r.created_at)}</div></div>`).join("");
   const dist=[1,2,3,4,5].map(s=>data.filter(r=>r.rating===s).length);
   new Chart($("ratingChart"),{type:"bar",data:{labels:["1★","2★","3★","4★","5★"],datasets:[{data:dist,backgroundColor:["#e74c3c","#e67e22","#f39c12","#1abc9c","#2ecc71"],borderRadius:6,barThickness:26}]},options:{...barOpts(),plugins:{legend:{display:false}}}});
   const tot=dist.reduce((s,v)=>s+v,0)||1;
@@ -1667,7 +1765,7 @@ loadOverview();
     if(clk) clk.textContent=t;
   }
   tick();setInterval(tick,1000);
-  try{const u=JSON.parse(localStorage.getItem("user")||"{}");if(u.full_name){const el=document.getElementById("adminNameLabel");if(el)el.textContent=u.full_name;}}catch(e){}
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
 })();
 
 /* ── COMMAND PALETTE ── */
@@ -1688,7 +1786,7 @@ loadOverview();
   ];
   const overlay=document.getElementById("cmdOverlay"),input=document.getElementById("cmdInput"),body=document.getElementById("cmdBody");
   let selIdx=0,flatItems=[];
-  function buildList(q){body.innerHTML="";flatItems=[];CMD_ITEMS.forEach(sec=>{const filtered=sec.items.filter(it=>!q||it.title.toLowerCase().includes(q.toLowerCase())||it.sub.toLowerCase().includes(q.toLowerCase()));if(!filtered.length)return;const lbl=document.createElement("div");lbl.className="cmd-section-label";lbl.textContent=sec.section;body.appendChild(lbl);filtered.forEach(it=>{const div=document.createElement("div");div.className="cmd-item";div.innerHTML=`<div class="cmd-item-icon">${it.icon}</div><div class="cmd-item-text"><div class="cmd-item-title">${it.title}</div><div class="cmd-item-sub">${it.sub}</div></div>`;div.addEventListener("click",()=>runItem(it));body.appendChild(div);flatItems.push({el:div,it});});});if(!flatItems.length)body.innerHTML=`<div style="text-align:center;padding:32px;color:rgba(255,255,255,.30);font-size:13px;">Không tìm thấy "<b>${q}</b>"</div>`;setSelected(0);}
+  function buildList(q){body.innerHTML="";flatItems=[];CMD_ITEMS.forEach(sec=>{const filtered=sec.items.filter(it=>!q||it.title.toLowerCase().includes(q.toLowerCase())||it.sub.toLowerCase().includes(q.toLowerCase()));if(!filtered.length)return;const lbl=document.createElement("div");lbl.className="cmd-section-label";lbl.textContent=sec.section;body.appendChild(lbl);filtered.forEach(it=>{const div=document.createElement("div");div.className="cmd-item";div.innerHTML=`<div class="cmd-item-icon">${it.icon}</div><div class="cmd-item-text"><div class="cmd-item-title">${it.title}</div><div class="cmd-item-sub">${it.sub}</div></div>`;div.addEventListener("click",()=>runItem(it));body.appendChild(div);flatItems.push({el:div,it});});});if(!flatItems.length)body.innerHTML=`<div style="text-align:center;padding:32px;color:rgba(255,255,255,.30);font-size:13px;">Không tìm thấy "<b>${escapeHtml(q)}</b>"</div>`;setSelected(0);}
   function setSelected(i){flatItems.forEach((x,j)=>x.el.classList.toggle("sel",j===i));selIdx=i;if(flatItems[i])flatItems[i].el.scrollIntoView({block:"nearest"});}
   function runItem(it){closeCmd();if(it.href){setTimeout(()=>{document.body.classList.add("leaving");setTimeout(()=>{location.href=it.href;},220);},80);}else if(it.action)setTimeout(it.action,80);}
   function openCmd(){overlay.classList.add("open");input.value="";buildList("");setTimeout(()=>input.focus(),60);}
@@ -1805,7 +1903,183 @@ async function loadSearchAnalytics() {
     console.error("[SearchAnalytics]", e);
   }
 }
+
+/* ══════════════════════════════════════════════
+   IMPORT TUYẾN ĐƯỜNG TỪ CSV/EXCEL (Enterprise Hardening Pass — Pillar 2)
+   Wires the existing Backend preview/confirm API (adminController.js
+   importRoutesPreview/importRoutesConfirm — already built, previously had
+   ZERO Frontend UI calling it, flagged in the technical audit as an
+   "orphaned" backend feature) to a real file-upload + preview + confirm
+   flow. .csv parsed with a small dependency-free parser (quoted-field
+   aware); .xlsx parsed via SheetJS, loaded lazily from the CDN only when
+   an .xlsx file is actually chosen — same lazy-SDK-loading pattern
+   already used for the Google/Facebook OAuth SDKs on the login page.
+══════════════════════════════════════════════ */
+let _importRows = null;      // raw {origin,destination,distance_km} parsed from the chosen file
+let _previewRows = null;     // the preview endpoint's own response rows (carries the `status` field confirm requires)
+let _sheetJsReady = false;
+
+function openImportModal(){
+  document.getElementById("importModal").style.display = "flex";
+  document.getElementById("importFileInput").value = "";
+  document.getElementById("importPreviewArea").innerHTML = "";
+  document.getElementById("importConfirmBtn").disabled = true;
+  _importRows = null;
+}
+function closeImportModal(){
+  document.getElementById("importModal").style.display = "none";
+}
+
+/* Minimal RFC4180-ish CSV parser — handles quoted fields containing commas
+   ("Hà Nội, Việt Nam") and escaped quotes (""), which a naive split(',')
+   would silently corrupt. No external dependency needed for CSV. */
+function parseCsv(text){
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; } else { inQuotes = false; }
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ""; }
+      else if(c === '\n' || c === '\r'){
+        if(field !== "" || row.length){ row.push(field); rows.push(row); row = []; field = ""; }
+        if(c === '\r' && text[i+1] === '\n') i++;
+      } else field += c;
+    }
+  }
+  if(field !== "" || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ""));
+}
+
+async function ensureSheetJs(){
+  if(_sheetJsReady) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  _sheetJsReady = true;
+}
+
+function rowsToObjects(rows){
+  if(!rows.length) return [];
+  const header = rows[0].map(h => String(h).trim().toLowerCase());
+  const oIdx = header.indexOf("origin"), dIdx = header.indexOf("destination"), kIdx = header.indexOf("distance_km");
+  return rows.slice(1).map(r => ({
+    origin: oIdx >= 0 ? String(r[oIdx] ?? "").trim() : "",
+    destination: dIdx >= 0 ? String(r[dIdx] ?? "").trim() : "",
+    distance_km: kIdx >= 0 && r[kIdx] !== undefined && r[kIdx] !== "" ? Number(r[kIdx]) : undefined,
+  }));
+}
+
+async function handleImportFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const preview = document.getElementById("importPreviewArea");
+  preview.innerHTML = `<div class="empty"><div class="empty-ico">⏳</div>Đang đọc file…</div>`;
+  try{
+    let rows;
+    if(/\.xlsx?$/i.test(file.name)){
+      await ensureSheetJs();
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+    } else {
+      const text = await file.text();
+      rows = parseCsv(text);
+    }
+    _importRows = rowsToObjects(rows);
+    await runImportPreview();
+  }catch(e){
+    preview.innerHTML = `<div class="empty"><div class="empty-ico">❌</div>Không đọc được file: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function runImportPreview(){
+  const preview = document.getElementById("importPreviewArea");
+  if(!_importRows || !_importRows.length){
+    preview.innerHTML = `<div class="empty"><div class="empty-ico">⚠️</div>File không có dòng dữ liệu hợp lệ (cần cột origin, destination).</div>`;
+    return;
+  }
+  preview.innerHTML = `<div class="empty"><div class="empty-ico">⏳</div>Đang kiểm tra ${_importRows.length} dòng…</div>`;
+  // req() (this file's shared fetch helper, defined above — no global
+  // `api` object exists in admin.html) returns null on any failure
+  // instead of throwing, so a null-check is the correct error path here.
+  const res = await req("admin/routes/import/preview", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rows: _importRows }),
+  });
+  if(!res){
+    preview.innerHTML = `<div class="empty"><div class="empty-ico">❌</div>Lỗi kiểm tra dữ liệu — vui lòng thử lại.</div>`;
+    return;
+  }
+  _previewRows = res.rows; // exact shape importRoutesConfirm requires (carries the `status` field it filters on)
+  const s = res.summary || {};
+  const okCount = s.valid ?? _previewRows.filter(r => r.status === "VALID").length;
+  const errorCount = _previewRows.length - okCount;
+  preview.innerHTML = `
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <span class="cc-badge cb-g">✅ ${okCount} hợp lệ</span>
+      ${s.duplicate_db ? `<span class="cc-badge cb-a">🔁 ${s.duplicate_db} đã có trong CSDL</span>` : ""}
+      ${s.duplicate_file ? `<span class="cc-badge cb-a">🔁 ${s.duplicate_file} trùng trong file</span>` : ""}
+      ${s.invalid ? `<span class="cc-badge cb-r">❌ ${s.invalid} lỗi dữ liệu</span>` : ""}
+    </div>
+    <div class="tw" style="max-height:280px;overflow-y:auto;"><table>
+      <thead><tr><th>#</th><th>Điểm đi</th><th>Điểm đến</th><th>Km</th><th>Trạng thái</th></tr></thead>
+      <tbody>${_previewRows.map(r => `<tr>
+        <td>${r.rowNumber}</td><td>${escapeHtml(r.origin)}</td><td>${escapeHtml(r.destination)}</td>
+        <td>${r.distance_km ?? "—"}</td>
+        <td>${r.status === "VALID"
+          ? `<span style="color:#2ecc71;">✅ Hợp lệ</span>`
+          : `<span style="color:#e74c3c;">${escapeHtml((r.errors||[]).map(e=>e.message).join(", "))}</span>`}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+  document.getElementById("importConfirmBtn").disabled = okCount === 0;
+}
+
+async function confirmImport(){
+  if(!_previewRows) return;
+  const btn = document.getElementById("importConfirmBtn");
+  btn.disabled = true; const original = btn.textContent; btn.textContent = "⏳ Đang import…";
+  const res = await req("admin/routes/import/confirm", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rows: _previewRows }), // must be the preview's OWN rows — importRoutesConfirm filters on their `status` field
+  });
+  if(!res){
+    showToast("❌ Lỗi khi import — vui lòng thử lại", "error");
+    btn.disabled = false; btn.textContent = original;
+    return;
+  }
+  const skippedNote = res.skipped ? `, bỏ qua ${res.skipped} tuyến đã tồn tại` : "";
+  showToast(`✅ Đã import ${res.inserted} tuyến đường${skippedNote}`, "success");
+  closeImportModal();
+  loadRoutes();
+}
 </script>
 <script src="/js/admin-notif.js"></script>
+
+<!-- Import CSV/Excel modal (Pillar 2 — wires the pre-existing Backend preview/confirm API to a real UI) -->
+<div id="importModal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(2,8,20,.72);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="width:min(720px,92vw);max-height:85vh;overflow-y:auto;background:linear-gradient(160deg,#0d1b33,#081326);border:1px solid rgba(99,102,241,.25);border-radius:18px;padding:26px 28px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="margin:0;font-size:17px;color:#fff;">📥 Import tuyến đường từ CSV/Excel</h3>
+      <button onclick="closeImportModal()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <p style="font-size:12.5px;color:rgba(255,255,255,.5);margin:0 0 16px;">File .csv hoặc .xlsx cần có cột <code>origin</code>, <code>destination</code>, và tuỳ chọn <code>distance_km</code>. Tối đa 500 dòng mỗi lần.</p>
+    <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" onchange="handleImportFile(this)"
+      style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#e8f4f8;font-size:13px;margin-bottom:16px;" />
+    <div id="importPreviewArea"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+      <button onclick="closeImportModal()" style="padding:9px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);font-size:12.5px;font-weight:700;cursor:pointer;">Huỷ</button>
+      <button id="importConfirmBtn" onclick="confirmImport()" disabled style="padding:9px 20px;border-radius:10px;border:1px solid rgba(46,204,113,.35);background:rgba(46,204,113,.15);color:#2ecc71;font-size:12.5px;font-weight:800;cursor:pointer;opacity:1;">✅ Xác nhận Import</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

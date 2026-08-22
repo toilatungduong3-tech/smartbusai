@@ -145,7 +145,7 @@ D:/smartbusai/
 - **Cold start**: fallback sang tuyến phổ biến toàn cục khi user chưa có lịch sử
 - **Price Prediction**: Linear regression trên lịch sử giá 60 ngày
 - **Demand Forecasting**: Phân tích theo ngày trong tuần + occupancy rate
-- **NLP Classification**: Phân loại yêu cầu hỗ trợ
+- **Rule-based Keyword Classifier**: Phân loại yêu cầu hỗ trợ bằng khớp từ khóa tiếng Việt (không phải NLP — không tokenization/embedding/model huấn luyện) — sửa lại thuật ngữ ở Sprint 3, xem `server/ai/recommendation.js`
 
 ### 5.3 Dynamic Pricing (`server/services/pricingEngine.js`)
 - Multiplier theo `days_until_departure`:

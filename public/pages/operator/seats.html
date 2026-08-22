@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<!-- Bug fix: this page uses the shared .sb-profile / .sb-profile-menu
+     profile-dropdown component (initProfileDropdown(), from /js/api.js),
+     whose CSS — including its position:absolute/z-index anchoring — lives
+     in /css/style.css. Every other operator page (operator.html,
+     vehicles.html, bookings.html, trips.html, revenue.html) already loads
+     it; this one never did, so .sb-profile-menu fell back to
+     position:static with no z-index, rendering the dropdown as ordinary
+     static-flow content instead of a floating overlay — it visually
+     overlapped/pushed into the page's own action buttons directly below
+     the header instead of floating above them. Loaded first (same order
+     as every other operator page) so this page's own inline <style>
+     block below still wins the cascade wherever the two overlap. -->
+<link rel="stylesheet" href="/css/style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sơ đồ Ghế — SmartBusAI Operator</title>
@@ -54,17 +67,12 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.20);}
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.25);}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .op-chip{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);
   border-radius:20px;padding:5px 12px 5px 6px;}
 .op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .op-name{font-size:12px;font-weight:600;}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* ── MAIN LAYOUT ── */
 .main{max-width:1440px;margin:0 auto;padding:28px 32px 60px;}
 .pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
@@ -348,11 +356,7 @@ select.form-control option{background:#0d1827;}
     <a href="revenue.html">Doanh thu</a>
   </nav>
   <div class="hdr-actions">
-    <div class="op-chip">
-      <div class="op-avatar">🏢</div>
-      <span class="op-name" id="opNameChip">Nhà xe</span>
-    </div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -626,11 +630,13 @@ document.addEventListener("click",e=>{
 
 /* ── State ── */
 const API="/api";
+/* Phase 2I Step 4: seat writes now require ADMIN/OPERATOR — attach the Bearer token. */
+function _authHeaders(){const t=typeof getAccessToken==="function"?getAccessToken():null;return t?{Authorization:`Bearer ${t}`}:{};}
 let allBuses=[], allTrips=[], seats=[], bookedSeatIds=new Set();
 let currentBus=null, currentTrip=null, selectedSeatId=null;
 let pendingChanges={}; // seatId -> new type
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 function fmtDT(s){if(!s)return"—";try{const d=new Date(s);return d.toLocaleDateString("vi-VN")+` ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`;}catch{return s;}}
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
 function countUp(el,to,dur=400){
@@ -774,7 +780,9 @@ async function loadSeats(busId){
   ];
   for(const url of endpoints){
     try{
-      const res=await fetch(url);
+      /* Sprint 3: GET /api/seats/bus/:busId now requires auth + operator
+         ownership (see seatController.getSeatsByBus / seatRoutes.js). */
+      const res=await fetch(url,{headers:_authHeaders()});
       if(!res.ok)continue;
       const d=await res.json();
       const arr=Array.isArray(d)?d:(d.data||d.seats||[]);
@@ -1018,7 +1026,7 @@ async function saveChanges(){
   try{
     for(const u of updates){
       await fetch(`${API}/seats/${u.seat_id}`,{
-        method:"PUT",headers:{"Content-Type":"application/json"},
+        method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},
         body:JSON.stringify({seat_type:u.seat_type})
       });
       const s=seats.find(x=>x.seat_id===u.seat_id);
@@ -1046,7 +1054,7 @@ async function addSeats(){
     if(seats.find(s=>s.seat_number===label)){toast(`Ghế ${label} đã tồn tại`,"error");continue;}
     try{
       const res=await fetch(`${API}/seats`,{
-        method:"POST",headers:{"Content-Type":"application/json"},
+        method:"POST",headers:{"Content-Type":"application/json",..._authHeaders()},
         body:JSON.stringify({bus_id:currentBus.bus_id,seat_number:label,seat_type:type})
       });
       if(res.ok){
@@ -1072,7 +1080,7 @@ async function addSeats(){
 async function deleteSeat(seatId){
   if(bookedSeatIds.has(seatId)){toast("Không thể xóa ghế đã có booking","error");return;}
   try{
-    const res=await fetch(`${API}/seats/${seatId}`,{method:"DELETE"});
+    const res=await fetch(`${API}/seats/${seatId}`,{method:"DELETE",headers:_authHeaders()});
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
       toast(err.message||"Lỗi xóa ghế","error");return;
@@ -1086,8 +1094,7 @@ async function deleteSeat(seatId){
 
 /* ── Operator name & live clock ── */
 (function(){
-  const nm=localStorage.getItem("operator_name")||"Nhà xe";
-  const chip=document.getElementById("opNameChip");if(chip)chip.textContent=nm;
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
   function tick(){
     const d=new Date();const pad=n=>String(n).padStart(2,"0");
     const el=document.getElementById("seatClock");

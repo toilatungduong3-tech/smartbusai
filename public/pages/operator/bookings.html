@@ -55,17 +55,12 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
   border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
 .hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.22);}
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.28);}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .op-chip{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);
   border-radius:20px;padding:5px 12px 5px 6px;}
 .op-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#818cf8,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .op-name{font-size:12px;font-weight:600;}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* ── MAIN ── */
 .main{max-width:1440px;margin:0 auto;padding:28px 32px 60px;}
 .pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:14px;}
@@ -285,11 +280,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
     <a href="revenue.html">Doanh thu</a>
   </nav>
   <div class="hdr-actions">
-    <div class="op-chip">
-      <div class="op-avatar">🏢</div>
-      <span class="op-name" id="opNameChip">Nhà xe</span>
-    </div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -479,9 +470,19 @@ document.addEventListener("click",e=>{
 
 /* ── State ── */
 const API="/api/bookings";
+/* Sprint 3 — MASTER_COMPLETION_MATRIX.md blocker: GET /api/bookings was
+   fully unauthenticated and unscoped — any caller (not just this page's
+   own operator) could dump the entire platform's booking ledger,
+   including every other operator's revenue and every passenger's PII.
+   Now requires auth and is server-side scoped to the caller's own
+   operator_id (see bookingController.getAllBookings). */
+function _authHeaders(){const t=typeof getAccessToken==="function"?getAccessToken():null;return t?{Authorization:`Bearer ${t}`}:{};}
 let allBookings=[], filtered=[], currentPage=1, pageSize=10;
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
+/* Phase 2I: full_name is the passenger's own profile name (attacker-
+   controllable) and is rendered via innerHTML below. */
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function money(v){return Number(v||0).toLocaleString("vi-VN")+" đ";}
 function fmtDT(s){if(!s)return"—";try{const d=new Date(s);return d.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");}catch{return s;}}
 
@@ -502,44 +503,28 @@ const GRAD_COLORS=["#818cf8,#6366f1","#e74c3c,#f39c12","#2ecc71,#6366f1","#fd79a
 function gradFor(id){return GRAD_COLORS[Number(id)%GRAD_COLORS.length];}
 
 /* ── Load ── */
+/* Bug fix: this used to fall back to genDemo() — 35 entirely fabricated
+   bookings (fake names, fake routes, fake amounts) — whenever the fetch
+   failed OR whenever the real result was a legitimate empty array
+   (`if(!allBookings.length)throw new Error("empty")`). That second branch
+   meant any operator with zero real bookings saw a full page of made-up
+   data with no indication it wasn't real — exactly the "dấu hiệu mock dữ
+   liệu sai lệch" reported. Removed entirely: a real empty result now
+   renders the page's own #emptyState (already built, see renderTable()
+   below), and a real fetch failure shows an honest error toast with zero
+   rows rather than silently substituting fake ones. */
 async function loadBookings(){
   try{
-    const res=await fetch(API,{signal:AbortSignal.timeout(5000)});
-    if(!res.ok)throw new Error();
+    const res=await fetch(API,{headers:_authHeaders(),signal:AbortSignal.timeout(8000)});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const d=await res.json();
     allBookings=Array.isArray(d)?d:(d.data||d.bookings||[]);
-    if(!allBookings.length)throw new Error("empty");
-  }catch{
-    // Demo fallback
-    allBookings=genDemo();
+  }catch(e){
+    allBookings=[];
+    toast("Không tải được danh sách đặt vé — vui lòng tải lại trang","error");
   }
   updateKPI();applyFilter();
-  toast(`Đã tải ${allBookings.length} booking`,"info");
-}
-
-function genDemo(){
-  const names=["Nguyễn Văn A","Trần Thị B","Lê Văn C","Phạm Minh D","Võ Thị E","Đặng Văn F","Hoàng Thị G","Bùi Văn H"];
-  const routes=[{o:"Hà Nội",d:"TP.HCM"},{o:"Hà Nội",d:"Đà Nẵng"},{o:"HCM",d:"Đà Lạt"},{o:"HN",d:"Hải Phòng"},{o:"HCM",d:"Cần Thơ"}];
-  const statuses=["PAID","PAID","PAID","PENDING","PENDING","CANCELED"];
-  const methods=["MOMO","ZALOPAY","BANK"];
-  return Array.from({length:35},(_,i)=>{
-    const rt=routes[i%routes.length];
-    const st=statuses[i%statuses.length];
-    return{
-      booking_id:1000+i,
-      user_id:10+i,full_name:names[i%names.length],
-      origin:rt.o,destination:rt.d,
-      departure_time:new Date(Date.now()+Math.random()*7*86400000).toISOString(),
-      booking_time:new Date(Date.now()-Math.random()*10*86400000).toISOString(),
-      total_amount:Math.floor(Math.random()*1200000+200000),
-      status:st,
-      payment_method:st!=="PENDING"?methods[i%methods.length]:null,
-      payment_status:st==="PAID"?"SUCCESS":st==="CANCELED"?"FAILED":null,
-      seats:[`${i%5+1}A`,`${i%5+1}B`].slice(0,i%2+1),
-      seat_types:["NORMAL","VIP"][i%2],
-      trip_id:200+i,plate_number:`51B-${10000+i}`,bus_type:i%3===0?"VIP":"Sleeper",
-    };
-  });
+  if(allBookings.length)toast(`Đã tải ${allBookings.length} booking`,"info");
 }
 
 /* ── KPI ── */
@@ -601,8 +586,8 @@ function renderTable(){
         <div style="display:flex;align-items:center;gap:9px;">
           <div class="user-av" style="background:linear-gradient(135deg,${grad});">${initials}</div>
           <div>
-            <div style="font-weight:700;font-size:13px;">${b.full_name||"—"}</div>
-            <div style="font-size:11px;color:var(--text3);">ID: ${b.user_id||"—"}</div>
+            <div style="font-weight:700;font-size:13px;">${escapeHtml(b.full_name)||(b.is_guest?"Khách vãng lai":"—")}</div>
+            <div style="font-size:11px;color:var(--text3);">${b.phone?"📞 "+escapeHtml(b.phone):(b.user_id?"ID: "+b.user_id:"—")}</div>
           </div>
         </div>
       </td>
@@ -663,7 +648,14 @@ function viewBooking(id){
   const seats=Array.isArray(b.seats)?b.seats.join(", "):(b.seat_numbers||b.seats||"—");
   document.getElementById("vGrid").innerHTML=[
     ["🆔 Booking ID","#"+b.booking_id],
-    ["👤 Hành khách",b.full_name||"—"],
+    /* full_name/phone come from either users.full_name (registered) or
+       booking.guest_name/guest_phone (guest checkout — see the backend
+       comment in bookingController.getAllBookings) — either way this is
+       attacker-controllable free text, and this list is rendered via
+       innerHTML below, so it must be escaped like the table row already
+       does (escapeHtml(b.full_name) a few lines up in renderTable()). */
+    ["👤 Hành khách",escapeHtml(b.full_name)||(b.is_guest?"Khách vãng lai":"—")],
+    ["📞 SĐT",escapeHtml(b.phone)||"—"],
     ["🗺️ Tuyến đường",`${b.origin||"?"}  →  ${b.destination||"?"}`,true],
     ["🚌 Trip ID","#"+(b.trip_id||"—")],
     ["🪪 Biển số",b.plate_number||"—"],
@@ -684,7 +676,7 @@ function viewBooking(id){
 /* ── Mark Paid ── */
 async function markPaid(id){
   try{
-    await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"PAID"})});
+    await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:"PAID"})});
   }catch{}
   const b=allBookings.find(x=>x.booking_id==id);
   if(b)b.status="PAID";
@@ -696,9 +688,9 @@ async function markPaid(id){
 function confirmCancel(id){
   const b=allBookings.find(x=>x.booking_id==id);if(!b)return;
   document.getElementById("confirmTitle").textContent=`Hủy Booking #${id}?`;
-  document.getElementById("confirmMsg").innerHTML=`Khách hàng: <b>${b.full_name||"—"}</b><br>Tuyến: <b>${b.origin||"?"}→${b.destination||"?"}</b><br>Trạng thái sẽ chuyển sang <b>CANCELED</b>.`;
+  document.getElementById("confirmMsg").innerHTML=`Khách hàng: <b>${escapeHtml(b.full_name)||"—"}</b><br>Tuyến: <b>${escapeHtml(b.origin)||"?"}→${escapeHtml(b.destination)||"?"}</b><br>Trạng thái sẽ chuyển sang <b>CANCELED</b>.`;
   document.getElementById("confirmBtn").onclick=async()=>{
-    try{await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"CANCELED"})});}catch{}
+    try{await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:"CANCELED"})});}catch{}
     const b=allBookings.find(x=>x.booking_id==id);
     if(b)b.status="CANCELED";
     toast(`Đã hủy Booking #${id}`,"info");
@@ -722,8 +714,7 @@ function exportCSV(){
 
 /* ── Operator name & live clock ── */
 (function(){
-  const nm=localStorage.getItem("operator_name")||"Nhà xe";
-  const chip=document.getElementById("opNameChip");if(chip)chip.textContent=nm;
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
   function tick(){
     const d=new Date();const pad=n=>String(n).padStart(2,"0");
     const el=document.getElementById("bkClock");

@@ -2,7 +2,7 @@
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 
-const QR_SECRET = 'smartbusai_qr_secret_2024';
+const QR_SECRET = require('../config/qrSecret');
 
 // Generate checksum for a booking (tamper-proof)
 function generateChecksum(bookingId, userId, amount) {

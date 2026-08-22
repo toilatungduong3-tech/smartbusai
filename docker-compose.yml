@@ -1,50 +1,92 @@
-version: "3.9"
-
 services:
   db:
-    image: mysql:8.0
-    container_name: smartbusai_db
+    image: mariadb:10.4
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass123}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-smartbusai_root}
       MYSQL_DATABASE: ${DB_NAME:-smartbusai}
-      MYSQL_USER: ${DB_USER:-smartbus}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-smartpass123}
+    ports:
+      - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./smartbusai.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks:
-      - smartbusai_net
+      - smartbusai_db_data:/var/lib/mysql
+      # Runs ONCE, only against a freshly-initialized (empty) data
+      # directory — the standard MySQL/MariaDB image behavior for anything
+      # mounted under /docker-entrypoint-initdb.d/. This is the real base
+      # schema (exported from the live dev DB via SHOW CREATE TABLE — see
+      # its own header comment); server/config/migrate_v2.sql onward then
+      # apply on top of it automatically when the backend container starts
+      # (server.js awaits runMigration() before it starts listening).
+      - ./server/config/schema_base.sql:/docker-entrypoint-initdb.d/01-schema_base.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpass123}"]
-      interval: 10s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD:-smartbusai_root}"]
+      interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 20s
 
-  app:
+  # Enterprise Hardening Pass — Pillar 3. Deliberately NOT in backend's
+  # `depends_on` (neither service_started nor service_healthy): the whole
+  # point of cacheManager.js's design is that the app must start and serve
+  # traffic correctly with zero regard for Redis's availability — making
+  # startup wait on/require Redis would silently reintroduce the single-
+  # point-of-failure a cache is supposed to never be. Redis is still
+  # declared here so `docker-compose up` brings it up alongside the app;
+  # the backend just doesn't block on it.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - smartbusai_redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  backend:
     build: .
-    container_name: smartbusai_app
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+      # No entry for `redis` here — see the comment on the redis service
+      # above. Docker Compose still starts redis in parallel with backend
+      # since it's declared in this file, just without backend waiting on it.
+    ports:
+      - "${PORT:-2704}:2704"
     environment:
       PORT: 2704
-      DB_HOST: db
-      DB_USER: ${DB_USER:-smartbus}
-      DB_PASSWORD: ${DB_PASSWORD:-smartpass123}
-      DB_NAME: ${DB_NAME:-smartbusai}
-      DB_PORT: 3306
       NODE_ENV: production
-    ports:
-      - "2704:2704"
-    networks:
-      - smartbusai_net
+      TZ: Asia/Ho_Chi_Minh
+      BASE_URL: ${BASE_URL:-http://localhost:2704}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-smartbusai_root}
+      DB_NAME: ${DB_NAME:-smartbusai}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set — see .env.example}
+      QR_SECRET: ${QR_SECRET:?QR_SECRET must be set — see .env.example}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      MOMO_PARTNER_CODE: ${MOMO_PARTNER_CODE:-}
+      MOMO_ACCESS_KEY: ${MOMO_ACCESS_KEY:-}
+      MOMO_SECRET_KEY: ${MOMO_SECRET_KEY:-}
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-}
+      VIETQR_BANK_ID: ${VIETQR_BANK_ID:-}
+      VIETQR_ACCOUNT_NO: ${VIETQR_ACCOUNT_NO:-}
+      VIETQR_ACCOUNT_NAME: ${VIETQR_ACCOUNT_NAME:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
 
 volumes:
-  db_data:
-
-networks:
-  smartbusai_net:
-    driver: bridge
+  smartbusai_db_data:
+  smartbusai_redis_data:

@@ -53,26 +53,18 @@ header{
   background:linear-gradient(90deg,#6366f1,#b4a9fd);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
-.nav-links{ display:flex; align-items:center; gap:4px; }
+.nav-links{ display:flex; align-items:center; gap:6px; }
 .nav-links a{
   text-decoration:none; color:rgba(220,235,255,0.62);
-  font-weight:600; font-size:13px; padding:7px 14px; border-radius:10px;
+  font-weight:600; font-size:13px; padding:8px 15px; border-radius:10px;
   border:1px solid transparent; transition:all .18s;
   display:flex; align-items:center; gap:5px;
 }
 .nav-links a:hover{ color:#6366f1; background:rgba(99,102,241,.07); border-color:rgba(99,102,241,.20); }
 .nav-links a.active{ color:#818cf8; background:rgba(0,212,255,.10); border-color:rgba(0,212,255,.25); font-weight:700; }
-.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.nav-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; overflow:visible !important;min-width:0;}
 .nav-greeting{ font-size:13px; color:rgba(185,210,230,0.68); font-weight:500; white-space:nowrap; }
 .nav-greeting .nav-uname{ font-weight:800; color:#daf0f8; }
-.btn-logout{
-  background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28);
-  color:#e74c3c; padding:7px 15px; border-radius:9px;
-  font-weight:700; font-size:12.5px; cursor:pointer;
-  transition:all .20s; font-family:inherit; white-space:nowrap;
-}
-.btn-logout:hover{ background:rgba(231,76,60,.26); color:#fff; border-color:rgba(231,76,60,.50); }
-
 /* ── Page wrapper ── */
 .page-wrap{ max-width:1280px; margin:0 auto; padding:28px 24px 100px; }
 
@@ -526,6 +518,7 @@ header{
 }
 </style>
 <script src="/js/api.js"></script>
+<script src="/js/legalModal.js"></script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u)return;if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');}})();
 </script></head>
@@ -551,11 +544,10 @@ header{
     <a href="nha-xe.html" class="active">🚌 Nhà xe</a>
     <a href="booking.html">🎫 Đặt vé</a>
     <a href="profile.html">👤 Tài khoản</a>
-    <a href="hotro.html">🛟 Hỗ trợ</a>
+    <a href="hotro.html">🎧 Hỗ trợ</a>
   </nav>
   <div class="nav-right">
-    <div class="nav-greeting">Xin chào, <span class="nav-uname" id="headerUserName">Khách</span></div>
-    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -783,15 +775,11 @@ function trustCircleSVG(score){
 
 /* ── User session ── */
 let currentUser=null;
-function logout(){ localStorage.clear(); window.location.href="../auth/login.html"; }
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 function initUser(){
   const raw=localStorage.getItem("user");
   try{ currentUser=raw?JSON.parse(raw):null; }catch{ currentUser=null; }
-  if(currentUser){
-    const nm=currentUser.full_name||currentUser.email||"Khách";
-    const el=document.getElementById("headerUserName");
-    if(el) el.textContent=nm;
-  }
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
 }
 
 /* ── Data ── */
@@ -1131,8 +1119,9 @@ async function submitOperatorReview(){
   const btn=document.getElementById("orSubmitBtn");
   btn.disabled=true; btn.textContent="Đang gửi...";
   try{
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     const res=await fetch("/api/reviews/operator",{
-      method:"POST",headers:{"Content-Type":"application/json"},
+      method:"POST",headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},
       body:JSON.stringify({user_id:currentUser.user_id,operator_id:_curOpId,rating:_orRating,comment})
     });
     const data=await res.json();
@@ -1302,5 +1291,10 @@ document.querySelectorAll("#orStars span").forEach((s,i)=>{
 initUser();
 loadOperators();
 </script>
+<footer style="text-align:center;padding:22px 20px;margin-top:20px;border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.32);font-size:12px;">
+  SmartBusAI © 2026 ·
+  <a href="/pages/legal/terms-of-service.html" style="color:rgba(255,255,255,.45);text-decoration:none;margin:0 6px;" onclick="openLegalModal('terms');return false;">Điều khoản sử dụng</a> ·
+  <a href="/pages/legal/privacy-policy.html" style="color:rgba(255,255,255,.45);text-decoration:none;margin:0 6px;" onclick="openLegalModal('privacy');return false;">Chính sách bảo mật</a>
+</footer>
 </body>
 </html>

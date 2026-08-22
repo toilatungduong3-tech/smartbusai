@@ -8,9 +8,18 @@
 /* ══════════════════════════════════════════
    1. AUTH MIDDLEWARE TESTS
 ══════════════════════════════════════════ */
+/* Sprint 3: authenticate() now re-checks the user's status in the DB on
+   every call (see server/middleware/authMiddleware.js) — db.js is mocked
+   here so this stays a real unit test. Every OTHER describe block in this
+   file requires controllers that never actually reach a db.query() call
+   under the specific validation-only paths they test, so a file-wide mock
+   returning undefined-by-default is harmless to them. */
+jest.mock('../server/config/db', () => ({ query: jest.fn(), getConnection: jest.fn() }));
+
 describe('authMiddleware', () => {
     const jwt = require('jsonwebtoken');
-    const JWT_SECRET = 'smartbusai_jwt_secret_key_2024_international';
+    const JWT_SECRET = require('../server/config/jwtSecret'); // same source authMiddleware verifies against
+    const db = require('../server/config/db');
 
     function makeToken(payload, secret = JWT_SECRET, opts = {}) {
         return jwt.sign(payload, secret, { expiresIn: '1h', ...opts });
@@ -25,6 +34,8 @@ describe('authMiddleware', () => {
 
     const { authenticate, requireAdmin, requireAdminOrOperator, requireSelfOrAdmin } =
         require('../server/middleware/authMiddleware');
+
+    beforeEach(() => { db.query.mockReset(); });
 
     test('authenticate — missing header → 401', () => {
         const req = { headers: {} };
@@ -53,14 +64,41 @@ describe('authMiddleware', () => {
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ expired: true }));
     });
 
-    test('authenticate — valid token → sets req.user and calls next', () => {
+    test('authenticate — valid token, ACTIVE user → sets req.user and calls next', async () => {
         const token = makeToken({ user_id: 5, role: 'PASSENGER', email: 'a@b.com' });
         const req = { headers: { authorization: `Bearer ${token}` } };
         const res = mockRes();
         const next = jest.fn();
-        authenticate(req, res, next);
+        db.query.mockResolvedValueOnce([[{ status: 'ACTIVE' }]]);
+        await authenticate(req, res, next);
         expect(next).toHaveBeenCalled();
         expect(req.user).toMatchObject({ user_id: 5, role: 'PASSENGER' });
+    });
+
+    /* Sprint 3 — MASTER_COMPLETION_MATRIX.md blocker: a valid, unexpired
+       token for a since-blocked user must be rejected, not silently
+       trusted from the token payload. */
+    test('authenticate — valid token, BLOCKED user → 403, next NOT called', async () => {
+        const token = makeToken({ user_id: 5, role: 'PASSENGER', email: 'a@b.com' });
+        const req = { headers: { authorization: `Bearer ${token}` } };
+        const res = mockRes();
+        const next = jest.fn();
+        db.query.mockResolvedValueOnce([[{ status: 'BLOCKED' }]]);
+        await authenticate(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(next).not.toHaveBeenCalled();
+        expect(req.user).toBeUndefined();
+    });
+
+    test('authenticate — valid token, user no longer exists (deleted) → 403, fails closed', async () => {
+        const token = makeToken({ user_id: 999, role: 'PASSENGER', email: 'a@b.com' });
+        const req = { headers: { authorization: `Bearer ${token}` } };
+        const res = mockRes();
+        const next = jest.fn();
+        db.query.mockResolvedValueOnce([[]]);
+        await authenticate(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(next).not.toHaveBeenCalled();
     });
 
     test('requireAdmin — PASSENGER → 403', () => {
@@ -331,6 +369,31 @@ describe('US-103 tripController validation', () => {
         const req  = { params: { id: '1' }, body: { price: -500 } };
         const res  = mockRes();
         await ctrl.updateTripPrice(req, res);
+        expect(res.status).toHaveBeenCalledWith(422);
+    });
+
+    /* Phase 2H Priority 3 — searchTrips price filter validation */
+    test('searchTrips — non-numeric minPrice → 422', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const req  = { query: { minPrice: 'abc' } };
+        const res  = mockRes();
+        await ctrl.searchTrips(req, res);
+        expect(res.status).toHaveBeenCalledWith(422);
+    });
+
+    test('searchTrips — negative maxPrice → 422', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const req  = { query: { maxPrice: '-100' } };
+        const res  = mockRes();
+        await ctrl.searchTrips(req, res);
+        expect(res.status).toHaveBeenCalledWith(422);
+    });
+
+    test('searchTrips — minPrice > maxPrice → 422', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const req  = { query: { minPrice: '300000', maxPrice: '100000' } };
+        const res  = mockRes();
+        await ctrl.searchTrips(req, res);
         expect(res.status).toHaveBeenCalledWith(422);
     });
 });

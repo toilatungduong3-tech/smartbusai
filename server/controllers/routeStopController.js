@@ -2,6 +2,7 @@
 
 const db = require('../config/db');
 const { haversine } = require('../ai/transitRouter');
+const logger = require('../utils/logger');
 
 /* ═══════════════════════════════════════════════════
    GET /api/stops?route_id=X
@@ -18,7 +19,7 @@ exports.getStopsByRoute = async (req, res) => {
         `, [route_id]);
         return res.json(rows);
     } catch (err) {
-        console.error('[routeStop] getStopsByRoute:', err);
+        logger.error('[routeStop] getStopsByRoute:', err);
         return res.status(500).json({ message: 'DB error' });
     }
 };
@@ -42,18 +43,24 @@ exports.getNearestStops = async (req, res) => {
 
     try {
         let sql, params = [];
+        // Sprint 10 — WAYPOINT rows (intercity highway waypoints for map
+        // rendering, seed_vietnam_real_routes.js) are never a real
+        // boarding/alighting station. Excluded unconditionally here, not
+        // just when a ?type= filter happens to be passed, so this
+        // "nearest pickup point" feature can never suggest one.
+        const NOT_WAYPOINT = ` AND stop_type != 'WAYPOINT'`;
         if (route_id) {
             // Khi lọc theo tuyến cụ thể: trả tất cả stops của tuyến đó
-            sql = `SELECT * FROM route_stop WHERE is_active = 1 AND lat IS NOT NULL AND lng IS NOT NULL AND route_id = ?`;
+            sql = `SELECT * FROM route_stop WHERE is_active = 1 AND lat IS NOT NULL AND lng IS NOT NULL AND route_id = ?${NOT_WAYPOINT}`;
             params.push(route_id);
             if (type) { sql += ' AND (stop_type = ? OR stop_type = "BOTH")'; params.push(type); }
             sql += ' ORDER BY stop_order ASC LIMIT 50';
         } else {
             // Không có route_id: deduplicate theo tên bến xe (GROUP BY stop_name)
             // Lấy đại diện mỗi bến xe một lần (min stop_id để nhất quán)
-            let typeClause = '';
+            let typeClause = NOT_WAYPOINT;
             if (type) {
-                typeClause = ` AND (stop_type = ? OR stop_type = 'BOTH')`;
+                typeClause += ` AND (stop_type = ? OR stop_type = 'BOTH')`;
                 params.push(type);
             }
             sql = `
@@ -84,7 +91,7 @@ exports.getNearestStops = async (req, res) => {
         const limit = isNaN(limitParam) ? 10 : Math.min(20, Math.max(1, limitParam));
         return res.json(withDist.slice(0, limit));
     } catch (err) {
-        console.error('[routeStop] getNearestStops:', err);
+        logger.error('[routeStop] getNearestStops:', err);
         return res.status(500).json({ message: 'DB error' });
     }
 };
@@ -93,11 +100,11 @@ exports.getNearestStops = async (req, res) => {
    POST /api/stops  (admin/operator tạo điểm dừng)
 ═══════════════════════════════════════════════════ */
 exports.createStop = async (req, res) => {
-    const { route_id, stop_name, stop_type, address, lat, lng, stop_order } = req.body;
+    const { route_id, stop_name, stop_type, address, lat, lng, stop_order, estimated_min_from_origin } = req.body;
     if (!route_id || !stop_name?.trim()) {
         return res.status(400).json({ message: 'Thiếu route_id hoặc stop_name' });
     }
-    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH']);
+    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH', 'WAYPOINT']);
     if (stop_type && !VALID_TYPE.has(stop_type)) {
         return res.status(422).json({ message: `stop_type phải là: ${[...VALID_TYPE].join(', ')}` });
     }
@@ -117,6 +124,14 @@ exports.createStop = async (req, res) => {
     if (isNaN(order) || order < 0) {
         return res.status(422).json({ message: 'stop_order phải là số nguyên không âm' });
     }
+    let estMinVal = null;
+    if (estimated_min_from_origin !== undefined && estimated_min_from_origin !== null && estimated_min_from_origin !== '') {
+        const v = parseInt(estimated_min_from_origin, 10);
+        if (isNaN(v) || v < 0) {
+            return res.status(422).json({ message: 'estimated_min_from_origin phải là số nguyên không âm' });
+        }
+        estMinVal = v;
+    }
     try {
         const [[routeExists]] = await db.query('SELECT route_id FROM route WHERE route_id=?', [route_id]);
         if (!routeExists) return res.status(404).json({ message: 'route_id không tồn tại' });
@@ -125,12 +140,12 @@ exports.createStop = async (req, res) => {
         const lngVal = (lng !== undefined && lng !== null && lng !== '') ? Number(lng) : null;
 
         const [r] = await db.query(`
-            INSERT INTO route_stop (route_id, stop_name, stop_type, address, lat, lng, stop_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [route_id, stop_name.trim(), stop_type || 'BOTH', address || null, latVal, lngVal, order]);
+            INSERT INTO route_stop (route_id, stop_name, stop_type, address, lat, lng, stop_order, estimated_min_from_origin)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [route_id, stop_name.trim(), stop_type || 'BOTH', address || null, latVal, lngVal, order, estMinVal]);
         return res.status(201).json({ message: 'Tạo điểm dừng thành công', stop_id: r.insertId });
     } catch (err) {
-        console.error('[routeStop] createStop:', err);
+        logger.error('[routeStop] createStop:', err);
         return res.status(500).json({ message: 'DB error' });
     }
 };
@@ -140,9 +155,9 @@ exports.createStop = async (req, res) => {
 ═══════════════════════════════════════════════════ */
 exports.updateStop = async (req, res) => {
     const { id } = req.params;
-    const { stop_name, stop_type, address, lat, lng, stop_order, is_active } = req.body;
+    const { stop_name, stop_type, address, lat, lng, stop_order, is_active, estimated_min_from_origin } = req.body;
 
-    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH']);
+    const VALID_TYPE = new Set(['PICKUP', 'DROPOFF', 'BOTH', 'WAYPOINT']);
     if (stop_type && !VALID_TYPE.has(stop_type)) {
         return res.status(422).json({ message: `stop_type phải là: ${[...VALID_TYPE].join(', ')}` });
     }
@@ -161,14 +176,23 @@ exports.updateStop = async (req, res) => {
     const latVal = (lat !== undefined && lat !== null && lat !== '') ? Number(lat) : null;
     const lngVal = (lng !== undefined && lng !== null && lng !== '') ? Number(lng) : null;
 
+    let estMinVal = null;
+    if (estimated_min_from_origin !== undefined && estimated_min_from_origin !== null && estimated_min_from_origin !== '') {
+        const v = parseInt(estimated_min_from_origin, 10);
+        if (isNaN(v) || v < 0) {
+            return res.status(422).json({ message: 'estimated_min_from_origin phải là số nguyên không âm' });
+        }
+        estMinVal = v;
+    }
+
     try {
         await db.query(`
-            UPDATE route_stop SET stop_name=?, stop_type=?, address=?, lat=?, lng=?, stop_order=?, is_active=?
+            UPDATE route_stop SET stop_name=?, stop_type=?, address=?, lat=?, lng=?, stop_order=?, is_active=?, estimated_min_from_origin=?
             WHERE stop_id=?
-        `, [stop_name, stop_type, address, latVal, lngVal, stop_order ?? 0, is_active ?? 1, id]);
+        `, [stop_name, stop_type, address, latVal, lngVal, stop_order ?? 0, is_active ?? 1, estMinVal, id]);
         return res.json({ message: 'Cập nhật thành công' });
     } catch (err) {
-        console.error('[routeStop] updateStop:', err);
+        logger.error('[routeStop] updateStop:', err);
         return res.status(500).json({ message: 'DB error' });
     }
 };

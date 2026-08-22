@@ -83,6 +83,38 @@ html {
 /* ── Body default (các trang override bằng inline style) ── */
 body { margin: 0; }
 
+/* Enterprise Hardening Pass — Pillar 5 (Responsive/Mobile-First).
+   Real-world root cause: this codebase's cards/nav/ticker widgets are
+   built with flex rows carrying per-item `min-width` values (badges,
+   hero stat cards, nav chips) that don't shrink below that floor —
+   correct and desirable on desktop, but their aggregate width can
+   exceed a 375px viewport (iPhone SE/Mini) before any single element
+   is individually "too wide" enough to spot by eye. Data tables were
+   already correctly wrapped in a scrollable `.tw` container
+   (admin.html) — this rule is the page-level backstop for everything
+   else: it does not change any layout on a viewport wide enough to fit
+   normally (no visual difference at ≥768px), it only stops the PAGE
+   itself from becoming horizontally pannable when some component's
+   natural width floor is wider than the screen, which is strictly
+   better than a full-page sideways scroll on mobile. Wide components
+   that legitimately need horizontal scroll (tables, calendars) must
+   opt into it explicitly via their own `overflow-x: auto` wrapper
+   (see `.tw` in admin.html) — this global rule is a safety net, not a
+   substitute for that per-component pattern. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* Defensive backstop alongside the overflow-x rule above: a long
+   unbroken token (a full email address, a long plate number, a raw URL)
+   dropped into a narrow flex/grid cell can force that cell wider than its
+   container instead of wrapping, which is exactly the kind of overflow
+   the rule above only catches at the page level, not inside a component.
+   break-word is the legacy property name still needed for older WebKit;
+   overflow-wrap is the current standard name for the same behavior. */
+body, button, input, select, textarea {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
 /* ── Image rendering ── */
 img, video {
     display: block;
@@ -575,4 +607,225 @@ header {
 .sidebar, .admin-sidebar, .op-sidebar {
     background: var(--sb-bg-elevated, #121b38) !important;
     border-right-color: var(--sb-border-subtle, #2a3678) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   Sprint 8 — Shared Topbar Profile Dropdown
+   Fixes a real, measured overflow bug: the old always-expanded
+   "avatar + name" chip + separate logout button together needed ~250px
+   of topbar width and had no responsive collapse — on a real 1280px
+   viewport the logout button's right edge landed at x=1439, 159px past
+   the visible edge (confirmed via getBoundingClientRect() against the
+   real running admin.html before this fix). Replaced with one compact
+   trigger (avatar + chevron, ~50px) that expands into a dropdown on
+   click — never wider than the trigger itself, so it can never push
+   later siblings off-screen the way an always-expanded chip could.
+   Built once here and reused via initProfileDropdown() in /js/api.js
+   rather than duplicated per page — every admin/operator/passenger
+   topbar wires up the exact same component.
+═══════════════════════════════════════════════════ */
+.sb-profile{position:relative;flex-shrink:0;}
+.sb-profile-trigger{
+  display:flex;align-items:center;gap:4px;padding:3px 8px 3px 3px;
+  border-radius:20px;cursor:pointer;border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);transition:background .15s,border-color .15s;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+.sb-profile-trigger:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18);}
+.sb-profile-trigger.open{background:rgba(99,102,241,.14);border-color:rgba(99,102,241,.30);}
+.sb-profile-avatar{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;
+  box-shadow:0 0 8px rgba(99,102,241,.35);
+  object-fit:cover;background-size:cover;background-position:center;
+}
+.sb-profile-chevron{font-size:9px;color:rgba(255,255,255,.45);transition:transform .18s;flex-shrink:0;}
+.sb-profile-trigger.open .sb-profile-chevron{transform:rotate(180deg);}
+
+.sb-profile-menu{
+  /* Sprint 9 hardening: right:0/left:auto anchors the menu to the
+     trigger's own right edge (not the header's), so it stays correctly
+     placed regardless of what else is in .hdr-actions or how that row's
+     own layout shifts on a given page — explicit left:auto guards against
+     any page-level CSS that might otherwise set `left` on an absolutely
+     positioned element in this stacking context. */
+  position:absolute;top:calc(100% + 8px);right:0;left:auto;z-index:4000;
+  min-width:220px;max-width:min(280px,calc(100vw - 24px));
+  background:rgba(10,14,28,.98);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.12);border-radius:14px;
+  box-shadow:0 12px 32px rgba(0,0,0,.45);
+  padding:6px;
+  opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .15s,transform .15s,visibility .15s;
+}
+.sb-profile-menu.open{opacity:1;visibility:visible;transform:translateY(0);}
+.sb-profile-menu-header{
+  display:flex;align-items:center;gap:10px;padding:10px 10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:6px;
+}
+.sb-profile-menu-avatar{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;
+  object-fit:cover;background-size:cover;background-position:center;
+}
+.sb-profile-menu-info{min-width:0;flex:1;}
+.sb-profile-menu-name{font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-profile-menu-email{font-size:11px;color:rgba(255,255,255,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.sb-profile-menu-role{
+  display:inline-block;margin-top:4px;font-size:9px;font-weight:800;letter-spacing:.4px;
+  padding:2px 7px;border-radius:6px;background:rgba(99,102,241,.16);color:#a5b4fc;
+  border:1px solid rgba(99,102,241,.28);
+}
+.sb-profile-menu-item{
+  display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border-radius:9px;
+  border:none;background:transparent;color:rgba(255,255,255,.80);font-size:12.5px;font-weight:600;
+  cursor:pointer;text-align:left;text-decoration:none;font-family:"Segoe UI",Arial,sans-serif;
+  transition:background .15s;
+}
+.sb-profile-menu-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-profile-menu-item.sb-danger{color:#fb7185;}
+.sb-profile-menu-item.sb-danger:hover{background:rgba(251,113,133,.12);color:#fca5b1;}
+.sb-profile-menu-sep{height:1px;background:rgba(255,255,255,.08);margin:5px 2px;}
+
+@media(max-width:480px){
+  .sb-profile-menu{position:fixed;top:auto;bottom:0;left:0;right:0;
+    max-width:100vw;width:100%;border-radius:16px 16px 0 0;
+    transform:translateY(100%);}
+  .sb-profile-menu.open{transform:translateY(0);}
+}
+
+/* ═══════════════════════════════════════════════════
+   Sprint 9 — OAuth button loading spinner
+   Google/Facebook buttons on login.html/register.html previously only
+   dimmed their text ("Đang kết nối…") while waiting on the provider SDK
+   and the backend round-trip — no actual motion, easy to mistake for a
+   frozen/unresponsive button on a slow connection. A small rotating ring
+   replaces the icon during that wait instead.
+═══════════════════════════════════════════════════ */
+@keyframes oauthSpin{to{transform:rotate(360deg);}}
+.oauth-spinner{
+  display:inline-block;width:16px;height:16px;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.25);border-top-color:#fff;
+  border-radius:50%;animation:oauthSpin .7s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════
+   Sprint 10 — In-page Legal Modal (public/js/legalModal.js)
+   Renders privacy-policy.html/terms-of-service.html's own <main> content
+   inside a modal via fetch(), instead of navigating away — those pages
+   stay directly reachable by URL (bookmarkable, shareable, no duplicated
+   content to keep in sync), the modal is just a second way to reach the
+   exact same source of truth without leaving the current page.
+═══════════════════════════════════════════════════ */
+.sb-legal-backdrop{
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(5,8,18,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;
+}
+.sb-legal-backdrop.open{opacity:1;visibility:visible;}
+.sb-legal-modal{
+  width:min(720px,100%);max-height:min(84vh,900px);
+  background:linear-gradient(160deg,#0d1827,#080f1c);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(99,102,241,.06);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:translateY(14px) scale(.98);transition:transform .22s cubic-bezier(.22,.61,.36,1);
+}
+.sb-legal-backdrop.open .sb-legal-modal{transform:translateY(0) scale(1);}
+.sb-legal-header{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;
+}
+.sb-legal-title{font-size:17px;font-weight:800;color:#fff;margin:0;}
+.sb-legal-close{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.65);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;
+}
+.sb-legal-close:hover{background:rgba(251,113,133,.14);border-color:rgba(251,113,133,.30);color:#fca5b1;}
+.sb-legal-body{
+  flex:1;overflow-y:auto;padding:22px 26px;color:rgba(255,255,255,.75);
+  scrollbar-width:thin;scrollbar-color:rgba(99,102,241,.35) transparent;
+}
+.sb-legal-body::-webkit-scrollbar{width:8px;}
+.sb-legal-body::-webkit-scrollbar-thumb{background:rgba(99,102,241,.30);border-radius:8px;}
+.sb-legal-body::-webkit-scrollbar-track{background:transparent;}
+.sb-legal-loading{text-align:center;padding:40px 0;color:rgba(255,255,255,.40);font-size:13px;}
+/* Bug fix: the fetched <main> uses .doc-head/.card/.num/etc classes, but
+   those are defined only inside privacy-policy.html's and
+   terms-of-service.html's own local <style> block, in their <head> —
+   fetchContent() in legalModal.js only ever grabs main.innerHTML, never
+   that <style> tag, so none of it travels into this modal. The comment
+   this replaced claimed "style.css already loads on every page... so
+   those selectors apply unchanged" — that was never true; grep confirms
+   .card/.num/.doc-head never appeared anywhere in this file before this
+   block. The visible result: <h2><span class="num">1</span>Dữ liệu…</h2>
+   rendered as a bare inline span with zero badge/gap styling, glued
+   directly against the following text — "1Dữ liệu chúng tôi thu thập".
+   Fixed by scoping the same rules those two pages already define, here,
+   under .sb-legal-body — copying their <style> block verbatim instead
+   would have been actively worse: it opens with an unscoped `*{margin:0;
+   padding:0;...}` reset and bare `body{}`/`header{}` selectors that would
+   leak out and break every page that opens this modal, not just the
+   modal's own content.
+
+   Follow-up bug found live: every property below is !important. Without
+   it, login.html and register.html — both callers of this exact modal —
+   turned out to each have their OWN unrelated `.card{width:380px;
+   flex-shrink:0;...}` rule for a completely different element on those
+   pages. My scoped .sb-legal-body .card rule never declared `width` at
+   all, so there was no property-level conflict for the cascade to
+   resolve by specificity — CSS cascades per PROPERTY, not per rule, so
+   that unrelated width:380px just applied unopposed, squeezing every
+   .card in the modal down to ~380px of a 718px-wide body and leaving the
+   right half of the modal visibly empty. .card/.badge/.contact-box are
+   common enough class names that some future page reusing this modal is
+   likely to collide the same way — !important here means this modal's
+   own layout is fixed and self-contained regardless of what unrelated
+   classes a host page happens to also define, the same defensive pattern
+   already used above for .card/.panel/.sb-card's shared background. */
+.sb-legal-body .doc-head{margin-bottom:28px !important;}
+.sb-legal-body .doc-head h1{font-size:22px !important;font-weight:900 !important;margin-bottom:8px !important;color:#fff !important;}
+.sb-legal-body .doc-meta{font-size:12px !important;color:rgba(255,255,255,.40) !important;}
+.sb-legal-body .doc-meta b{color:rgba(255,255,255,.62) !important;}
+.sb-legal-body .card{width:100% !important;max-width:none !important;flex-shrink:1 !important;box-sizing:border-box !important;
+  background:rgba(255,255,255,.05) !important;border:1px solid rgba(255,255,255,.09) !important;
+  border-radius:16px !important;padding:20px 22px !important;margin:0 0 16px !important;}
+.sb-legal-body .card h2{font-size:16px !important;font-weight:800 !important;margin-bottom:12px !important;display:flex !important;align-items:center !important;gap:9px !important;color:#fff !important;}
+.sb-legal-body .card h2 .num{width:24px !important;height:24px !important;border-radius:8px !important;background:rgba(99,102,241,.16) !important;
+  border:1px solid rgba(99,102,241,.30) !important;color:#a5b4fc !important;font-size:12px !important;font-weight:800 !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;}
+.sb-legal-body .card p{font-size:13.5px !important;line-height:1.65 !important;color:rgba(255,255,255,.62) !important;margin:0 0 10px !important;}
+.sb-legal-body .card p:last-child{margin-bottom:0 !important;}
+.sb-legal-body .card ul{margin:10px 0 !important;padding-left:0 !important;list-style:none !important;}
+.sb-legal-body .card li{font-size:13.5px !important;line-height:1.6 !important;color:rgba(255,255,255,.62) !important;margin-bottom:8px !important;padding-left:22px !important;position:relative !important;}
+.sb-legal-body .card li::before{content:"•";position:absolute;left:6px;color:#818cf8;font-weight:900;}
+.sb-legal-body .card b{color:#f1f5f9 !important;}
+.sb-legal-body .badge-row{display:flex !important;gap:8px !important;flex-wrap:wrap !important;margin-top:14px !important;}
+.sb-legal-body .badge{width:auto !important;background:rgba(46,204,113,.09) !important;border:1px solid rgba(46,204,113,.22) !important;color:#2ecc71 !important;
+  padding:6px 13px !important;border-radius:20px !important;font-size:11px !important;font-weight:800 !important;display:flex !important;align-items:center !important;gap:6px !important;}
+.sb-legal-body .contact-box{width:100% !important;box-sizing:border-box !important;background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(129,140,248,.05)) !important;
+  border:1px solid rgba(99,102,241,.22) !important;border-radius:14px !important;padding:20px 22px !important;margin-top:24px !important;}
+.sb-legal-body .contact-box h3{font-size:14px !important;font-weight:800 !important;margin-bottom:8px !important;color:#fff !important;}
+.sb-legal-body .contact-box p{font-size:13px !important;color:rgba(255,255,255,.62) !important;}
+.sb-legal-body .contact-box a{color:#a5b4fc !important;text-decoration:none !important;font-weight:700 !important;}
+.sb-legal-body .contact-box a:hover{text-decoration:underline !important;}
+.sb-legal-footer{
+  padding:16px 24px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;
+  display:flex;justify-content:flex-end;
+}
+.sb-legal-agree{
+  padding:11px 22px;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,#6366f1,#818cf8);color:#04080f;
+  font-size:13.5px;font-weight:800;font-family:"Segoe UI",Arial,sans-serif;
+  box-shadow:0 0 16px rgba(99,102,241,.30);transition:all .2s;
+}
+.sb-legal-agree:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,102,241,.45);}
+@media(max-width:640px){
+  .sb-legal-backdrop{padding:0;align-items:flex-end;}
+  .sb-legal-modal{width:100%;max-height:88vh;border-radius:18px 18px 0 0;}
 }

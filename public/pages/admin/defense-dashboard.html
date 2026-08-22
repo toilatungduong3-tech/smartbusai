@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bảo vệ Đồ án — SmartBusAI Admin</title>
+<style>
+:root{
+  --bg:#0d1326; --neon:#6366f1; --neon2:#818cf8; --purple:#2563eb;
+  --amber:#fbbf24; --green:#34d399; --red:#fb7185; --pink:#f472b6;
+  --glass:rgba(255,255,255,0.05); --glass2:rgba(255,255,255,0.10);
+  --border:rgba(50,56,110,0.70); --border2:rgba(82,119,155,0.80);
+  --hh:62px; --text:#f7fafc; --text2:rgba(184,198,217,.80); --text3:rgba(142,163,189,.60);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;}
+html{background:var(--bg);min-height:100vh;}
+body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn .3s ease;}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER — matches other admin pages */
+.hdr{position:sticky;top:0;z-index:3000;height:var(--hh);display:flex;align-items:center;
+  background:rgba(4,8,15,0.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);padding:0 32px;}
+.hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.hdr-logo-ic{width:34px;height:34px;border-radius:9px;font-size:18px;
+  background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px rgba(99,102,241,.38);}
+.hdr-logo-tx{font-size:16px;font-weight:800;background:linear-gradient(90deg,#6366f1,#b4a9fd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-sep{width:1px;height:30px;background:var(--border);margin:0 20px;flex-shrink:0;}
+.hdr-nav{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.hdr-nav a{text-decoration:none;color:var(--text2);font-size:12.5px;font-weight:600;padding:7px 13px;
+  border-radius:8px;border:1px solid transparent;transition:all .2s;white-space:nowrap;}
+.hdr-nav a:hover{color:var(--neon);background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.20);}
+.hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.25);}
+.hdr-logo-badge{font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(129,140,248,.16));border:1px solid rgba(99,102,241,.38);color:var(--neon);letter-spacing:.8px;box-shadow:0 0 10px rgba(99,102,241,.20);text-transform:uppercase;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
+.admin-chip{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);
+  border-radius:20px;padding:5px 12px 5px 6px;}
+.admin-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#6366f1);
+  display:flex;align-items:center;justify-content:center;font-size:13px;}
+.admin-name{font-size:12px;font-weight:600;}
+.main{max-width:1200px;margin:0 auto;padding:28px 32px 60px;}
+.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap;}
+.pg-head-left h1{font-size:22px;font-weight:800;}
+.pg-head-left p{font-size:13px;color:var(--text2);margin-top:3px;}
+
+/* Status pill */
+.status-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:20px;
+  font-size:12.5px;font-weight:700;border:1px solid;}
+.status-pill.healthy{color:var(--green);background:rgba(52,211,153,.10);border-color:rgba(52,211,153,.30);}
+.status-pill.degraded{color:var(--amber);background:rgba(251,191,36,.10);border-color:rgba(251,191,36,.30);}
+.status-pill.down{color:var(--red);background:rgba(251,113,133,.10);border-color:rgba(251,113,133,.30);}
+.status-pill.pending{color:var(--text3);background:var(--glass);border-color:var(--border);}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+.dot.pulse{animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* Live status widget */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px;}
+@media(max-width:960px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.kpi-tile{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden;}
+.kpi-tile .ico{font-size:19px;margin-bottom:8px;opacity:.9;}
+.kpi-tile .lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.kpi-tile .val{font-size:21px;font-weight:800;color:var(--text);}
+.kpi-tile .sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.kpi-tile.good .val{color:var(--green);}
+.kpi-tile.warn .val{color:var(--amber);}
+.kpi-tile.bad .val{color:var(--red);}
+
+/* Section card */
+.sec{background:var(--glass);border:1px solid var(--border);border-radius:18px;margin-bottom:22px;overflow:hidden;}
+.sec-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.sec-head h3{font-size:15px;font-weight:800;}
+.sec-head p{font-size:12px;color:var(--text2);margin-top:2px;}
+.sec-body{padding:22px;}
+
+/* Scenario cards */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:900px){.scenario-grid{grid-template-columns:1fr;}}
+.scenario{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;}
+.scenario .sc-ico{font-size:24px;}
+.scenario h4{font-size:14px;font-weight:800;}
+.scenario p{font-size:12px;color:var(--text2);line-height:1.5;flex:1;}
+.btn-run{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:10px;
+  padding:10px 14px;font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;
+  font-family:"Segoe UI",Arial,sans-serif;}
+.btn-run:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(99,102,241,.35);}
+.btn-run:disabled{opacity:.55;cursor:wait;}
+.sc-result{margin-top:4px;border-radius:10px;background:rgba(0,0,0,.28);border:1px solid var(--border);
+  padding:10px 12px;font-size:11.5px;font-family:"Cascadia Code","Consolas",monospace;color:var(--text2);
+  max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;display:none;}
+.sc-result.show{display:block;}
+.sc-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;margin-bottom:6px;}
+.sc-badge.ok{color:var(--green);background:rgba(52,211,153,.12);}
+.sc-badge.fail{color:var(--red);background:rgba(251,113,133,.12);}
+
+.test-summary{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.test-summary .big{font-size:30px;font-weight:900;color:var(--green);}
+.test-summary .meta{font-size:12px;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<header class="hdr">
+  <a class="hdr-logo" href="admin.html">
+    <div class="hdr-logo-ic">🚌</div>
+    <div class="hdr-logo-tx">SmartBusAI</div>
+    <span class="hdr-logo-badge">ADMIN</span>
+  </a>
+  <div class="hdr-sep"></div>
+  <nav class="hdr-nav">
+    <a href="admin.html">📊 Dashboard</a>
+    <a href="users.html">👥 Người dùng</a>
+    <a href="operators.html">🚌 Nhà xe</a>
+    <a href="support.html">🆘 Hỗ trợ</a>
+    <a href="settings.html">⚙️ Cài đặt</a>
+    <a href="defense-dashboard.html" class="active">🎓 Bảo vệ ĐA</a>
+  </nav>
+  <div class="hdr-actions">
+    <div class="sb-profile" id="sbProfile"></div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="pg-head">
+    <div class="pg-head-left">
+      <h1>🎓 Thesis Defense Dashboard</h1>
+      <p>Trạng thái hệ thống thời gian thực &amp; kịch bản demo phục vụ hội đồng bảo vệ đồ án — mọi số liệu trên trang này lấy trực tiếp từ API thật, không có dữ liệu giả lập.</p>
+    </div>
+    <span class="status-pill pending" id="overallStatus"><span class="dot pulse"></span> Đang kiểm tra…</span>
+  </div>
+
+  <!-- LIVE STATUS WIDGET -->
+  <div class="kpi-grid">
+    <div class="kpi-tile" id="tileLatency">
+      <div class="ico">⚡</div>
+      <div class="lbl">API Ping</div>
+      <div class="val" id="valLatency">—</div>
+      <div class="sub">GET /api/health</div>
+    </div>
+    <div class="kpi-tile" id="tilePool">
+      <div class="ico">🔌</div>
+      <div class="lbl">DB Pool</div>
+      <div class="val" id="valPool">—</div>
+      <div class="sub" id="subPool">active / total</div>
+    </div>
+    <div class="kpi-tile good">
+      <div class="ico">✅</div>
+      <div class="lbl">Test Pass</div>
+      <div class="val" id="valTests">—</div>
+      <div class="sub" id="subTests">jest --json output</div>
+    </div>
+    <div class="kpi-tile" id="tileUptime">
+      <div class="ico">⏱️</div>
+      <div class="lbl">Server Uptime</div>
+      <div class="val" id="valUptime">—</div>
+      <div class="sub">process.uptime()</div>
+    </div>
+    <div class="kpi-tile" id="tileMem">
+      <div class="ico">🧠</div>
+      <div class="lbl">RAM (RSS)</div>
+      <div class="val" id="valMem">—</div>
+      <div class="sub" id="subMem">heap used</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO SIMULATOR -->
+  <div class="sec">
+    <div class="sec-head">
+      <div>
+        <h3>🎬 Interactive Scenario Simulator</h3>
+        <p>Mỗi nút gọi API thật trên server thật — không có bước nào được giả lập trước. Kịch bản 2 tự động dọn dẹp booking demo ngay sau khi chạy xong.</p>
+      </div>
+    </div>
+    <div class="sec-body">
+      <div class="scenario-grid">
+
+        <div class="scenario">
+          <div class="sc-ico">🤖</div>
+          <h4>1. AI Booking Concierge</h4>
+          <p>Gửi một câu tiếng Việt tự nhiên tới <code>POST /api/ai/concierge</code> và hiển thị kết quả trích xuất + danh sách chuyến thật từ DB.</p>
+          <button class="btn-run" id="btnSc1" onclick="runScenario1()">▶ Chạy demo</button>
+          <div class="sc-result" id="resSc1"></div>
+        </div>
+
+        <div class="scenario">
+          <div class="sc-ico">🔒</div>
+          <h4>2. Chống đặt trùng ghế</h4>
+          <p>Bắn 2 request <code>POST /api/bookings</code> đồng thời vào CÙNG một ghế thật, chứng minh ràng buộc DB-level (<code>trip_seat_hold</code>) chỉ cho 1 request thắng. Booking demo được huỷ tự động ngay sau đó.</p>
+          <button class="btn-run" id="btnSc2" onclick="runScenario2()">▶ Chạy demo</button>
+          <div class="sc-result" id="resSc2"></div>
+        </div>
+
+        <div class="scenario">
+          <div class="sc-ico">🗺️</div>
+          <h4>3. AI Transit Router đa chặng</h4>
+          <p>Gọi <code>POST /api/search/transit</code> trên một cặp tuyến thật, đo latency thực và so với mục tiêu &lt;1.5s (Sprint 3).</p>
+          <button class="btn-run" id="btnSc3" onclick="runScenario3()">▶ Chạy demo</button>
+          <div class="sc-result" id="resSc3"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script>
+requireRole('ADMIN');
+
+/* ── Live status widget: real GET /api/health, polled every 8s ── */
+async function refreshHealth(){
+  const t0 = performance.now();
+  try{
+    const res = await fetch('/api/health');
+    const clientMs = Math.round(performance.now() - t0);
+    const j = await res.json();
+
+    const pill = document.getElementById('overallStatus');
+    pill.className = 'status-pill ' + j.status;
+    pill.innerHTML = `<span class="dot${j.status==='healthy'?' pulse':''}"></span> ` +
+      (j.status === 'healthy' ? 'Hệ thống hoạt động bình thường'
+       : j.status === 'degraded' ? 'Hệ thống chậm (degraded)'
+       : 'Hệ thống lỗi');
+
+    document.getElementById('valLatency').textContent = (j.database.ping_ms ?? '—') + ' ms';
+    document.getElementById('tileLatency').className = 'kpi-tile ' + (j.database.ping_ms < 50 ? 'good' : j.database.ping_ms < 200 ? 'warn' : 'bad');
+
+    if(j.database.pool){
+      document.getElementById('valPool').textContent = j.database.pool.active + ' / ' + j.database.pool.total;
+      document.getElementById('subPool').textContent = `idle ${j.database.pool.idle} · limit ${j.database.pool.limit}`;
+    } else {
+      document.getElementById('valPool').textContent = j.database.connected ? 'OK' : 'DOWN';
+    }
+
+    const s = j.uptime_seconds;
+    const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), sec = s%60;
+    document.getElementById('valUptime').textContent = d>0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m ${sec}s`;
+
+    document.getElementById('valMem').textContent = j.memory_mb.rss + ' MB';
+    document.getElementById('subMem').textContent = `heap ${j.memory_mb.heap_used}/${j.memory_mb.heap_total} MB · Node ${j.node_version}`;
+  }catch(e){
+    const pill = document.getElementById('overallStatus');
+    pill.className = 'status-pill down';
+    pill.innerHTML = '<span class="dot"></span> Không kết nối được server';
+  }
+}
+refreshHealth();
+setInterval(refreshHealth, 8000);
+
+/* ── Real jest --json output (public/data/test-results.json), regenerated
+   by `npm test -- --json --outputFile=public/data/test-results.json`
+   after every full regression run — not a hardcoded number. ── */
+async function loadTestResults(){
+  try{
+    const res = await fetch('/data/test-results.json?t=' + Date.now());
+    const j = await res.json();
+    document.getElementById('valTests').textContent = `${j.numPassedTests}/${j.numTotalTests}`;
+    const when = j.startTime ? new Date(j.startTime).toLocaleString('vi-VN') : '';
+    document.getElementById('subTests').textContent = `${j.numTotalTestSuites} suites · ${when}`;
+  }catch(e){
+    document.getElementById('valTests').textContent = 'N/A';
+    document.getElementById('subTests').textContent = 'Chưa có file test-results.json';
+  }
+}
+loadTestResults();
+
+/* ── Scenario 1: AI Concierge ── */
+async function runScenario1(){
+  const btn = document.getElementById('btnSc1'), out = document.getElementById('resSc1');
+  btn.disabled = true; btn.textContent = '⏳ Đang chạy…';
+  out.className = 'sc-result show'; out.textContent = 'Đang gọi POST /api/ai/concierge…';
+  const message = 'Sơn La đi Nam Định hôm nay';
+  const t0 = performance.now();
+  try{
+    const res = await fetch('/api/ai/concierge', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message }) });
+    const ms = Math.round(performance.now() - t0);
+    const j = await res.json();
+    const tripLines = (j.trips||[]).slice(0,3).map(t => `  • ${t.origin} → ${t.destination} | ${new Date(t.departure_time).toLocaleString('vi-VN')} | ${Number(t.base_price).toLocaleString('vi-VN')}đ | ${t.available_seats} ghế trống`).join('\n');
+    out.innerHTML = `<span class="sc-badge ok">✔ ${res.status} · ${ms} ms</span>\n`;
+    out.innerHTML += `Tin nhắn: "${message}"\n\nIntent trích xuất:\n` + JSON.stringify(j.intent, null, 2) +
+      `\n\nTìm thấy ${j.trips ? j.trips.length : 0} chuyến thật từ DB:\n` + (tripLines || '  (không có)') +
+      `\n\nTrả lời AI:\n${j.reply}`;
+  }catch(e){
+    out.innerHTML = `<span class="sc-badge fail">✘ Lỗi</span>\n${e.message}`;
+  }
+  btn.disabled = false; btn.textContent = '▶ Chạy demo';
+}
+
+/* ── Scenario 2: concurrent booking race on one real seat, then cleanup ── */
+async function runScenario2(){
+  const btn = document.getElementById('btnSc2'), out = document.getElementById('resSc2');
+  btn.disabled = true; btn.textContent = '⏳ Đang chạy…';
+  out.className = 'sc-result show'; out.textContent = 'Đang tìm một chuyến thật còn ghế trống…';
+  try{
+    const trips = await fetch('/api/trips?nocache=' + Date.now()).then(r=>r.json());
+    const trip = trips.find(t => t.available_seats > 0);
+    if(!trip) throw new Error('Không tìm thấy chuyến còn ghế trống để demo');
+
+    const seats = await fetch('/api/seats/trip/' + trip.trip_id).then(r=>r.json());
+    const seat = (Array.isArray(seats) ? seats : []).find(s => !s.isBooked);
+    if(!seat) throw new Error('Không tìm thấy ghế trống trên chuyến #' + trip.trip_id);
+
+    out.textContent = `Chuyến #${trip.trip_id} (${trip.origin} → ${trip.destination}), ghế ${seat.seat_number} — bắn 2 request POST /api/bookings đồng thời…`;
+
+    const mkBody = (label) => ({
+      trip_id: trip.trip_id,
+      seats: [{ id: seat.seat_id, type: seat.seat_type || 'NORMAL' }],
+      guest_name: `[DEMO] Race Test ${label}`,
+      guest_phone: '0900000000',
+      status: 'PENDING',
+    });
+    const post = (body) => fetch('/api/bookings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
+      .then(async r => ({ ok: r.ok, status: r.status, body: await r.json() }));
+
+    const t0 = performance.now();
+    const [ra, rb] = await Promise.all([post(mkBody('A')), post(mkBody('B'))]);
+    const ms = Math.round(performance.now() - t0);
+
+    const winner = ra.ok ? ra : (rb.ok ? rb : null);
+    const loser = ra.ok ? rb : ra;
+    const bothWon = ra.ok && rb.ok;
+
+    let cleanupLine = '';
+    if(winner && winner.body.booking_id){
+      // PUT /api/bookings/:id requires auth — use api.put() (attaches the
+      // Bearer token automatically), not a raw fetch(), and actually check
+      // the result instead of assuming success.
+      try{
+        await api.put('/bookings/' + winner.body.booking_id, { status: 'CANCELED' });
+        cleanupLine = `\n\n🧹 Đã huỷ booking demo #${winner.body.booking_id} ngay sau khi chứng minh xong (không để lại dữ liệu rác).`;
+      }catch(cleanupErr){
+        cleanupLine = `\n\n⚠️ KHÔNG huỷ được booking demo #${winner.body.booking_id}: ${cleanupErr.message || cleanupErr} — cần huỷ thủ công.`;
+      }
+    }
+
+    if(bothWon){
+      out.innerHTML = `<span class="sc-badge fail">✘ SAI — cả 2 request đều thành công!</span>\n` +
+        `Ghế ${seat.seat_number} bị đặt trùng — đây là lỗi thật, cần điều tra.` + cleanupLine;
+    } else if(winner){
+      out.innerHTML = `<span class="sc-badge ok">✔ ĐÚNG — chỉ 1/2 request thành công</span>\n` +
+        `Chuyến #${trip.trip_id}, ghế ${seat.seat_number}, ${ms} ms cho cả 2 request song song.\n\n` +
+        `Request thắng: HTTP ${winner.status} → booking_id ${winner.body.booking_id}\n` +
+        `Request thua: HTTP ${loser.status} → "${loser.body.message}"` + cleanupLine;
+    } else {
+      out.innerHTML = `<span class="sc-badge fail">✘ Cả 2 request đều thất bại</span>\n` +
+        `A: ${ra.status} ${JSON.stringify(ra.body)}\nB: ${rb.status} ${JSON.stringify(rb.body)}`;
+    }
+  }catch(e){
+    out.innerHTML = `<span class="sc-badge fail">✘ Lỗi</span>\n${e.message}`;
+  }
+  btn.disabled = false; btn.textContent = '▶ Chạy demo';
+}
+
+/* ── Scenario 3: AI Transit Router ── */
+async function runScenario3(){
+  const btn = document.getElementById('btnSc3'), out = document.getElementById('resSc3');
+  btn.disabled = true; btn.textContent = '⏳ Đang chạy…';
+  out.className = 'sc-result show'; out.textContent = 'Đang gọi POST /api/search/transit…';
+  const body = { origin: 'Hòa Bình', destination: 'Ninh Bình' };
+  const t0 = performance.now();
+  try{
+    const res = await fetch('/api/search/transit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const ms = Math.round(performance.now() - t0);
+    const j = await res.json();
+    const underBudget = ms < 1500;
+    out.innerHTML = `<span class="sc-badge ${underBudget?'ok':'fail'}">${underBudget?'✔':'✘'} ${ms} ms (mục tiêu &lt;1500ms)</span>\n` +
+      `${body.origin} → ${body.destination}\n\n` +
+      `Chuyến đi thẳng (DIRECT): ${j.direct_count}\n` +
+      `Chuyến trung chuyển (TRANSIT, ≤3 chặng): ${j.transit_count}\n\n` +
+      (j.direct && j.direct[0] ? `Ví dụ chuyến thẳng: ${j.direct[0].operator_name} · ${new Date(j.direct[0].departure_time).toLocaleString('vi-VN')} · ${Number(j.direct[0].base_price).toLocaleString('vi-VN')}đ` : '');
+  }catch(e){
+    out.innerHTML = `<span class="sc-badge fail">✘ Lỗi</span>\n${e.message}`;
+  }
+  btn.disabled = false; btn.textContent = '▶ Chạy demo';
+}
+
+/* ── Admin name ── */
+(function(){
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
+})();
+</script>
+</body>
+</html>

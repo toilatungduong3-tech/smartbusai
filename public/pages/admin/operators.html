@@ -59,7 +59,7 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .hdr-nav a.active{color:var(--neon);background:rgba(99,102,241,.10);border-color:rgba(99,102,241,.25);}
 .hdr-nav a.active::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--neon);margin-left:4px;box-shadow:0 0 5px var(--neon);}
 .hdr-logo-badge{font-size:8.5px;font-weight:900;padding:3px 8px;border-radius:6px;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(129,140,248,.16));border:1px solid rgba(99,102,241,.38);color:var(--neon);letter-spacing:.8px;box-shadow:0 0 10px rgba(99,102,241,.20);text-transform:uppercase;}
-.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;}
+.hdr-actions{display:flex;align-items:center;gap:8px;margin-left:16px;flex-shrink:0;overflow:visible !important;min-width:0;}
 .hdr-badge{position:relative;background:var(--glass);border:1px solid var(--border);border-radius:8px;
   padding:7px 10px;cursor:pointer;font-size:16px;transition:background .2s;}
 .hdr-badge:hover{background:var(--glass2);}
@@ -73,11 +73,6 @@ body{color:var(--text);background:transparent;overflow-x:hidden;animation:pageIn
 .admin-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#6366f1);
   display:flex;align-items:center;justify-content:center;font-size:13px;}
 .admin-name{font-size:12px;font-weight:600;color:var(--text);}
-.btn-logout{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.28);color:#e74c3c;
-  padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;
-  font-family:"Segoe UI",Arial,sans-serif;transition:all .2s;}
-.btn-logout:hover{background:rgba(231,76,60,.26);color:#fff;}
-
 /* MAIN */
 .main{max-width:1440px;margin:0 auto;padding:28px 32px 60px;}
 
@@ -505,6 +500,7 @@ body.leaving{opacity:0;transition:opacity .22s;}
     <a href="operators.html" class="active">🚌 Nhà xe</a>
     <a href="support.html">🆘 Hỗ trợ</a>
     <a href="settings.html">⚙️ Cài đặt</a>
+    <a href="defense-dashboard.html">🎓 Bảo vệ ĐA</a>
   </nav>
   <div class="hdr-actions">
     <button class="hdr-tool-btn" id="cmdPaletteBtn" title="Ctrl+K">🔍 <span class="hdr-tool-key">Ctrl K</span></button>
@@ -514,14 +510,7 @@ body.leaving{opacity:0;transition:opacity .22s;}
       <div class="badge-dot" id="notifDot" style="display:none;"></div>
       <span id="notifBadge" class="notif-count" style="display:none;"></span>
     </div>
-    <div class="admin-chip">
-      <div class="admin-avatar">👑</div>
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <span class="admin-name" id="adminNameLabel">Admin</span>
-        <span style="font-size:9px;color:rgba(99,102,241,.55);font-weight:700;letter-spacing:.4px;">ADMIN</span>
-      </div>
-    </div>
-    <button class="btn-logout" onclick="logout()">🚪 Đăng xuất</button>
+    <div class="sb-profile" id="sbProfile"></div>
   </div>
 </header>
 
@@ -867,8 +856,11 @@ document.addEventListener("click",e=>{
 /* ── State ── */
 const API="/api/operators",API_BUS="/api/buses";
 let allOps=[],filteredOps=[],allBuses=[],currentPage=1,pageSize=10,editingId=null,selectedIds=new Set();
+/* Phase 2I Step 4: operator CRUD is now ADMIN-only server-side — attach the Bearer token. */
+function _authHeaders(){const t=typeof getAccessToken==="function"?getAccessToken():null;return t?{Authorization:`Bearer ${t}`}:{};}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
-function logout(){localStorage.clear();window.location.href="../auth/login.html";}
+/* logout() now provided by /js/api.js — Sprint 7: calls POST /api/auth/logout for real server-side token revocation, this page previously shadowed it with a client-only localStorage.clear() */
 
 /* Toast */
 function toast(msg,type="success"){
@@ -902,9 +894,11 @@ function scoreBadge(s){
 /* Load */
 async function loadOperators(){
   try{
+    /* Sprint 3: GET /api/buses now requires auth (admin sees all — no
+       operator_id sent means unscoped, admin-only). */
     const [ro,rb]=await Promise.all([
       fetch(API).then(r=>r.json()),
-      fetch(API_BUS).then(r=>r.json()).catch(()=>[])
+      fetch(API_BUS,{headers:_authHeaders()}).then(r=>r.json()).catch(()=>[])
     ]);
     allOps=Array.isArray(ro)?ro:(ro.data||[]);
     allBuses=Array.isArray(rb)?rb:(rb.data||[]);
@@ -1139,7 +1133,7 @@ async function saveOperator(){
     status:document.getElementById("f_status").value};
   try{
     const url=editingId?`${API}/${editingId}`:API,method=editingId?"PUT":"POST";
-    const res=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    const res=await fetch(url,{method,headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify(data)});
     if(!res.ok)throw new Error();
     toast(editingId?"Cập nhật thành công!":"Thêm nhà xe thành công!");
     closeModal("formModal");loadOperators();
@@ -1150,7 +1144,7 @@ async function saveOperator(){
 async function toggleStatus(id,cur){
   const next=cur==="ACTIVE"?"SUSPENDED":"ACTIVE";
   try{
-    await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:next})});
+    await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:next})});
     toast(next==="ACTIVE"?"✅ Đã kích hoạt nhà xe":"⛔ Đã đình chỉ nhà xe",next==="ACTIVE"?"success":"error");
     loadOperators();
   }catch{toast("Lỗi cập nhật trạng thái","error");}
@@ -1160,9 +1154,9 @@ async function toggleStatus(id,cur){
 function confirmDel(id){
   const o=allOps.find(x=>x.operator_id==id);
   document.getElementById("confirmTitle").textContent="Xóa nhà xe này?";
-  document.getElementById("confirmMsg").innerHTML=`Nhà xe <strong>${o?.name||"này"}</strong> sẽ bị xóa vĩnh viễn.<br>Hành động này <strong>không thể hoàn tác</strong>.`;
+  document.getElementById("confirmMsg").innerHTML=`Nhà xe <strong>${escapeHtml(o?.name)||"này"}</strong> sẽ bị xóa vĩnh viễn.<br>Hành động này <strong>không thể hoàn tác</strong>.`;
   document.getElementById("confirmBtn").onclick=async()=>{
-    try{await fetch(`${API}/${id}`,{method:"DELETE"});toast("Đã xóa nhà xe");closeModal("confirmModal");loadOperators();}
+    try{await fetch(`${API}/${id}`,{method:"DELETE",headers:_authHeaders()});toast("Đã xóa nhà xe");closeModal("confirmModal");loadOperators();}
     catch{toast("Lỗi khi xóa","error");}
   };
   document.getElementById("confirmModal").classList.add("open");
@@ -1294,9 +1288,7 @@ function aiAsk(q){
 
 /* ── Admin name + Live clock ── */
 (function(){
-  try{const u=JSON.parse(localStorage.getItem("user")||"{}");
-    if(u.full_name){const el=document.getElementById("adminNameLabel");if(el)el.textContent=u.full_name;}
-  }catch(e){}
+  if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile");
   (function tick(){
     const d=new Date(),t=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
     const c=document.getElementById("hdrClock");if(c)c.textContent=t;
