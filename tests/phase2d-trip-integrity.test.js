@@ -9,8 +9,28 @@
 
 // Factory mock — replaces the module entirely so the real db.js (which opens
 // a live connection on import) is never loaded by this test file.
-jest.mock('../server/config/db', () => ({ query: jest.fn() }));
+jest.mock('../server/config/db', () => ({ query: jest.fn(), getConnection: jest.fn() }));
 const db = require('../server/config/db');
+
+/* Sprint 24 — updateTrip now runs the same bus-double-booking advisory-lock
+   check createTrip already had (see phase1-transactions.test.js's own
+   "advisory-lock TOCTOU fix" describe block for that original coverage)
+   whenever route_id/bus_id/departure_time/arrival_time actually change.
+   Defaults to "lock acquired, no conflict" so every pre-existing test in
+   this file below — none of which are testing THIS behavior — keeps
+   passing unmodified; see the dedicated describe block near the bottom of
+   this file for direct coverage of the new check itself. */
+function makeLockConn({ locked = 1, hasConflict = false } = {}) {
+    return {
+        query: jest.fn((sql) => {
+            if (/GET_LOCK/.test(sql)) return Promise.resolve([[{ locked }]]);
+            if (/RELEASE_LOCK/.test(sql)) return Promise.resolve([[{}]]);
+            if (/SELECT trip_id FROM trip/.test(sql)) return Promise.resolve([hasConflict ? [{ trip_id: 77 }] : []]);
+            return Promise.resolve([{}]);
+        }),
+        release: jest.fn(),
+    };
+}
 
 function mockRes() {
     const res = {};
@@ -66,7 +86,10 @@ describe('Phase 2D — updateTrip partial-body safety', () => {
         base_price: 250000, status: 'OPEN'
     };
 
-    beforeEach(() => { jest.clearAllMocks(); });
+    beforeEach(() => {
+        jest.clearAllMocks();
+        db.getConnection.mockResolvedValue(makeLockConn());
+    });
 
     test('1. partial update with arrival_time only — other fields preserved from existing row', async () => {
         const ctrl = require('../server/controllers/tripController');
@@ -228,6 +251,89 @@ describe('Phase 2D — updateTrip partial-body safety', () => {
         await ctrl.updateTrip(req, res);
         expect(res.status).toHaveBeenCalledWith(404);
         expect(db.query).toHaveBeenCalledTimes(1);
+    });
+});
+
+/* ══════════════════════════════════════════
+   TEST GROUP A2 — updateTrip bus double-booking guard (Sprint 24)
+   createTrip has always rejected a bus assigned to two overlapping trips;
+   updateTrip was a second, unguarded path to the same real-world conflict
+   (editing bus_id/departure_time/arrival_time on an existing trip). Same
+   advisory-lock-then-overlap-check discipline, only run when one of the
+   4 structural fields actually changes and only for trips with no active
+   booking (the pre-existing activeBooking guard runs first).
+══════════════════════════════════════════ */
+describe('Phase 2D (Sprint 24) — updateTrip bus double-booking guard', () => {
+    const EXISTING_ROW = {
+        route_id: 10, bus_id: 20,
+        departure_time: new Date(2026, 7, 20, 8, 0, 0),
+        arrival_time: new Date(2026, 7, 20, 12, 0, 0),
+        base_price: 250000, status: 'OPEN'
+    };
+
+    beforeEach(() => { jest.clearAllMocks(); });
+
+    test('reassigning to a bus with an overlapping trip is rejected 409, UPDATE never runs', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const conn = makeLockConn({ hasConflict: true });
+        db.getConnection.mockResolvedValue(conn);
+        db.query
+            .mockResolvedValueOnce([[EXISTING_ROW]])   // SELECT existing
+            .mockResolvedValueOnce([[{ cnt: 0 }]]);     // active-booking guard: none
+        const req = { params: { id: '5' }, body: { bus_id: 99 } }; // reassign to a busy bus
+        const res = mockRes();
+        await ctrl.updateTrip(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(409);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ conflict_trip_id: 77 }));
+        expect(db.query.mock.calls.some(c => /UPDATE trip SET/.test(c[0]))).toBe(false);
+        expect(conn.query.mock.calls.some(c => /RELEASE_LOCK/.test(c[0]))).toBe(true); // lock still released
+    });
+
+    test('the conflict check excludes the trip\'s own row (trip_id != id)', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const conn = makeLockConn({ hasConflict: false });
+        db.getConnection.mockResolvedValue(conn);
+        db.query
+            .mockResolvedValueOnce([[EXISTING_ROW]])
+            .mockResolvedValueOnce([[{ cnt: 0 }]])
+            .mockResolvedValueOnce([{}]); // UPDATE
+        const req = { params: { id: '5' }, body: { departure_time: '2026-08-20 09:00:00' } };
+        const res = mockRes();
+        await ctrl.updateTrip(req, res);
+
+        const conflictCheckSql = conn.query.mock.calls.find(c => /SELECT trip_id FROM trip/.test(c[0]));
+        expect(conflictCheckSql[0]).toMatch(/trip_id\s*!=\s*\?/);
+        expect(conflictCheckSql[1]).toEqual(expect.arrayContaining(['5']));
+        expect(res.status).not.toHaveBeenCalledWith(409);
+    });
+
+    test('failing to acquire the lock is rejected 409, not a silent race', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        const conn = makeLockConn({ locked: 0 });
+        db.getConnection.mockResolvedValue(conn);
+        db.query
+            .mockResolvedValueOnce([[EXISTING_ROW]])
+            .mockResolvedValueOnce([[{ cnt: 0 }]]);
+        const req = { params: { id: '5' }, body: { bus_id: 99 } };
+        const res = mockRes();
+        await ctrl.updateTrip(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(409);
+        expect(conn.query.mock.calls.some(c => /SELECT trip_id FROM trip/.test(c[0]))).toBe(false); // never even checked
+    });
+
+    test('no structural field changed (e.g. only status) never touches the lock/overlap path at all', async () => {
+        const ctrl = require('../server/controllers/tripController');
+        db.query
+            .mockResolvedValueOnce([[EXISTING_ROW]])
+            .mockResolvedValueOnce([{}]); // UPDATE
+        const req = { params: { id: '5' }, body: { status: 'FULL' } };
+        const res = mockRes();
+        await ctrl.updateTrip(req, res);
+
+        expect(db.getConnection).not.toHaveBeenCalled();
+        expect(res.status).not.toHaveBeenCalledWith(409);
     });
 });
 

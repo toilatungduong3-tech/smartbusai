@@ -1,10 +1,36 @@
 'use strict';
 const db = require('../config/db');
+const tripController = require('./tripController');
 const ai = require('../ai/recommendation');
 const aiIntentPredictor = require('../services/aiIntentPredictor');
 const aiDemandForecaster = require('../services/aiDemandForecaster');
 const aiUserProfilingService = require('../services/aiUserProfilingService');
+const anthropicService = require('../services/anthropicService');
 const logger = require('../utils/logger');
+
+// POST /api/ai/chat — backend proxy for the two features that used to call
+// https://api.anthropic.com/v1/messages directly from the browser
+// (passenger/index.html's aiSend(), admin/support.html's runAI()) with no
+// API key at all, meaning the call always 401'd in production and the key
+// requirement was moot — but any real key added later would have been
+// readable by anyone opening DevTools. The real key now lives only in this
+// process's environment (ANTHROPIC_API_KEY), never shipped to the client.
+exports.aiChat = async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+            return res.status(400).json({ message: 'prompt is required' });
+        }
+        const reply = await anthropicService.chatCompletion(prompt.trim(), { maxTokens: 800 });
+        res.json({ reply });
+    } catch (err) {
+        if (err.code === 'AI_NOT_CONFIGURED') {
+            return res.status(503).json({ message: 'AI chưa được cấu hình trên server', code: err.code });
+        }
+        logger.error('AI CHAT ERROR:', err);
+        res.status(502).json({ message: 'Dịch vụ AI hiện không khả dụng', code: err.code || 'AI_ERROR' });
+    }
+};
 
 // Phase 2I: shared ownership check for the userId-scoped AI endpoints below
 // (mirrors canAccessBooking in bookingController.js) — self or ADMIN/OPERATOR.
@@ -681,7 +707,7 @@ exports.getBehaviorProfile = async (req, res) => {
    GET /api/ai/search-insight?origin=X&destination=Y&userId=Z
 ═══════════════════════════════════════════════════════════ */
 exports.getSearchInsight = async (req, res) => {
-    const { origin, destination } = req.query;
+    const { origin, destination, date, busType, minPrice, maxPrice } = req.query;
     if (!origin || !destination) return res.json({ insights: [] });
     try {
         const insights = [];
@@ -691,23 +717,30 @@ exports.getSearchInsight = async (req, res) => {
         // search/booking behavior for a given route.
         const uid = req.user ? req.user.user_id : null;
 
-        const [priceRows] = await db.query(`
-            SELECT AVG(t.base_price) AS avg_price, MIN(t.base_price) AS min_price,
-                   COUNT(DISTINCT t.trip_id) AS trip_count
-            FROM trip t JOIN route r ON t.route_id=r.route_id
-            WHERE (r.origin LIKE ? OR r.origin LIKE ?)
-              AND (r.destination LIKE ? OR r.destination LIKE ?)
-              AND t.status='OPEN' AND t.departure_time > NOW()
-        `, [`%${origin}%`, `${origin}%`, `%${destination}%`, `${destination}%`]);
+        /* Single-source-of-truth fix: this used to run its own independent
+           COUNT query with DIFFERENT conditions than the actual search
+           results list — no `date` filter, so it counted every future OPEN
+           trip on the route across ALL dates while the list below is
+           filtered to the one date the passenger searched for. That's
+           exactly the reported "AI badge says 12 chuyến, list only shows
+           9" bug. Reusing tripController's own runTripSearch() with the
+           identical {origin, destination, date} the passenger searched
+           with means trip_count IS rows.length from the same query the
+           search endpoint runs — never a second, independently-maintained
+           count that can drift from it again. */
+        const { rows = [] } = await tripController._runTripSearch(db, { origin, destination, date, busType, minPrice, maxPrice });
+        const tripCount = rows.length;
 
-        const priceRow = priceRows[0];
-        if (priceRow?.avg_price) {
-            const diff = Math.round((priceRow.min_price - priceRow.avg_price) / priceRow.avg_price * 100);
+        if (tripCount > 0) {
+            const prices = rows.map(r => Number(r.base_price)).filter(Number.isFinite);
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const minPrice = Math.min(...prices);
+            const diff = avgPrice > 0 ? Math.round((minPrice - avgPrice) / avgPrice * 100) : 0;
             if (diff < -5) insights.push({ type: 'price_drop', icon: '💰',
                 text: `Giá hôm nay thấp hơn trung bình ${Math.abs(diff)}%`,
-                detail: `Từ ${Number(priceRow.min_price).toLocaleString('vi-VN')}đ` });
-            if (priceRow.trip_count > 0) insights.push({ type: 'availability', icon: '✅',
-                text: `Còn ${priceRow.trip_count} chuyến sắp tới` });
+                detail: `Từ ${minPrice.toLocaleString('vi-VN')}đ` });
+            insights.push({ type: 'availability', icon: '✅',
+                text: `Còn ${tripCount} chuyến sắp tới` });
         }
 
         if (uid) {

@@ -864,7 +864,6 @@ document.addEventListener("click",e=>{
 
 /* ── State ── */
 const BASE_API="/api/support";
-const ANTHROPIC_MODEL="claude-sonnet-4-20250514";
 let allTickets=[], filtered=[], currentPage=1, pageSize=8;
 let currentDetailId=null;
 
@@ -1339,15 +1338,22 @@ Mã vé: ${t.booking_id||"Không có"}
 
 Hãy: 1) Tóm tắt vấn đề 2) Đề xuất hành động cụ thể 3) Ưu tiên xử lý`;
   try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:ANTHROPIC_MODEL,max_tokens:400,messages:[{role:"user",content:prompt}]})
+    // Backend proxy — see server/services/anthropicService.js. Previously
+    // this called https://api.anthropic.com/v1/messages directly from the
+    // browser with no API key, which always failed and silently fell back
+    // to localAIAnalysis() below; the real key now lives server-side only.
+    const token=localStorage.getItem("accessToken");
+    const res=await fetch("/api/ai/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json", ...(token?{"Authorization":"Bearer "+token}:{})},
+      body:JSON.stringify({prompt})
     });
+    if(!res.ok) throw new Error("AI proxy unavailable");
     const data=await res.json();
-    const reply=data?.content?.[0]?.text||"Không thể phân tích lúc này.";
+    const reply=data?.reply||"Không thể phân tích lúc này.";
     textEl.innerHTML=reply.replace(/\n/g,"<br>");
   }catch{
-    // Fallback local AI
+    // Fallback local AI — runs whenever ANTHROPIC_API_KEY isn't configured server-side
     textEl.innerHTML=localAIAnalysis(t);
   }
 }

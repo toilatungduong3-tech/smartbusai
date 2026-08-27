@@ -27,6 +27,15 @@ function seatsFromLayout(bus) {
 exports.getSeatsByTrip = async (req, res) => {
     try {
         const tripId = req.params.tripId;
+        /* Bug fix: the old JOIN also required
+           DATE(bk.booking_time) = DATE(t.departure_time) — booking_time is
+           when the ticket was PURCHASED, not the trip's date, so a
+           perfectly normal advance booking (bought today for a trip next
+           month) failed this check and the seat was wrongly reported as
+           free even though it's genuinely booked. bk.trip_id = t.trip_id
+           (already in the JOIN) is the only condition that actually
+           determines "is this booking for this trip" — the date check was
+           pure noise that only ever caused undercounting. */
         const sql = `
             SELECT
                 s.seat_id,
@@ -38,7 +47,6 @@ exports.getSeatsByTrip = async (req, res) => {
             JOIN seat s ON s.bus_id = b.bus_id
             LEFT JOIN booking bk ON bk.trip_id = t.trip_id
                                  AND bk.status IN ('CONFIRMED','PAID','PENDING')
-                                 AND DATE(bk.booking_time) = DATE(t.departure_time)
             LEFT JOIN booking_detail bd ON bd.booking_id = bk.booking_id AND bd.seat_id = s.seat_id
             WHERE t.trip_id = ?
             GROUP BY s.seat_id, s.seat_number, s.seat_type
@@ -71,6 +79,53 @@ exports.updateSeat = async (req, res) => {
     } catch (err) {
         logger.error("UPDATE SEAT ERROR:", err);
         res.status(500).json({ message: "Update seat failed" });
+    }
+};
+
+/* ===============================
+   CẬP NHẬT HÀNG LOẠT (đổi VIP/Thường cho cả 1 hàng/cột ghế)
+   PUT /api/seats/batch-update  body: { seat_ids:[...], seat_type }
+=============================== */
+const SEAT_TYPE_WHITELIST = new Set(["VIP", "NORMAL"]);
+
+exports.batchUpdateSeats = async (req, res) => {
+    try {
+        const { seat_ids, seat_type } = req.body;
+        if (!Array.isArray(seat_ids) || seat_ids.length === 0) {
+            return res.status(400).json({ message: "Thiếu danh sách seat_ids" });
+        }
+        if (!SEAT_TYPE_WHITELIST.has(seat_type)) {
+            return res.status(400).json({ message: "seat_type phải là VIP hoặc NORMAL" });
+        }
+        const ids = seat_ids.map(id => parseInt(id, 10));
+        if (ids.some(id => !id || isNaN(id))) {
+            return res.status(400).json({ message: "seat_ids chứa giá trị không hợp lệ" });
+        }
+
+        /* Ownership: every seat in the batch must belong to a bus this
+           operator owns (or caller is ADMIN) — same guarantee updateSeat
+           enforces per-seat, just checked once for the whole batch instead
+           of once per seat_id. A row/column tool that could silently touch
+           another operator's fleet would be a much bigger hole than the
+           single-seat editor it's meant to speed up. */
+        const [rows] = await db.query(
+            "SELECT DISTINCT b.operator_id FROM seat s JOIN bus b ON s.bus_id=b.bus_id WHERE s.seat_id IN (?)",
+            [ids]
+        );
+        if (rows.length === 0) return res.status(404).json({ message: "Không tìm thấy ghế" });
+        const foreignOwner = rows.find(r => !ownsOperator(req, r.operator_id));
+        if (foreignOwner) {
+            return res.status(403).json({ message: "Không có quyền sửa ghế của nhà xe khác" });
+        }
+
+        const [result] = await db.query(
+            "UPDATE seat SET seat_type=? WHERE seat_id IN (?)",
+            [seat_type, ids]
+        );
+        res.json({ message: "Đã cập nhật hàng loạt", updated: result.affectedRows });
+    } catch (err) {
+        logger.error("BATCH UPDATE SEATS ERROR:", err);
+        res.status(500).json({ message: "DB error" });
     }
 };
 

@@ -33,6 +33,12 @@ router.post("/expand-bus/:busId",     authenticate, requireAdminOrOperator, atta
 /* POST create seat    — /api/seats */
 router.post("/",                      authenticate, requireAdminOrOperator, attachOperatorId, seatController.createSeat);
 
+/* PUT batch update    — /api/seats/batch-update (row/column quick-edit)
+   MUST be registered before the generic /:id route below — otherwise
+   Express would match "batch-update" as the :id param and route here
+   never gets hit. */
+router.put("/batch-update",           authenticate, requireAdminOrOperator, attachOperatorId, seatController.batchUpdateSeats);
+
 /* PUT update seat     — /api/seats/:id */
 router.put("/:id",                    authenticate, requireAdminOrOperator, attachOperatorId, seatController.updateSeat);
 

@@ -86,4 +86,22 @@ const aiLimiter = rateLimit({
     }
 });
 
-module.exports = { loginLimiter, apiLimiter, strictLimiter, paymentLimiter, aiLimiter };
+// =================================
+// TWO-FACTOR LIMITER
+// Giới hạn 10 lần thử mỗi 5 phút mỗi IP
+// Áp dụng cho: xác minh mã TOTP (setup/disable/login-verify) — không gian
+// mã 6 chữ số chỉ có 1 triệu tổ hợp, cần giới hạn chặt hơn strictLimiter
+// để việc dò mã trong 1 cửa sổ 30 giây là bất khả thi.
+// =================================
+const twoFactorLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        message: "Bạn đã thử xác minh mã 2FA quá nhiều lần. Vui lòng thử lại sau 5 phút."
+    },
+    skipSuccessfulRequests: true
+});
+
+module.exports = { loginLimiter, apiLimiter, strictLimiter, paymentLimiter, aiLimiter, twoFactorLimiter };

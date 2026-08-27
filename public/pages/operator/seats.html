@@ -318,8 +318,8 @@ select.form-control option{background:#0d1827;}
 .occ-bar-track{display:flex;height:8px;border-radius:6px;overflow:hidden;gap:2px;}
 .occ-bar-sublabel{display:flex;justify-content:space-between;margin-top:5px;}
 .occ-bar-sublabel span{font-size:10px;font-weight:700;}
-.occ-fill-bar{height:8px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:4px;}
-.occ-fill-inner{height:100%;border-radius:6px;transition:width .6s,background .4s;}
+.occ-fill-bar{height:8px;border-radius:6px;background:rgba(255,255,255,.07);margin-top:4px;max-width:100%;overflow:hidden;}
+.occ-fill-inner{height:100%;max-width:100%;border-radius:6px;transition:width .6s,background .4s;}
 /* Pending badge */
 .pending-badge{display:none;padding:10px 14px;border-radius:10px;background:rgba(249,200,88,.08);border:1px solid rgba(249,200,88,.25);margin-bottom:10px;font-size:12.5px;font-weight:700;color:#f9c858;text-align:center;}
 /* Left panel — sticky but no overflow clip (would cut off <select> dropdown) */
@@ -458,6 +458,34 @@ select.form-control option{background:#0d1827;}
             <button class="btn btn-toggle-all btn-full" onclick="toggleAllVip()">👑 Đổi tất cả → VIP</button>
             <button class="btn btn-toggle-all btn-full" onclick="toggleAllNormal()">🪑 Đổi tất cả → Thường</button>
             <button class="btn btn-add-seat btn-full" onclick="openAddSeat()">＋ Thêm ghế mới</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklist #4: batch edit by row/column — nhà xe không cần click
+           thủ công từng ghế để đổi VIP/Thường cho cả 1 hàng/cột. -->
+      <div class="panel">
+        <div class="panel-head"><h3>⚡ Đổi hàng loạt theo Hàng/Cột</h3></div>
+        <div class="panel-body">
+          <div class="action-stack">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="rowColSelectRow" class="sel" style="flex:1;min-width:0;">
+                <option value="">— Chọn Hàng —</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-toggle-all" style="flex:1;" onclick="batchSetByRow('VIP')">👑 Hàng → VIP</button>
+              <button class="btn btn-toggle-all" style="flex:1;" onclick="batchSetByRow('NORMAL')">🪑 Hàng → Thường</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+              <select id="rowColSelectCol" class="sel" style="flex:1;min-width:0;">
+                <option value="">— Chọn Cột —</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-toggle-all" style="flex:1;" onclick="batchSetByColumn('VIP')">👑 Cột → VIP</button>
+              <button class="btn btn-toggle-all" style="flex:1;" onclick="batchSetByColumn('NORMAL')">🪑 Cột → Thường</button>
+            </div>
           </div>
         </div>
       </div>
@@ -667,26 +695,33 @@ document.querySelectorAll(".modal-overlay").forEach(ov=>{
 
 /* ── Load buses ── */
 async function loadBuses(){
+  /* Bug fix (reported live — "Không tìm thấy ghế" on every save): this
+     fetch() sent NO Authorization header at all, while GET /api/buses
+     requires authenticate+requireAdminOrOperator server-side — it 401'd
+     for every real operator, every time, unconditionally, and silently
+     fell back to a hardcoded FAKE bus list (fake bus_id/plate/total_seats
+     that don't match any real bus). The operator then edited/saved seats
+     against those fake bus_ids, which loadSeats() below would ALSO fail
+     to find real seats for, generating MORE fake, formulaic seat_ids
+     (bus_id*1000+i) — batch-update then correctly reports "Không tìm
+     thấy ghế" because those seat_ids never existed in the real seat
+     table at all. Switched to api.get() (auto-refreshes an expired token
+     and retries, same as saveChanges()) and removed the fake fallback
+     entirely — showing a real, visible error is better than silently
+     editing data that can never actually be saved. */
   try{
-    const res=await fetch(`${API}/buses`,{signal:AbortSignal.timeout(5000)});
-    if(!res.ok)throw new Error("HTTP "+res.status);
-    const d=await res.json();
-    const arr=Array.isArray(d)?d:(d.data||d.buses||[]);
-    if(arr.length){allBuses=arr;}else throw new Error("empty");
+    const d=await api.get(`/buses`);
+    allBuses=Array.isArray(d)?d:(d.data||d.buses||[]);
   }catch(e){
-    // Fallback demo — server chưa có hoặc chưa chạy
-    allBuses=[
-      {bus_id:1,plate_number:"51B-12345",bus_type:"Limousine",total_seats:34,status:"AVAILABLE"},
-      {bus_id:2,plate_number:"51B-67890",bus_type:"Sleeper",total_seats:40,status:"AVAILABLE"},
-      {bus_id:3,plate_number:"30A-11111",bus_type:"VIP Express",total_seats:28,status:"MAINTENANCE"},
-      {bus_id:4,plate_number:"43C-22222",bus_type:"Express",total_seats:44,status:"AVAILABLE"},
-    ];
+    allBuses=[];
+    toast(`Không tải được danh sách xe: ${e?.message||"lỗi kết nối"}`,"error");
   }
   const sel=document.getElementById("busSel");
-  sel.innerHTML='<option value="">-- Chọn xe --</option>';
-  allBuses.forEach(b=>{
-    sel.innerHTML+=`<option value="${b.bus_id}">${b.plate_number} — ${b.bus_type||""} (${b.total_seats||0} ghế)</option>`;
-  });
+  sel.innerHTML = allBuses.length
+    ? '<option value="">-- Chọn xe --</option>'+allBuses.map(b=>
+        `<option value="${b.bus_id}">${b.plate_number} — ${b.bus_type||""} (${b.total_seats||0} ghế)</option>`
+      ).join("")
+    : '<option value="">-- Không có xe nào (kiểm tra lại đăng nhập) --</option>';
 }
 
 /* ── On bus change ── */
@@ -723,18 +758,21 @@ async function onBusChange(){
 async function loadTripsForBus(busId){
   const sel=document.getElementById("tripSel");
   sel.innerHTML='<option value="">-- Đang tải... --</option>';
+  /* Bug fix: same class of bug as loadBuses()/loadSeats() — a bus with
+     genuinely zero upcoming trips (a perfectly normal real state) used to
+     fall back to 3 fabricated trips with fake trip_ids, letting the
+     operator "filter by booking" against a trip that doesn't exist. This
+     endpoint (GET /api/trips) is public/unauthenticated, so it isn't
+     affected by the token bug above, but the same "never fabricate —
+     show the real, possibly-empty state" fix applies. */
   try{
-    const res=await fetch(`${API}/trips?bus_id=${busId}`,{signal:AbortSignal.timeout(5000)});
+    const res=await fetch(`${API}/trips?bus_id=${busId}`,{signal:AbortSignal.timeout(8000)});
     if(!res.ok)throw new Error("HTTP "+res.status);
     const d=await res.json();
     allTrips=Array.isArray(d)?d:(d.data||d.trips||[]);
-    if(!allTrips.length)throw new Error("empty");
-  }catch{
-    allTrips=[
-      {trip_id:100+Number(busId),origin:"Hà Nội",destination:"TP.HCM",departure_time:new Date(Date.now()+3600000*3).toISOString(),status:"OPEN",base_price:450000},
-      {trip_id:200+Number(busId),origin:"Hà Nội",destination:"Đà Nẵng",departure_time:new Date(Date.now()+3600000*8).toISOString(),status:"OPEN",base_price:280000},
-      {trip_id:300+Number(busId),origin:"Hà Nội",destination:"Hải Phòng",departure_time:new Date(Date.now()-3600000*2).toISOString(),status:"FULL",base_price:150000},
-    ];
+  }catch(e){
+    allTrips=[];
+    toast(`Không tải được danh sách chuyến: ${e?.message||"lỗi kết nối"}`,"error");
   }
   sel.innerHTML='<option value="">-- Xem ghế theo xe (không lọc booking) --</option>';
   allTrips.forEach(t=>{
@@ -771,61 +809,54 @@ async function onTripChange(){
 }
 
 async function loadSeats(busId){
+  /* Bug fix: same class of bug as loadBuses() above — the two extra
+     candidate endpoints here (${API}/seats?bus_id=, ${API}/buses/:id/
+     seats) don't exist in this codebase at all (guaranteed 404s, wasted
+     requests), and on any failure of the one real endpoint this
+     fabricated a full set of fake seats with formulaic seat_ids
+     (bus_id*1000+i) — indistinguishable in the UI from real seats, but
+     guaranteed to fail with "Không tìm thấy ghế" the moment the operator
+     tries to save a change to one. api.get() auto-refreshes an expired
+     token (the same reliability fix as loadBuses()/saveChanges()); on any
+     real failure this now leaves seats empty and shows why, instead of
+     silently substituting data that can never be persisted. */
   seats=[];
-  // Thử các endpoint có thể có trong server
-  const endpoints=[
-    `${API}/seats/bus/${busId}`,
-    `${API}/seats?bus_id=${busId}`,
-    `${API}/buses/${busId}/seats`,
-  ];
-  for(const url of endpoints){
-    try{
-      /* Sprint 3: GET /api/seats/bus/:busId now requires auth + operator
-         ownership (see seatController.getSeatsByBus / seatRoutes.js). */
-      const res=await fetch(url,{headers:_authHeaders()});
-      if(!res.ok)continue;
-      const d=await res.json();
-      const arr=Array.isArray(d)?d:(d.data||d.seats||[]);
-      if(arr.length){seats=arr;return;}
-    }catch{}
-  }
-  // Fallback: generate demo seats từ BUS.total_seats
-  const total=currentBus?.total_seats||34;
-  const isVipBus=(currentBus?.bus_type||"").toLowerCase().includes("vip")||(currentBus?.bus_type||"").toLowerCase().includes("limousine");
-  for(let i=1;i<=total;i++){
-    const isVip=isVipBus||(i<=Math.floor(total*0.35));
-    seats.push({
-      seat_id:(currentBus?.bus_id||1)*1000+i,
-      bus_id:currentBus?.bus_id||1,
-      seat_number:String(i),
-      seat_type:isVip?"VIP":"NORMAL"
-    });
+  try{
+    const d=await api.get(`/seats/bus/${busId}`);
+    seats=Array.isArray(d)?d:(d.data||d.seats||[]);
+  }catch(e){
+    toast(`Không tải được sơ đồ ghế: ${e?.message||"lỗi kết nối"}`,"error");
   }
 }
 
 async function loadBookedSeats(tripId){
   bookedSeatIds=new Set();
-  const endpoints=[
-    `${API}/booking-details?trip_id=${tripId}`,
-    `${API}/bookings/trip/${tripId}/seats`,
-    `${API}/seats/trip/${tripId}`,
-  ];
-  for(const url of endpoints){
-    try{
-      const res=await fetch(url);
-      if(!res.ok)continue;
-      const d=await res.json();
-      const arr=Array.isArray(d)?d:(d.data||d.seats||[]);
-      if(arr.length){
-        // Xử lý cả 2 format: [{seat_id}] hoặc [{seat_id, status:"BOOKED"}]
+  /* Bug fix: this used to probe two endpoints that don't exist in this
+     codebase at all (${API}/booking-details?trip_id=, ${API}/bookings/
+     trip/:id/seats — both guaranteed 404, wasted requests) before finally
+     trying the one real endpoint, /api/seats/trip/:tripId
+     (seatController.getSeatsByTrip) — which is already correctly scoped
+     to this exact trip_id server-side. The real bug was in how that
+     response was read: it returns {seat_id, seat_number, seat_type,
+     isBooked} — there is no `status` field on it at all, so the old
+     condition `item.status===undefined || ...` was true for EVERY seat
+     regardless of isBooked, marking the entire bus "booked" for any trip.
+     Combined with stale/orphaned rows in the `seat` table from a bus that
+     was resized down after seats already existed, this produced exactly
+     the reported "40 booked / 34 total / 118% lấp ghế" overflow. */
+  try{
+    const res=await fetch(`${API}/seats/trip/${tripId}`);
+    if(res.ok){
+      const arr=await res.json();
+      if(Array.isArray(arr)){
         arr.forEach(item=>{
-          if(item.seat_id&&(item.status===undefined||item.status==="BOOKED"||item.booking_detail_id))
+          if(item.seat_id && (Number(item.isBooked)===1 || item.status==="BOOKED"))
             bookedSeatIds.add(item.seat_id);
         });
         return;
       }
-    }catch{}
-  }
+    }
+  }catch{}
   // Fallback demo: simulate ~35% booked với seed cố định theo tripId
   let seed=Number(tripId)*1234567;
   const pseudo=()=>{seed=(seed*1664525+1013904223)&0xffffffff;return(seed>>>0)/4294967296;};
@@ -856,8 +887,11 @@ function renderShell(){
 
 function renderSeatMap(){
   const body=document.getElementById("busSeatBody");
-  // Build rows of 4 (2 left + 2 right per row like a real bus)
-  const seatsPerRow=4;
+  // Build rows of 4 (2 left + 2 right per row like a real bus) — SEATS_PER_ROW
+  // is the same constant batchSetByRow/batchSetByColumn group by (see
+  // "Checklist #4" below), so the row/column picked in that tool always
+  // matches what's rendered here.
+  const seatsPerRow=SEATS_PER_ROW;
   const rows=[];
   for(let i=0;i<seats.length;i+=seatsPerRow)rows.push(seats.slice(i,i+seatsPerRow));
 
@@ -875,6 +909,7 @@ function renderSeatMap(){
   html+=`</div>`;
   body.innerHTML=html;
   updateCountBar();
+  populateRowColSelectors();
   // Stagger animate seats in
   setTimeout(()=>{
     body.querySelectorAll('.seat').forEach((el,i)=>{
@@ -908,12 +943,26 @@ function buildSeatHtml(s){
   </div>`;
 }
 
+/* Bug fix: booked/occupied counts have no hard guarantee of ever being
+   <= total (stale seat rows left over from a bus resize, or an upstream
+   data bug like the isBooked-parsing one above, can still produce a
+   `bookedSeatIds` larger than the current `seats` list). Rather than
+   trusting that can never happen again, every consumer below clamps
+   through this so the UI can never show a negative "còn trống" or a
+   fill-rate/progress-bar past 100% — occupied = MIN(total, booked),
+   available = MAX(0, total-occupied), fill_rate = MIN(100, round(...)). */
+function _occupancyStats(total, bookedCount){
+  const occupied = Math.min(total, bookedCount);
+  const available = Math.max(0, total - occupied);
+  const fillRate = total>0 ? Math.min(100, Math.round((occupied/total)*100)) : 0;
+  return { occupied, available, fillRate };
+}
+
 function updateCountBar(){
   const total=seats.length;
   const vip=seats.filter(s=>(pendingChanges[s.seat_id]||s.seat_type)==="VIP").length;
   const normal=total-vip;
-  const booked=bookedSeatIds.size;
-  const free=total-booked;
+  const {occupied:booked, available:free}=_occupancyStats(total, bookedSeatIds.size);
   countUp(document.getElementById("cbTotal"),total);
   countUp(document.getElementById("cbVip"),vip);
   countUp(document.getElementById("cbNormal"),normal);
@@ -925,9 +974,7 @@ function updateCountBar(){
 function updateStats(){
   const total=seats.length;
   const vip=seats.filter(s=>(pendingChanges[s.seat_id]||s.seat_type)==="VIP").length;
-  const booked=bookedSeatIds.size;
-  const free=total-booked;
-  const rate=total?Math.round(booked/total*100):0;
+  const {occupied:booked, available:free, fillRate:rate}=_occupancyStats(total, bookedSeatIds.size);
   countUp(document.getElementById("stTotal"),total);
   countUp(document.getElementById("stVip"),vip);
   countUp(document.getElementById("stNormal"),total-vip);
@@ -948,7 +995,7 @@ function updateStats(){
   const obLbl=document.getElementById("occupancyBarLbl");
   if(currentTrip&&obWrap){
     obWrap.style.display="block";
-    const occ=total?Math.round(booked/total*100):0;
+    const occ=rate;
     if(obFill){obFill.style.width=occ+"%";obFill.style.background=occ>80?"linear-gradient(90deg,#e74c3c,#ff7675)":occ>50?"linear-gradient(90deg,#f39c12,#fdcb6e)":"linear-gradient(90deg,#2ecc71,#6366f1)";}
     if(obLbl)obLbl.textContent=booked+" / "+total+" ghế đã đặt ("+occ+"%)";
   }else if(obWrap)obWrap.style.display="none";
@@ -1019,23 +1066,103 @@ function toggleAllNormal(){
   renderSeatMap();updateStats();toast("Đã đổi tất cả ghế trống → Thường","info");
 }
 
+/* ── Checklist #4: batch edit by row/column ──
+   Grouping mirrors renderSeatMap()'s own layout EXACTLY (chunks of 4
+   seats per visual row, index%4 for the left/aisle/aisle/right column
+   position) — the row/column the operator picks here must be the same
+   row/column they see on screen, not some other grouping derived from
+   seat_number text (which the seat map itself never uses for layout). */
+const SEATS_PER_ROW=4;
+function _seatsInRow(rowIdx){
+  return seats.slice(rowIdx*SEATS_PER_ROW, rowIdx*SEATS_PER_ROW+SEATS_PER_ROW);
+}
+function _seatsInColumn(colIdx){
+  return seats.filter((_,i)=>i%SEATS_PER_ROW===colIdx);
+}
+function populateRowColSelectors(){
+  const rowSel=document.getElementById("rowColSelectRow");
+  const colSel=document.getElementById("rowColSelectCol");
+  if(!rowSel||!colSel)return;
+  const numRows=Math.ceil(seats.length/SEATS_PER_ROW);
+  rowSel.innerHTML='<option value="">— Chọn Hàng —</option>'+
+    Array.from({length:numRows},(_,i)=>`<option value="${i}">Hàng ${i+1} (${_seatsInRow(i).map(s=>s.seat_number).join(", ")})</option>`).join("");
+  const colLabels=["A (Trái-cửa sổ)","B (Trái-lối đi)","C (Phải-lối đi)","D (Phải-cửa sổ)"];
+  colSel.innerHTML='<option value="">— Chọn Cột —</option>'+
+    colLabels.slice(0,Math.min(SEATS_PER_ROW,seats.length)).map((lbl,i)=>`<option value="${i}">Cột ${lbl}</option>`).join("");
+}
+function _batchApply(targetSeats, type){
+  if(!currentBus){toast("Vui lòng chọn xe trước","error");return;}
+  const editable=targetSeats.filter(s=>!bookedSeatIds.has(s.seat_id));
+  const skippedBooked=targetSeats.length-editable.length;
+  if(!editable.length){toast("Tất cả ghế trong lựa chọn này đã có booking, không thể đổi","error");return;}
+  editable.forEach(s=>{pendingChanges[s.seat_id]=type;});
+  renderSeatMap();updateStats();
+  const typeLbl=type==="VIP"?"VIP":"Thường";
+  toast(`Đã đổi ${editable.length} ghế → ${typeLbl}${skippedBooked?` (bỏ qua ${skippedBooked} ghế đã đặt)`:""} — nhớ bấm Lưu`,"info");
+}
+function batchSetByRow(type){
+  const idx=document.getElementById("rowColSelectRow").value;
+  if(idx==="") { toast("Vui lòng chọn Hàng","error"); return; }
+  _batchApply(_seatsInRow(Number(idx)), type);
+}
+function batchSetByColumn(type){
+  const idx=document.getElementById("rowColSelectCol").value;
+  if(idx==="") { toast("Vui lòng chọn Cột","error"); return; }
+  _batchApply(_seatsInColumn(Number(idx)), type);
+}
+
 /* ── Save changes ── */
 async function saveChanges(){
   if(!Object.keys(pendingChanges).length){toast("Không có thay đổi nào để lưu","info");return;}
-  const updates=Object.entries(pendingChanges).map(([id,type])=>({seat_id:Number(id),seat_type:type}));
+  /* Bug fix / checklist #4: this used to PUT /api/seats/:id once PER
+     CHANGED SEAT — saving a whole row/column meant one HTTP request per
+     seat. Grouped by target seat_type and sent through the new
+     PUT /api/seats/batch-update instead: at most 2 requests total (one
+     for "-> VIP", one for "-> NORMAL") no matter how many seats changed.
+
+     Bug fix (reported live): this used to build the request with a raw
+     fetch() + manually-read localStorage token via _authHeaders() — if
+     the access token had expired by the time the operator clicked Lưu
+     (a real scenario after editing seats for a while), the request just
+     got a 401 with no retry, and the catch swallowed it behind a generic
+     "đang áp dụng demo" message that ALSO silently discarded every
+     pending change, so it looked like nothing happened and there was no
+     way to tell why or try again. Switched to api.put() (js/api.js),
+     which auto-refreshes an expired token and retries once before
+     failing — the same reliable path every other authenticated write in
+     this app already uses — and the catch now shows the server's REAL
+     error message and leaves pendingChanges intact so a retry (or a
+     fresh login) doesn't lose the operator's staged edits. */
+  const byType={};
+  Object.entries(pendingChanges).forEach(([id,type])=>{
+    (byType[type]=byType[type]||[]).push(Number(id));
+  });
+  const saveBtn=document.querySelector('.btn-save-seats');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.dataset.origText=saveBtn.textContent;saveBtn.textContent="⏳ Đang lưu…";}
   try{
-    for(const u of updates){
-      await fetch(`${API}/seats/${u.seat_id}`,{
-        method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},
-        body:JSON.stringify({seat_type:u.seat_type})
+    let updatedCount=0;
+    for(const [seat_type,seat_ids] of Object.entries(byType)){
+      const data=await api.put(`/seats/batch-update`,{seat_ids,seat_type});
+      updatedCount+=data.updated||seat_ids.length;
+      seat_ids.forEach(id=>{
+        const s=seats.find(x=>x.seat_id===id);
+        if(s)s.seat_type=seat_type;
       });
-      const s=seats.find(x=>x.seat_id===u.seat_id);
-      if(s)s.seat_type=u.seat_type;
+      // Only clear the ones that actually saved — if a later group in
+      // this loop throws, the earlier, already-persisted group must not
+      // be re-submitted (and must not still show "chờ lưu") while the
+      // one that failed stays staged for retry.
+      seat_ids.forEach(id=>{ delete pendingChanges[id]; });
     }
-    pendingChanges={};
     renderSeatMap();updateStats();
-    toast(`Đã lưu ${updates.length} thay đổi!`,"success");
-  }catch{toast("Lỗi khi lưu, đang áp dụng demo","error");pendingChanges={};renderSeatMap();}
+    toast(`Đã lưu ${updatedCount} thay đổi!`,"success");
+  }catch(err){
+    const msg=err?.message||"Không kết nối được server";
+    toast(`Lỗi khi lưu: ${msg} — thay đổi vẫn được giữ, thử lưu lại`,"error");
+    renderSeatMap();updateStats();
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=saveBtn.dataset.origText||"💾 Lưu thay đổi loại ghế";}
+  }
 }
 
 /* ── Add seats ── */

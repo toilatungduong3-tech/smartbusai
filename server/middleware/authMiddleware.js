@@ -52,6 +52,14 @@ const authenticate = async (req, res, next) => {
         }
         return res.status(401).json({ message: "Token không hợp lệ" });
     }
+    /* A token minted by the 2FA-pending step (authController.login, when
+       users.totp_enabled=1) carries purpose:'2fa_pending' and grants
+       nothing beyond POST /api/auth/2fa/login-verify — reject it here so a
+       captured pending token can never be replayed against a real
+       protected endpoint to bypass the second factor. */
+    if (decoded.purpose === "2fa_pending") {
+        return res.status(401).json({ message: "Token tạm thời cho xác thực 2 bước, không dùng được cho API khác" });
+    }
     try {
         const [[user]] = await db.query("SELECT status, token_version FROM users WHERE user_id = ?", [decoded.user_id]);
         if (!user || user.status !== "ACTIVE") {
@@ -83,6 +91,7 @@ const optionalAuth = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.purpose === "2fa_pending") { req.user = null; return next(); }
         req.user = { user_id: decoded.user_id, role: decoded.role, email: decoded.email };
         setContext({ user_id: decoded.user_id });
     } catch { req.user = null; }

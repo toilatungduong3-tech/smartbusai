@@ -94,6 +94,8 @@ const MIGRATION_FILES = [
     'migrate_v20.sql',
     'migrate_v21.sql',
     'migrate_v22.sql',
+    'migrate_v23.sql',
+    'migrate_v24.sql',
 ];
 
 /** Independently verify the specific schema objects safety-critical
@@ -227,6 +229,26 @@ async function verifySchema() {
         `SELECT COUNT(*) AS c FROM bus WHERE status = '' OR status IS NULL`
     );
     if (invalidBusStatus.c > 0) missing.push(`${invalidBusStatus.c} bus row(s) with invalid/blank status — migrate_v22.sql cleanup did not apply`);
+
+    const [[totpEnabledCol]] = await db.query(
+        `SELECT COUNT(*) AS c FROM information_schema.columns
+         WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'totp_enabled'`
+    );
+    if (!totpEnabledCol.c) missing.push('users.totp_enabled column (migrate_v23.sql — server-side 2FA depends on this)');
+
+    const [[idNumberCol]] = await db.query(
+        `SELECT CHARACTER_MAXIMUM_LENGTH AS len FROM information_schema.columns
+         WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'id_number'`
+    );
+    if (!idNumberCol || Number(idNumberCol.len) < 255) {
+        missing.push('users.id_number not widened to varchar(255) (migrate_v23.sql — AES-256-GCM ciphertext no longer fits the old varchar(20))');
+    }
+
+    const [[voucherTable]] = await db.query(
+        `SELECT COUNT(*) AS c FROM information_schema.tables
+         WHERE table_schema = DATABASE() AND table_name = 'voucher'`
+    );
+    if (!voucherTable.c) missing.push('voucher table (migrate_v24.sql — server-persisted loyalty vouchers depends on this)');
 
     return missing;
 }

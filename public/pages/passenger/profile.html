@@ -1699,6 +1699,7 @@ header{
 </style>
 <script src="/js/api.js"></script>
 <script src="/js/legalModal.js"></script>
+<script src="/js/mapRouting.js"></script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u){window.location.replace('/pages/auth/login.html');return;}if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');return;}})();
 </script>
@@ -2448,6 +2449,10 @@ async function loadProfile(){
         if(el&&badge){el.textContent=sinceStr;badge.style.display="inline-flex";}
       }
     }
+    // Server-side 2FA state (Enterprise hardening — replaces the old
+    // localStorage['smartbus_2fa'] client-only simulation).
+    _userTotpEnabled = !!u.totp_enabled;
+    if(typeof _tfa_updateUI==="function") _tfa_updateUI();
   }catch(e){ console.error(e); }
 }
 
@@ -2693,11 +2698,14 @@ async function loadBookings(){
     document.getElementById("bsSpent").textContent   = fmt(spent)+" VNĐ";
     document.getElementById("hStatTrips").textContent = allBk.length;
     document.getElementById("hStatSpent").textContent = fmt(spent);
-    const earnedPts = Math.floor(spent/100000);
-    const redeemedPts = parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0');
-    const pts = Math.max(0, earnedPts - redeemedPts);
-    document.getElementById("hStatPts").textContent   = pts;
-    updateLoyaltyUI(pts);
+    // Enterprise hardening: loyalty points are now read exclusively from
+    // loadLoyalty() (GET /api/users/:id/loyalty, the real server balance
+    // used by the redeem/voucher flow below) — this used to recompute a
+    // second, parallel "points" number from spend/localStorage and
+    // overwrite the real one whenever loadBookings() resolved after
+    // loadLoyalty() (both fire together at page init), so the UI could
+    // show a balance that didn't match what redeeming actually checked
+    // against. hStatPts is now populated by loadLoyalty() too.
     renderVoucherWallet();
     renderTravelStats(allBk);
     document.getElementById("heroBadgeTrips").textContent = allBk.length+" chuyến";
@@ -3123,14 +3131,18 @@ function updateLoyaltyUI(pts){
   btn.disabled = pts < REWARDS[0].pts;
 }
 
-function openRedeemChooser(){
-  // Block if already has an active unused voucher
-  const existingVouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
-  const hasActive=existingVouchers.some(v=>!v.used);
-  if(hasActive){
-    showToast('Bạn đang có voucher chưa sử dụng. Hãy dùng voucher hiện tại trước khi đổi mới!','error');
-    return;
-  }
+async function openRedeemChooser(){
+  // Block if already has an active unused voucher — checked against the
+  // real server-side voucher table (Sprint 24), not localStorage, so it
+  // can't be bypassed by clearing browser storage.
+  try{
+    const res=await authFetch(`/api/users/${userId}/vouchers`);
+    const vouchers=res.ok?await res.json():[];
+    if(vouchers.some(v=>!v.is_used)){
+      showToast('Bạn đang có voucher chưa sử dụng. Hãy dùng voucher hiện tại trước khi đổi mới!','error');
+      return;
+    }
+  }catch(e){ showToast('Không thể kiểm tra voucher — thử lại','error'); return; }
   const pts = parseInt(document.getElementById("loyaltyPts").textContent)||0;
   if(pts<=0){showToast('Bạn chưa có đủ điểm để đổi ưu đãi','error');return;}
   const eligible = REWARDS.filter(r => pts >= r.pts);
@@ -3183,54 +3195,55 @@ function confirmRedeem(r){
     </div>`;
 }
 
-function doRedeem(r){
+async function doRedeem(r){
   const cfm=document.getElementById("redeemConfirm");
   if(cfm)cfm.style.display="none";
-  const suffix = Math.random().toString(36).substring(2,7).toUpperCase();
-  const code = `SMART-${r.code}-${suffix}`;
-  // Deduct points by incrementing redeemed_pts tracker
-  const prevRedeemed=parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0');
-  localStorage.setItem('smartbus_redeemed_pts', prevRedeemed+r.pts);
-  // Save to voucher wallet
-  const key='smartbus_vouchers';
-  const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
-  vouchers.push({code,name:r.name,codeType:r.code,pts:r.pts,used:false,savedAt:new Date().toISOString()});
-  localStorage.setItem(key,JSON.stringify(vouchers));
-  document.getElementById("redeemCoupon").textContent = code;
-  document.getElementById("redeemChoices").style.display = "none";
-  document.getElementById("redeemResult").style.display = "block";
-  document.getElementById("redeemIntro").textContent = `✅ Đã đổi: ${r.name}`;
-  // Refresh loyalty UI to reflect deducted points
-  const currentPts=parseInt(document.getElementById("loyaltyPts").textContent)||0;
-  const newPts=Math.max(0, currentPts-r.pts);
-  updateLoyaltyUI(newPts);
-  // Sync hero stat badge
-  const hPts=document.getElementById("hStatPts");
-  if(hPts) hPts.textContent=newPts;
-  // Refresh wallet display
-  setTimeout(renderVoucherWallet, 200);
+  // Sprint 24 — redeem now goes through the real backend (deducts the
+  // actual users.loyalty_points balance under a row lock, and persists the
+  // voucher server-side) instead of generating a code and decrementing a
+  // separate localStorage counter that never touched the real balance.
+  try{
+    const res=await authFetch(`/api/users/${userId}/vouchers/redeem`,{method:'POST',body:JSON.stringify({rewardCode:r.code})});
+    const data=await res.json();
+    if(!res.ok){ showToast('❌ '+(data.message||'Đổi điểm thất bại'),'error'); return; }
+
+    document.getElementById("redeemCoupon").textContent = data.code;
+    document.getElementById("redeemChoices").style.display = "none";
+    document.getElementById("redeemResult").style.display = "block";
+    document.getElementById("redeemIntro").textContent = `✅ Đã đổi: ${r.name}`;
+    updateLoyaltyUI(data.newPoints);
+    const hPts=document.getElementById("hStatPts");
+    if(hPts) hPts.textContent=data.newPoints;
+    setTimeout(renderVoucherWallet, 200);
+  }catch(e){
+    showToast('❌ Lỗi kết nối — thử lại','error');
+  }
 }
 
-/* ── VOUCHER WALLET ── */
-function renderVoucherWallet(){
-  const key='smartbus_vouchers';
-  const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
+/* ── VOUCHER WALLET (Sprint 24 — real server data, GET /api/users/:id/vouchers) ── */
+async function renderVoucherWallet(){
   let wrap=document.getElementById('voucherWallet');
   if(!wrap) return;
-  const active=vouchers.filter(v=>!v.used);
+  let vouchers=[];
+  try{
+    const res=await authFetch(`/api/users/${userId}/vouchers`);
+    if(res.ok) vouchers=await res.json();
+  }catch(e){ /* leave wallet empty on error rather than show stale/fake data */ }
+
+  const active=vouchers.filter(v=>!v.is_used);
   document.getElementById('voucherWalletCount').textContent=active.length;
   if(!vouchers.length){
     wrap.innerHTML=`<div class="voucher-empty">🎟 Chưa có voucher nào. Đổi điểm để nhận ưu đãi!</div>`;
     return;
   }
-  wrap.innerHTML=vouchers.map((v,i)=>`
-    <div class="voucher-item ${v.used?'used':''}">
+  wrap.innerHTML=vouchers.map(v=>`
+    <div class="voucher-item ${v.is_used?'used':''}">
       <div style="flex:1;min-width:0;">
         <div class="voucher-code">${v.code}</div>
-        <div class="voucher-name">${v.name}</div>
+        <div class="voucher-name">${v.reward_name}</div>
       </div>
-      <span class="voucher-status ${v.used?'used':'active'}">${v.used?'Đã dùng':'Còn hiệu lực'}</span>
-      ${!v.used?`<button class="voucher-copy-btn" onclick="copyVoucher('${v.code}')">📋 Sao chép</button>`:''}
+      <span class="voucher-status ${v.is_used?'used':'active'}">${v.is_used?'Đã dùng':'Còn hiệu lực'}</span>
+      ${!v.is_used?`<button class="voucher-copy-btn" onclick="copyVoucher('${v.code}')">📋 Sao chép</button>`:''}
     </div>`).join('');
 }
 function copyVoucher(code){
@@ -3293,8 +3306,12 @@ async function loadLoyalty(){
     const res = await authFetch(`/api/users/${userId}/loyalty`);
     if (!res.ok) return;
     const data = await res.json();
-    // Update points display using existing updateLoyaltyUI
-    updateLoyaltyUI(data.points || 0);
+    // Update points display using existing updateLoyaltyUI — the single
+    // source of truth for the points shown/redeemed anywhere on this page.
+    _realLoyaltyPoints=data.points || 0;
+    updateLoyaltyUI(_realLoyaltyPoints);
+    const hPts=document.getElementById("hStatPts");
+    if(hPts) hPts.textContent=_realLoyaltyPoints;
 
     // Update tier badge with backend tier data
     const tierEl = document.getElementById("heroTierBadge");
@@ -3398,7 +3415,8 @@ function renderInsights(bkList){
   if(mEl) mEl.innerHTML=`Tháng ${now.getMonth()+1} này bạn đặt <b>${monthly} chuyến</b>${monthly===0?' — Đặt chuyến đầu tiên ngay!':monthly>=3?' 🔥':''}`;
   // Tier
   const spent=bkList.filter(b=>b.status==='PAID').reduce((s,b)=>s+Number(b.total_amount),0);
-  const pts=Math.max(0,Math.floor(spent/100000)-parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0'));
+  // Real balance from loadLoyalty() — see _realLoyaltyPoints declaration.
+  const pts=_realLoyaltyPoints!=null?_realLoyaltyPoints:Math.floor(spent/100000);
   const tier=getTier(pts);
   const lEl=document.getElementById('insLoyalty');
   if(lEl) lEl.innerHTML=`Hạng: <b>${tier.icon} ${tier.name}</b> · <b>${pts}</b> điểm tích lũy`;
@@ -3454,80 +3472,32 @@ function _initLastLoginInfo(){
   el.textContent='Đăng nhập lúc '+now.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
 }
 /* ════════════════════════════════════════════════════
-   2FA — TOTP (RFC 6238) pure-frontend implementation
-   State persisted in localStorage key: "smartbus_2fa"
+   2FA — server-side TOTP (RFC 6238)
+   Enterprise hardening: this used to generate the secret and verify codes
+   entirely in the browser, with "enabled" state just a flag in
+   localStorage['smartbus_2fa'] — anyone with DevTools access could read
+   the secret directly or flip the flag, defeating the point of having a
+   second factor. Secret generation/verification now happens server-side
+   (server/controllers/authController.js's setup2FA/verify2FASetup/
+   disable2FA/verify2FALogin) and login() itself won't issue real tokens
+   for an account with 2FA enabled until the second factor is verified —
+   see login.html's handling of the {requires2FA:true} response.
 ════════════════════════════════════════════════════ */
 
-/* ── Base32 helpers ── */
-const _B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-function _b32Encode(bytes){
-  let bits=0,val=0,out='';
-  for(const b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=_B32[(val>>>(bits-5))&31];bits-=5;}}
-  if(bits>0) out+=_B32[(val<<(5-bits))&31];
-  return out;
-}
-function _b32Decode(s){
-  s=s.toUpperCase().replace(/=+$/,'');
-  let bits=0,val=0;const out=[];
-  for(const c of s){const idx=_B32.indexOf(c);if(idx<0)continue;val=(val<<5)|idx;bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8;}}
-  return new Uint8Array(out);
-}
-
-/* ── Generate random base32 secret (20 bytes = 160 bits) ── */
-function _genSecret(){
-  const b=new Uint8Array(20);crypto.getRandomValues(b);return _b32Encode(b);
-}
-
-/* ── TOTP code for a given secret and time window offset ── */
-async function _totp(secret, offsetWindows=0){
-  const key=_b32Decode(secret);
-  const counter=Math.floor(Date.now()/1000/30)+offsetWindows;
-  const buf=new ArrayBuffer(8);
-  const view=new DataView(buf);
-  view.setUint32(4,counter>>>0,false);
-  const cryptoKey=await crypto.subtle.importKey('raw',key,{name:'HMAC',hash:'SHA-1'},false,['sign']);
-  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',cryptoKey,buf));
-  const off=sig[19]&0x0f;
-  const otp=((sig[off]&0x7f)<<24|(sig[off+1]&0xff)<<16|(sig[off+2]&0xff)<<8|(sig[off+3]&0xff))%1000000;
-  return otp.toString().padStart(6,'0');
-}
-
-/* ── Verify entered code (±1 window tolerance) ── */
-async function _totpVerify(secret, entered){
-  const code=entered.replace(/\s/g,'');
-  if(!/^\d{6}$/.test(code)) return false;
-  for(const w of [-1,0,1]){
-    if(await _totp(secret,w)===code) return true;
-  }
-  return false;
-}
-
-/* ── Generate 8 random backup codes ── */
-function _genBackupCodes(){
-  return Array.from({length:8},()=>{
-    const n=new Uint32Array(1);crypto.getRandomValues(n);
-    return (n[0]%100000000).toString().padStart(8,'0');
-  });
-}
-
-/* ── localStorage state ── */
-function _tfa_load(){ try{return JSON.parse(localStorage.getItem('smartbus_2fa')||'null');}catch{return null;} }
-function _tfa_save(obj){ localStorage.setItem('smartbus_2fa',JSON.stringify(obj)); }
-function _tfa_clear(){ localStorage.removeItem('smartbus_2fa'); }
-
 /* ── State for current setup session ── */
-let _tfaSecret='';
-let _tfaBackupCodes=[];
+let _tfaSecret='';         // shown once during setup, for manual entry
+let _tfaBackupCodes=[];    // shown once, right after verify-setup succeeds
 let _tfaTimerInterval=null;
 let _tfaMode='setup'; // 'setup' | 'disable'
+let _userTotpEnabled=false; // populated by loadProfile() from GET /api/users/:id
+let _realLoyaltyPoints=null; // populated by loadLoyalty() — the one real balance, see below
 
-/* ── Update the security row UI based on stored state ── */
+/* ── Update the security row UI based on server-reported state ── */
 function _tfa_updateUI(){
-  const state=_tfa_load();
   const tag=document.getElementById('twoFATag');
-  const btn=document.querySelector('[onclick="show2FAInfo()"]')||document.getElementById('twoFABtn');
+  const btn=document.querySelector('[onclick="show2FAInfo()"]')||document.querySelector('[onclick="open2FADisable()"]')||document.getElementById('twoFABtn');
   if(!tag) return;
-  if(state&&state.enabled){
+  if(_userTotpEnabled){
     tag.textContent='Đã bật';tag.className='sec-tag on';
     if(btn){btn.textContent='Tắt 2FA';btn.setAttribute('onclick','open2FADisable()');}
   } else {
@@ -3625,10 +3595,8 @@ function _tfaSetStep(step){
 /* ════════════ PUBLIC API ════════════ */
 
 /* Open setup flow */
-function show2FAInfo(){
+async function show2FAInfo(){
   _tfaMode='setup';
-  _tfaSecret=_genSecret();
-  _tfaBackupCodes=_genBackupCodes();
 
   // Reset UI
   document.getElementById('tfaSteps').style.display='flex';
@@ -3638,31 +3606,33 @@ function show2FAInfo(){
     document.getElementById(id)?.classList.remove('active');
   });
   _tfaSetStep(1);
-
-  // Build QR code
-  const user=typeof getUser==='function'?getUser():null;
-  const email=(user&&user.email)||'user@smartbusai.vn';
-  const issuer='SmartBusAI';
-  const otpauth=`otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${_tfaSecret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
-
-  const qrEl=document.getElementById('tfaQRCanvas');
-  qrEl.innerHTML='';
-  try{
-    new QRCode(qrEl,{text:otpauth,width:168,height:168,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-  }catch(e){
-    qrEl.innerHTML=`<div style="width:168px;height:168px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#333;text-align:center;padding:10px">QR: escanear desde app</div>`;
-  }
-
-  // Display secret in groups of 4
-  const grouped=_tfaSecret.match(/.{1,4}/g).join(' ');
-  document.getElementById('tfaSecretDisp').textContent=grouped;
-
-  // Backup codes
-  const grid=document.getElementById('tfaBackupGrid');
-  grid.innerHTML=_tfaBackupCodes.map(c=>`<div class="tfa-backup-code">${c.slice(0,4)} ${c.slice(4)}</div>`).join('');
-
   document.getElementById('tfaOverlay').classList.add('open');
   document.body.style.overflow='hidden';
+
+  const qrEl=document.getElementById('tfaQRCanvas');
+  qrEl.innerHTML=`<div style="width:168px;height:168px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#888">⏳ Đang tạo mã…</div>`;
+
+  // Secret is now generated server-side (authController.setup2FA) — never
+  // in the browser — and stored encrypted (AES-256-GCM) until verified.
+  try{
+    const res=await authFetch('/api/auth/2fa/setup',{method:'POST'});
+    if(!res.ok) throw new Error();
+    const data=await res.json();
+    _tfaSecret=data.secret;
+
+    try{
+      new QRCode(qrEl,{text:data.otpauthUrl,width:168,height:168,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+    }catch(e){
+      qrEl.innerHTML=`<div style="width:168px;height:168px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#333;text-align:center;padding:10px">QR: escanear desde app</div>`;
+    }
+
+    // Display secret in groups of 4
+    const grouped=_tfaSecret.match(/.{1,4}/g).join(' ');
+    document.getElementById('tfaSecretDisp').textContent=grouped;
+  }catch(e){
+    qrEl.innerHTML=`<div style="width:168px;height:168px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#e74c3c;text-align:center;padding:10px">Lỗi tải mã — thử lại</div>`;
+    showToast('❌ Không thể khởi tạo 2FA — thử lại','error');
+  }
 }
 
 /* Open disable flow */
@@ -3723,70 +3693,71 @@ function tfaGoStep1(){
   _tfaSetStep(1);
 }
 
-/* Verify OTP during setup */
+/* Verify OTP during setup — server checks the code against the encrypted
+   secret from setup2FA and, if correct, flips totp_enabled=1 itself and
+   returns freshly-generated backup codes (bcrypt-hashed before storage,
+   shown here exactly once). */
 async function tfaVerifySetup(){
   const btn=document.getElementById('tfaVerifyBtn');
   const errEl=document.getElementById('tfaVerifyErr');
   const code=_getOtpValue('tfaD',6);
   btn.disabled=true;btn.textContent='Đang xác minh…';
-  const ok=await _totpVerify(_tfaSecret,code);
-  btn.textContent='Xác minh';
-  if(ok){
-    _stopTOTPTimer();
-    _tfaSetStep(3);
-  } else {
-    _shakeOtpDigits('tfaD',6);
-    errEl.textContent='❌ Mã không đúng — hãy kiểm tra lại ứng dụng hoặc thời gian thiết bị';
-    btn.disabled=false;
+  try{
+    const res=await authFetch('/api/auth/2fa/verify-setup',{method:'POST',body:JSON.stringify({code})});
+    const data=await res.json().catch(()=>({}));
+    btn.textContent='Xác minh';
+    if(res.ok){
+      _stopTOTPTimer();
+      _tfaBackupCodes=data.backupCodes||[];
+      const grid=document.getElementById('tfaBackupGrid');
+      grid.innerHTML=_tfaBackupCodes.map(c=>`<div class="tfa-backup-code">${c.slice(0,4)} ${c.slice(4)}</div>`).join('');
+      _userTotpEnabled=true;
+      _tfaSetStep(3);
+    } else {
+      _shakeOtpDigits('tfaD',6);
+      errEl.textContent='❌ '+(data.message||'Mã không đúng — hãy kiểm tra lại ứng dụng hoặc thời gian thiết bị');
+      btn.disabled=false;
+    }
+  }catch(e){
+    btn.textContent='Xác minh'; btn.disabled=false;
+    errEl.textContent='❌ Lỗi kết nối — thử lại';
   }
 }
 
-/* Step 3: Finish and save */
+/* Step 3: server already enabled 2FA in verify-setup above — this just
+   closes the modal and refreshes the security-row UI. */
 function tfaFinishSetup(){
-  _tfa_save({
-    enabled:true,
-    secret:_tfaSecret,
-    backupCodes:_tfaBackupCodes,
-    enabledAt:new Date().toISOString()
-  });
   closeTFA();
   _tfa_updateUI();
   showToast('🔐 Xác thực 2 bước đã được bật thành công!','success');
 }
 
-/* Confirm disable */
+/* Confirm disable — server verifies the TOTP code (or an unused backup
+   code) against the account's real stored secret before clearing it. */
 async function tfaConfirmDisable(){
   const btn=document.getElementById('tfaDisableBtn');
   const errEl=document.getElementById('tfaDisableErr');
   const code=_getOtpValue('tfaDD',6);
-  const state=_tfa_load();
-  if(!state||!state.secret){ closeTFA(); return; }
 
   btn.disabled=true; btn.textContent='Đang xác minh…';
-
-  // Check TOTP
-  let ok=await _totpVerify(state.secret,code);
-
-  // Check backup codes
-  if(!ok&&state.backupCodes){
-    const idx=state.backupCodes.indexOf(code);
-    if(idx>=0){
-      state.backupCodes.splice(idx,1);
-      ok=true;
+  try{
+    const res=await authFetch('/api/auth/2fa/disable',{method:'POST',body:JSON.stringify({code})});
+    const data=await res.json().catch(()=>({}));
+    btn.textContent='Tắt xác thực 2 bước';
+    if(res.ok){
+      _userTotpEnabled=false;
+      _stopTOTPTimer();
+      closeTFA();
+      _tfa_updateUI();
+      showToast('🔓 Đã tắt xác thực 2 bước','info');
+    } else {
+      _shakeOtpDigits('tfaDD',6);
+      errEl.textContent='❌ '+(data.message||'Mã không đúng — thử lại hoặc dùng mã dự phòng');
+      btn.disabled=false;
     }
-  }
-
-  btn.textContent='Tắt xác thực 2 bước';
-  if(ok){
-    _tfa_clear();
-    _stopTOTPTimer();
-    closeTFA();
-    _tfa_updateUI();
-    showToast('🔓 Đã tắt xác thực 2 bước','info');
-  } else {
-    _shakeOtpDigits('tfaDD',6);
-    errEl.textContent='❌ Mã không đúng — thử lại hoặc dùng mã dự phòng';
-    btn.disabled=false;
+  }catch(e){
+    btn.textContent='Tắt xác thực 2 bước'; btn.disabled=false;
+    errEl.textContent='❌ Lỗi kết nối — thử lại';
   }
 }
 
@@ -3933,7 +3904,7 @@ function renderAchievements(trips, pts){
 function renderTravelStats(bkList){
   const paid=bkList.filter(b=>b.status==="PAID");
   const totalSpent=paid.reduce((s,b)=>s+Number(b.total_amount),0);
-  const pts=Math.max(0,Math.floor(totalSpent/100000)-parseInt(localStorage.getItem('smartbus_redeemed_pts')||'0'));
+  const pts=_realLoyaltyPoints!=null?_realLoyaltyPoints:Math.floor(totalSpent/100000);
   const sec=document.getElementById("travelStatsSection");
   if(sec&&bkList.length>0) sec.style.display="block";
   const el=id=>document.getElementById(id);
@@ -4451,9 +4422,7 @@ function initJourneyMap(){
   window._mapInited=true;
 
   const map=L.map('journeyMap',{zoomControl:true,scrollWheelZoom:false}).setView([16.5,107.5],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'© OpenStreetMap',maxZoom:18
-  }).addTo(map);
+  sbAddTerrainTile(map);
 
   // City coordinates in Vietnam
   const cities={
@@ -4492,8 +4461,6 @@ function initJourneyMap(){
     }
   });
 
-  // Custom map style
-  el.style.filter='hue-rotate(200deg) brightness(.8) saturate(.7)';
 }
 
 /* ── Month filter for bookings (DOM-based, safe) ── */

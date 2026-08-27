@@ -2,6 +2,7 @@
 const crypto = require('crypto');
 const https  = require('https');
 const cfg    = require('../config/payment.config');
+const logger = require('../utils/logger');
 
 // ── MoMo ──────────────────────────────────────────────────────────────────
 exports.createMoMoPayment = ({ bookingId, amount, orderInfo }) => {
@@ -103,15 +104,63 @@ function sortObject(obj) {
   return out;
 }
 
+/* VNPay's checksum must be computed over the RAW (un-encoded) sorted
+   key=value pairs — VNPay's own server decodes the incoming query string
+   back to raw values, sorts them, and joins them the same way before
+   recomputing the hash to compare. Encoding values first (this code used
+   to build both the hash input AND the final URL via `new
+   URLSearchParams(...).toString()`) hashes the ENCODED string instead,
+   which only happens to match VNPay's own recomputation when every value
+   is plain ASCII with no characters that need encoding — it silently
+   breaks the moment a value has a space, a Vietnamese diacritic, or a `#`
+   (exactly the shape of vnp_OrderInfo below, "SmartBusAI - Vé xe #123"),
+   producing VNPay's code=99 "invalid signature" response. Confirmed as
+   the actual root cause of the reported failures. */
+function vnpaySignData(sortedParams) {
+  return Object.entries(sortedParams).map(([k, v]) => `${k}=${v}`).join('&');
+}
+
+/* Same raw values, percent-encoded for safe transmission as an actual URL
+   query string. Critically, this also stops an un-encoded `#` in
+   vnp_OrderInfo from being read as a URL fragment — a browser strips
+   everything from `#` onward before the request is even sent, which was
+   silently dropping vnp_SecureHash and every param after it. */
+function vnpayQueryString(sortedParams) {
+  return Object.entries(sortedParams).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+}
+
+/* vnp_CreateDate/vnp_ExpireDate must be Asia/Ho_Chi_Minh wall-clock time
+   regardless of the server process's own timezone — a server running in
+   UTC (common on cloud/CI hosts) would otherwise stamp a CreateDate up to
+   7h off from VNPay's own clock, which VNPay's sandbox can reject. */
+function formatVNPayDate(date) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  }).formatToParts(date).reduce((o, p) => { o[p.type] = p.value; return o; }, {});
+  if (parts.hour === '24') parts.hour = '00'; // Intl quirk: midnight can report as "24"
+  return `${parts.year}${parts.month}${parts.day}${parts.hour}${parts.minute}${parts.second}`;
+}
+
+/* VNPay expects a plain IPv4-looking address. A local request with no
+   reverse proxy in front resolves via req.socket.remoteAddress to the
+   IPv6 loopback `::1`, which VNPay's sandbox rejects — normalize any
+   non-IPv4 value down to the conventional 127.0.0.1 fallback. */
+function normalizeVNPayIp(ip) {
+  if (!ip || ip === '::1') return '127.0.0.1';
+  const mapped = String(ip).match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (mapped) return mapped[1];
+  return /^\d+\.\d+\.\d+\.\d+$/.test(ip) ? ip : '127.0.0.1';
+}
+
 exports.createVNPayPayment = ({ bookingId, amount, orderInfo, ipAddr }) => {
   const { tmnCode, hashSecret, url: vnpUrl, returnUrl } = cfg.vnpay;
 
   const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  const createDate = [
-    now.getFullYear(), pad(now.getMonth()+1), pad(now.getDate()),
-    pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds()),
-  ].join('');
+  const createDate = formatVNPayDate(now);
+  const expireDate = formatVNPayDate(new Date(now.getTime() + 15 * 60 * 1000)); // 15' hold, matches payTimeout default
 
   const orderId = `SB${bookingId}T${Date.now()}`.slice(-20);
 
@@ -123,20 +172,31 @@ exports.createVNPayPayment = ({ bookingId, amount, orderInfo, ipAddr }) => {
     vnp_CurrCode:   'VND',
     vnp_TxnRef:     orderId,
     vnp_OrderInfo:  orderInfo,
-    vnp_OrderType:  '250000',
-    vnp_Amount:     amount * 100,
+    vnp_OrderType:  'other',
+    // VNPay requires an integer amount in the smallest currency subunit
+    // (VND * 100), never a float — Math.round() guards against any
+    // upstream floating-point residue (e.g. a % discount/fee calc)
+    // slipping a decimal into the request or its signature.
+    vnp_Amount:     Math.round(Number(amount) * 100),
     vnp_ReturnUrl:  returnUrl,
-    vnp_IpAddr:     ipAddr || '127.0.0.1',
+    vnp_IpAddr:     normalizeVNPayIp(ipAddr),
     vnp_CreateDate: createDate,
+    vnp_ExpireDate: expireDate,
   };
 
   params = sortObject(params);
-  const signData  = new URLSearchParams(params).toString();
-  const secureHash = crypto.createHmac('sha512', hashSecret)
+  const signData    = vnpaySignData(params);
+  const secureHash  = crypto.createHmac('sha512', hashSecret)
     .update(Buffer.from(signData, 'utf-8')).digest('hex');
   params.vnp_SecureHash = secureHash;
 
-  const payUrl = `${vnpUrl}?${new URLSearchParams(params).toString()}`;
+  const payUrl = `${vnpUrl}?${vnpayQueryString(params)}`;
+
+  // Debug visibility requested for verifying code=99-class failures: the
+  // exact raw string that was hashed and the final redirect URL, printed
+  // before this function ever returns/redirects anywhere.
+  logger.info('[VNPay] createVNPayPayment', { bookingId, orderId, signData, secureHash, payUrl });
+
   return { payUrl, orderId };
 };
 
@@ -148,7 +208,10 @@ exports.verifyVNPayReturn = (query) => {
   delete params.vnp_SecureHash;
   delete params.vnp_SecureHashType;
   const sorted    = sortObject(params);
-  const signData  = new URLSearchParams(sorted).toString();
+  // req.query values are already URL-decoded by Express — sign the raw
+  // decoded values directly (see vnpaySignData's comment above) rather
+  // than re-encoding them, which is what VNPay's own server does too.
+  const signData  = vnpaySignData(sorted);
   const expected  = crypto.createHmac('sha512', hashSecret)
     .update(Buffer.from(signData, 'utf-8')).digest('hex');
   return received === expected && query.vnp_ResponseCode === '00';

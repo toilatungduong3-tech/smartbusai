@@ -1,5 +1,7 @@
 const db = require("../config/db");
-const { awardPoints } = require("../services/loyaltyService");
+const { awardPoints, getUserLoyalty, applyUserTierDiscount } = require("../services/loyaltyService");
+const { getSystemFeePercent, getVipSurchargePercent } = require("./settingsController");
+const pricingEngine = require("../services/pricingEngine");
 const { sendBookingConfirmation, sendBookingCancellation } = require("../services/emailService");
 const { parsePagination, paginatedResponse } = require("../utils/pagination");
 const logger = require('../utils/logger');
@@ -305,7 +307,19 @@ exports.createBooking = async (req, res) => {
             return res.status(404).json({ message: "Trip not found" });
         }
 
-        const basePrice = trip.base_price;
+        /* Dynamic pricing (early-bird/last-minute + occupancy surcharge) —
+           the exact same pricingEngine.getDynamicPrice() calculation
+           index.html's search results already display, now also the price
+           actually charged here. Previously this charged plain
+           trip.base_price and ignored dynamic pricing entirely: for the
+           common >14-day-ahead booking, the search list shows a real -15%
+           early-bird discount, but the charge here still used full price
+           — the amount charged always came out ~17.6% higher than what
+           the user had just seen. Runs on `conn` so it reads inside this
+           same transaction (the trip row is already FOR UPDATE locked
+           above, so price/occupancy can't move under us mid-request). */
+        const dyn = await pricingEngine.getDynamicPrice(conn, trip_id);
+        const basePrice = dyn.dynamicPrice;
 
         // Check ghế chưa được đặt cho chuyến này (bỏ điều kiện ngày đặt — sai logic)
         const [bookedSeats] = await conn.query(
@@ -334,17 +348,65 @@ exports.createBooking = async (req, res) => {
            the hold-table INSERT is the guarantee that holds even if some
            other, future code path ever bypasses this lock. */
 
-        let total = 0;
-        normalizedSeats.forEach(s => {
-            total += s.type === "VIP" ? basePrice * 1.5 : basePrice;
-        });
+        /* Loyalty tier discount — server-authoritative. req.user comes from
+           optionalAuth (see bookingRoutes.js), which verifies the JWT
+           signature before setting it — a caller cannot get a Diamond
+           discount by just putting someone else's user_id in the request
+           body, only by presenting a validly-signed token for that exact
+           account. Guests and any request without a valid token get
+           tier BRONZE (0% discount), same price they'd see before logging
+           in. Applied per-seat (not once on the aggregate) so
+           booking_detail.price stays consistent with booking.total_amount
+           — summing the detail rows must always equal the total, the same
+           invariant every other part of this codebase assumes. Amenities
+           are intentionally NOT discounted — the tier benefit is framed
+           everywhere (login/homepage copy) as a ticket-price discount. */
+        let loyaltyTier = 'BRONZE', loyaltyDiscountPct = 0;
+        if (req.user && req.user.user_id) {
+            try {
+                const loyalty = await getUserLoyalty(db, req.user.user_id);
+                loyaltyTier = loyalty.tier;
+                loyaltyDiscountPct = loyalty.tierDiscount || 0;
+            } catch (e) { /* non-critical — fall back to no discount */ }
+        }
+        /* System fee (systemFee, %) + loyalty discount — both now go
+           through the single canonical applyUserTierDiscount() helper
+           (server/services/loyaltyService.js), the exact same formula
+           /public/js/pricing.js mirrors on every frontend surface (trip
+           list, AI Reco, Golden Deal, booking.html). Before this, this
+           controller and the frontend each independently composed
+           fee+discount in their own order with their own intermediate
+           rounding — a real, live price mismatch (and VIP surcharge was
+           ALSO hardcoded here as basePrice*1.5 — 50% — while booking.html
+           displayed the real configured value, currently 20%). Routing
+           both sides through one shared function is what actually
+           guarantees they can never drift apart again, not just matching
+           orders by hand. VIP surcharge is a separate axis, applied on
+           top of the discounted+fee-adjusted non-VIP price. */
+        const systemFeePercent = getSystemFeePercent();
+        const vipSurchargePercent = getVipSurchargePercent();
+        const nonVipFinal = applyUserTierDiscount(basePrice, loyaltyTier, systemFeePercent).finalPrice;
+        const seatFinalPrices = normalizedSeats.map(s =>
+            s.type === "VIP" ? Math.round(nonVipFinal * (1 + vipSurchargePercent / 100)) : nonVipFinal
+        );
 
-        // Compute amenities cost (server-authoritative prices)
+        // Pre-discount reference total for the response's receipt breakdown
+        // only (never itself charged) — raw ticket price with VIP
+        // surcharge, before system fee or loyalty discount.
+        const seatRawPrices = normalizedSeats.map(s => s.type === "VIP" ? basePrice * (1 + vipSurchargePercent / 100) : basePrice);
+        const seatSubtotal = seatRawPrices.reduce((a, b) => a + b, 0);
+        const seatDiscountedTotal = seatFinalPrices.reduce((a, b) => a + b, 0);
+
+        // Compute amenities cost (server-authoritative prices, not discounted)
         const extrasArr = Array.isArray(extras) ? extras.filter(e => e.qty > 0) : [];
+        let extrasTotal = 0;
         extrasArr.forEach(e => {
-            total += (AMENITY_PRICES[e.id] || 0) * (parseInt(e.qty) || 0);
+            extrasTotal += (AMENITY_PRICES[e.id] || 0) * (parseInt(e.qty) || 0);
         });
         const extrasJson = extrasArr.length ? JSON.stringify(extrasArr) : null;
+
+        const subtotal = seatSubtotal + extrasTotal; // pre-discount, for the response's receipt breakdown
+        const total = seatDiscountedTotal + extrasTotal;
 
         // Generate unique booking_code
         let bookingCode;
@@ -363,10 +425,10 @@ exports.createBooking = async (req, res) => {
         );
         const bookingId = bookingResult.insertId;
 
-        const values = normalizedSeats.map(s => [
+        const values = normalizedSeats.map((s, i) => [
             bookingId,
             s.id,
-            s.type === "VIP" ? basePrice * 1.5 : basePrice
+            seatFinalPrices[i]
         ]);
         await conn.query(
             "INSERT INTO booking_detail (booking_id, seat_id, price) VALUES ?",
@@ -460,6 +522,10 @@ exports.createBooking = async (req, res) => {
             booking_id: bookingId,
             booking_code: bookingCode,
             total,
+            subtotal,
+            system_fee_pct: systemFeePercent,
+            loyalty_tier: loyaltyTier,
+            loyalty_discount_pct: loyaltyDiscountPct,
             is_guest: !user_id
         });
 

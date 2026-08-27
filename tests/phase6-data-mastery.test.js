@@ -389,7 +389,16 @@ describe('userController.updateUser — accepts the new Sprint 6 profile auto-fi
         expect(sql).toMatch(/id_number=IFNULL\(\?,id_number\)/);
         expect(sql).toMatch(/default_pickup=IFNULL\(\?,default_pickup\)/);
         expect(sql).toMatch(/default_dropoff=IFNULL\(\?,default_dropoff\)/);
-        expect(params).toContain('001199012345');
+        // Sprint 23 — id_number is now AES-256-GCM encrypted before it ever
+        // reaches SQL (server/utils/piiCrypto.js), so the raw plaintext
+        // never appears in the bound params; decrypt the bound value back
+        // to confirm the right CCCD was actually encrypted, not just that
+        // some string was.
+        const { decryptPII } = require('../server/utils/piiCrypto');
+        const idNumberParam = params.find(p => typeof p === 'string' && p.startsWith('enc1:'));
+        expect(idNumberParam).toBeDefined();
+        expect(decryptPII(idNumberParam)).toBe('001199012345');
+        expect(params).not.toContain('001199012345');
         expect(params).toContain('Bến xe Mỹ Đình');
         expect(params).toContain('Bến xe Miền Đông');
     });

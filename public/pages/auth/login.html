@@ -108,6 +108,25 @@ body{
   margin-bottom:28px;font-weight:500;max-width:430px;
 }
 
+/* ── MEMBER PERK STRIP — glassmorphism callout for a real, existing
+   benefit (SmartPoint loyalty), not a fabricated voucher ── */
+.perk-strip{
+  display:flex;align-items:center;gap:12px;max-width:460px;
+  padding:12px 16px;margin-bottom:22px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(245,158,11,.05));
+  border:1px solid rgba(251,191,36,.28);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 4px 20px rgba(245,158,11,.10),inset 0 1px 0 rgba(255,255,255,.06);
+  animation:perkGlow 3s ease-in-out infinite;
+}
+@keyframes perkGlow{
+  0%,100%{box-shadow:0 4px 20px rgba(245,158,11,.10),inset 0 1px 0 rgba(255,255,255,.06);}
+  50%{box-shadow:0 4px 28px rgba(245,158,11,.22),inset 0 1px 0 rgba(255,255,255,.08);}
+}
+.perk-ico{font-size:22px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(245,158,11,.5));}
+.perk-text{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.78);}
+.perk-text b{color:#fbbf24;}
+
 /* ── STATS ROW ── */
 .stats-row{
   display:flex;gap:0;margin-bottom:30px;
@@ -425,6 +444,15 @@ body{
 
     <p>Nền tảng đặt vé xe và quản lý vận hành ứng dụng AI — tối ưu tuyến đường, dự đoán nhu cầu hành khách và tối đa hoá doanh thu cho doanh nghiệp vận tải.</p>
 
+    <!-- Member perk strip: real SmartPoint mechanic, not a fabricated
+         voucher — every paid booking genuinely earns points via
+         loyaltyService.awardPoints(), and tier discounts are applied for
+         real, so this is a promise the platform actually keeps. -->
+    <div class="perk-strip">
+      <span class="perk-ico">🎁</span>
+      <span class="perk-text"><b>Chưa có tài khoản?</b> Đăng ký để bắt đầu tích điểm SmartPoint ngay từ vé đầu tiên — chưa đăng nhập là đang bỏ lỡ điểm thưởng của mọi chuyến đi.</span>
+    </div>
+
     <!-- Stats -->
     <div class="stats-row">
       <div class="stat-item">
@@ -450,21 +478,21 @@ body{
 
       <div class="feat-card" id="fc0" onclick="toggleFeat(0)">
         <div class="feat-head">
-          <div class="feat-ico">🤖</div>
+          <div class="feat-ico">🏆</div>
           <div class="feat-info">
-            <div class="feat-title">AI tối ưu tuyến & dự đoán nhu cầu</div>
-            <div class="feat-pill">Rule-based AI · Real-time</div>
+            <div class="feat-title">Tích điểm SmartPoint mỗi chuyến đi</div>
+            <div class="feat-pill">100 điểm = 10.000đ · Tự động</div>
           </div>
           <span class="feat-arrow">▼</span>
         </div>
         <div class="feat-body" id="fb0">
           <div class="feat-body-inner">
-            <p>Hệ thống AI phân tích dữ liệu lịch sử đặt vé, thời tiết, sự kiện và xu hướng hành khách để tự động đề xuất tuyến tối ưu, điều chỉnh giá linh hoạt và dự báo lượng khách chính xác tới 92%.</p>
+            <p>Mỗi 1.000đ chi tiêu tích ngay 1 điểm SmartPoint, quy đổi trực tiếp thành tiền giảm giá cho chuyến sau — không cần nhập mã. Lên hạng theo tổng điểm để được giảm <b>tự động 5–15%</b> trên mọi vé kể từ đó.</p>
             <div class="feat-tags">
-              <span class="feat-tag">⚡ Phân tích thời gian thực</span>
-              <span class="feat-tag">📈 Dự báo nhu cầu</span>
-              <span class="feat-tag">🗺️ Tối ưu tuyến đường</span>
-              <span class="feat-tag">💡 Gợi ý cá nhân hoá</span>
+              <span class="feat-tag">🥈 Hạng Bạc: giảm 5%</span>
+              <span class="feat-tag">🥇 Hạng Vàng: giảm 10%</span>
+              <span class="feat-tag">💎 Kim cương: giảm 15%</span>
+              <span class="feat-tag">🔁 Đổi điểm bất kỳ lúc nào</span>
             </div>
           </div>
         </div>
@@ -472,21 +500,21 @@ body{
 
       <div class="feat-card" id="fc1" onclick="toggleFeat(1)">
         <div class="feat-head">
-          <div class="feat-ico">🎫</div>
+          <div class="feat-ico">🤖</div>
           <div class="feat-info">
-            <div class="feat-title">Đặt vé siêu nhanh — dưới 60 giây</div>
-            <div class="feat-pill">3 bước · Mọi thiết bị</div>
+            <div class="feat-title">AI ghi nhớ thói quen đi lại của bạn</div>
+            <div class="feat-pill">Cá nhân hoá · Cảnh báo giá tốt</div>
           </div>
           <span class="feat-arrow">▼</span>
         </div>
         <div class="feat-body" id="fb1">
           <div class="feat-body-inner">
-            <p>Quy trình đặt vé tối giản gồm 3 bước: tìm chuyến → chọn ghế → thanh toán. Hỗ trợ MoMo, ZaloPay, VNPAY và giữ ghế trả sau. Mọi thao tác hoàn tất trong chưa đầy 60 giây trên mọi thiết bị.</p>
+            <p>AI phân tích lịch sử tìm kiếm và đặt vé của bạn để tự động gợi ý lại tuyến quen thuộc, đồng thời cảnh báo ngay khi có giá tốt hoặc chuyến sắp hết ghế — không cần tự dò tìm lại từ đầu mỗi lần.</p>
             <div class="feat-tags">
-              <span class="feat-tag">💜 MoMo & ZaloPay</span>
-              <span class="feat-tag">🔒 Thanh toán bảo mật</span>
-              <span class="feat-tag">📱 Mobile-first</span>
-              <span class="feat-tag">⏰ Đặt trước trả sau</span>
+              <span class="feat-tag">🔍 Gợi ý theo lịch sử</span>
+              <span class="feat-tag">💸 Cảnh báo giá tốt</span>
+              <span class="feat-tag">🔥 Báo ghế sắp hết</span>
+              <span class="feat-tag">⚡ Cập nhật real-time</span>
             </div>
           </div>
         </div>
@@ -494,21 +522,21 @@ body{
 
       <div class="feat-card" id="fc2" onclick="toggleFeat(2)">
         <div class="feat-head">
-          <div class="feat-ico">📊</div>
+          <div class="feat-ico">🎫</div>
           <div class="feat-info">
-            <div class="feat-title">Dashboard quản lý & phân tích doanh thu</div>
-            <div class="feat-pill">Admin · Operator · Analytics</div>
+            <div class="feat-title">Đặt vé & thanh toán dưới 60 giây</div>
+            <div class="feat-pill">MoMo · ZaloPay · VNPay</div>
           </div>
           <span class="feat-arrow">▼</span>
         </div>
         <div class="feat-body" id="fb2">
           <div class="feat-body-inner">
-            <p>Dashboard toàn diện với biểu đồ doanh thu, tỷ lệ lấp đầy xe, hành vi người dùng và AI analytics. Nhà xe theo dõi chuyến đi, quản lý ghế và tối ưu hoạt động theo thời gian thực.</p>
+            <p>Tìm chuyến → chọn ghế → thanh toán, chỉ 3 bước. Giữ ghế tạm 15 phút để bạn yên tâm hoàn tất thanh toán bằng ví điện tử quen thuộc, nhận vé điện tử kèm mã QR ngay lập tức — không cần in vé giấy.</p>
             <div class="feat-tags">
-              <span class="feat-tag">📊 Biểu đồ trực quan</span>
-              <span class="feat-tag">🏢 Quản lý nhà xe</span>
-              <span class="feat-tag">💰 Phân tích doanh thu</span>
-              <span class="feat-tag">🤖 AI Insights</span>
+              <span class="feat-tag">💜 MoMo & ZaloPay</span>
+              <span class="feat-tag">🔒 Thanh toán bảo mật</span>
+              <span class="feat-tag">📱 Vé điện tử QR</span>
+              <span class="feat-tag">⏰ Giữ ghế 15 phút</span>
             </div>
           </div>
         </div>
@@ -758,23 +786,17 @@ async function login(){
       body:JSON.stringify({email,password})
     });
     const data=await res.json();
-    if(res.ok){
+    if(res.ok && data.requires2FA){
+      // Password was correct, but this account has server-side 2FA
+      // enabled (authController.login) — a pendingToken alone grants
+      // nothing (authMiddleware.authenticate rejects it everywhere except
+      // /api/auth/2fa/login-verify), so real tokens only arrive after the
+      // OTP step below succeeds.
       ok=true;
-      localStorage.clear();
-      localStorage.setItem("user",JSON.stringify(data.user));
-      localStorage.setItem("user_id",data.user.user_id);
-      if(data.accessToken)  localStorage.setItem("accessToken",data.accessToken);
-      if(data.refreshToken) localStorage.setItem("refreshToken",data.refreshToken);
-      // Lưu operator info nếu là OPERATOR
-      if(data.user.operator_id)   localStorage.setItem("operator_id",   data.user.operator_id);
-      if(data.user.operator_name) localStorage.setItem("operator_name", data.user.operator_name);
-      showMsg("success","✅ Đăng nhập thành công!");
-      setTimeout(()=>{
-        const role=data.user.role;
-        if(role==="ADMIN")         window.location.href="/pages/admin/admin.html";
-        else if(role==="OPERATOR") window.location.href="/pages/operator/operator.html";
-        else                       window.location.href="/pages/passenger/index.html";
-      },800);
+      _open2FALoginModal(data.pendingToken);
+    } else if(res.ok){
+      ok=true;
+      _completeLogin(data);
     } else if(res.status===503 && data.message==="maintenance"){
       showMsg("error","🛑 Hệ thống đang bảo trì — vui lòng thử lại sau");
       generateCaptcha();
@@ -788,12 +810,98 @@ async function login(){
   if(!ok){btn.disabled=false;btn.textContent="ĐĂNG NHẬP →";}
 }
 
+function _completeLogin(data){
+  localStorage.clear();
+  localStorage.setItem("user",JSON.stringify(data.user));
+  localStorage.setItem("user_id",data.user.user_id);
+  if(data.accessToken)  localStorage.setItem("accessToken",data.accessToken);
+  if(data.refreshToken) localStorage.setItem("refreshToken",data.refreshToken);
+  if(data.user.operator_id)   localStorage.setItem("operator_id",   data.user.operator_id);
+  if(data.user.operator_name) localStorage.setItem("operator_name", data.user.operator_name);
+  showMsg("success","✅ Đăng nhập thành công!");
+  setTimeout(()=>{
+    const role=data.user.role;
+    if(role==="ADMIN")         window.location.href="/pages/admin/admin.html";
+    else if(role==="OPERATOR") window.location.href="/pages/operator/operator.html";
+    else                       window.location.href="/pages/passenger/index.html";
+  },800);
+}
+
+/* ── 2FA login step — injected modal, mirrors the dynamic-modal pattern
+   already used elsewhere in this codebase (e.g. booking.html's payment
+   gateway confirm modal) rather than adding new markup to the page. ── */
+function _open2FALoginModal(pendingToken){
+  let modal=document.getElementById('tfaLoginModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='tfaLoginModal';
+    modal.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`
+    <div style="width:min(360px,92vw);background:linear-gradient(150deg,#131b33,#0a0f20);border:1px solid rgba(255,255,255,.10);border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.55);padding:26px 24px;">
+      <div style="font-size:34px;text-align:center;margin-bottom:10px;">🔐</div>
+      <h3 style="font-size:17px;font-weight:800;color:#f1f5f9;text-align:center;margin:0 0 6px;">Xác thực 2 bước</h3>
+      <p style="font-size:12.5px;color:rgba(255,255,255,.55);text-align:center;line-height:1.6;margin:0 0 18px;">Nhập mã 6 chữ số từ ứng dụng xác thực, hoặc một mã dự phòng.</p>
+      <input id="tfaLoginCode" maxlength="10" inputmode="numeric" autocomplete="one-time-code"
+        style="width:100%;padding:12px 14px;font-size:18px;letter-spacing:4px;text-align:center;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#f1f5f9;margin-bottom:8px;">
+      <div id="tfaLoginErr" style="min-height:18px;font-size:12px;color:#ff9db7;text-align:center;margin-bottom:10px;"></div>
+      <button id="tfaLoginBtn" onclick="_submit2FALogin()" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#6366f1,#4338ca);color:#fff;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">Xác nhận</button>
+      <button onclick="_cancel2FALoginModal()" style="width:100%;padding:8px;border:none;background:transparent;color:rgba(255,255,255,.4);font-size:12.5px;cursor:pointer;">Huỷ, quay lại đăng nhập</button>
+    </div>`;
+  modal.dataset.pendingToken=pendingToken;
+  modal.style.display='flex';
+  setTimeout(()=>document.getElementById('tfaLoginCode')?.focus(),100);
+  const input=document.getElementById('tfaLoginCode');
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter') _submit2FALogin(); });
+}
+
+function _cancel2FALoginModal(){
+  const modal=document.getElementById('tfaLoginModal');
+  if(modal) modal.style.display='none';
+  document.getElementById("loginBtn").disabled=false;
+  document.getElementById("loginBtn").textContent="ĐĂNG NHẬP →";
+}
+
+async function _submit2FALogin(){
+  const modal=document.getElementById('tfaLoginModal');
+  const pendingToken=modal.dataset.pendingToken;
+  const code=document.getElementById('tfaLoginCode').value.trim();
+  const errEl=document.getElementById('tfaLoginErr');
+  const btn=document.getElementById('tfaLoginBtn');
+  if(!code){ errEl.textContent='Vui lòng nhập mã xác minh'; return; }
+
+  btn.disabled=true; btn.textContent='Đang xác minh…';
+  try{
+    const res=await fetch('/api/auth/2fa/login-verify',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pendingToken,code})
+    });
+    const data=await res.json();
+    if(res.ok){
+      modal.style.display='none';
+      _completeLogin(data);
+    } else {
+      errEl.textContent='❌ '+(data.message||'Mã không đúng');
+      btn.disabled=false; btn.textContent='Xác nhận';
+    }
+  }catch(e){
+    errEl.textContent='❌ Lỗi kết nối — thử lại';
+    btn.disabled=false; btn.textContent='Xác nhận';
+  }
+}
+
 function showMsg(type,text){
   const m=document.getElementById("message");
   m.className="message "+type;m.textContent=text;
 }
 
-document.addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  const tfaModal=document.getElementById('tfaLoginModal');
+  if(tfaModal && tfaModal.style.display==='flex') return; // handled by its own listener
+  login();
+});
 
 /* ── GOOGLE OAUTH ── */
 let _googleReady=false;

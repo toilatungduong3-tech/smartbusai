@@ -40,6 +40,17 @@ function makeCreateBookingConn({ holdInsertError = null } = {}) {
             if (/SELECT base_price, bus_id FROM trip/.test(sql)) {
                 return Promise.resolve([[{ base_price: 100000, bus_id: 1 }]]);
             }
+            /* Sprint 24 — createBooking now runs pricingEngine.getDynamicPrice()
+               on this same connection before pricing the seats. Fixed at a
+               neutral 1.00x multiplier (5 days out, 30% occupancy) so this
+               file keeps testing transaction/hold-table control flow only,
+               unaffected by dynamic pricing (see phase13's test file for
+               dynamic-pricing-neutral fee/discount coverage, and phase14/
+               a dedicated pricingEngine test for the multiplier itself). */
+            if (/FROM trip t\s+JOIN bus b/.test(sql)) {
+                const departure_time = new Date(Date.now() + 5 * 24 * 3600 * 1000);
+                return Promise.resolve([[{ base_price: 100000, departure_time, booked: 3, total_seats: 10 }]]);
+            }
             if (/SELECT bd\.seat_id FROM booking_detail/.test(sql)) {
                 return Promise.resolve([[]]); // no conflicting active booking
             }

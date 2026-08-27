@@ -7,6 +7,7 @@ const loyaltyService = require("../services/loyaltyService");
 const { VALID_ROLES, VALID_STATUSES } = require("../middleware/authMiddleware");
 const { sendError } = require("../utils/errors");
 const { validatePasswordStrength } = require("../utils/passwordPolicy");
+const { encryptPII, decryptPII } = require("../utils/piiCrypto");
 const logger = require('../utils/logger');
 
 logger.info("✅ userController loaded");
@@ -77,14 +78,16 @@ exports.getUserById = async (req, res) => {
             `SELECT u.user_id, u.username, u.full_name, u.email, u.phone, u.gender, u.birth_date,
                     u.province, u.district, u.address_detail, u.role, u.status, u.created_at,
                     u.operator_id, o.name AS operator_name,
-                    u.id_number, u.default_pickup, u.default_dropoff, u.avatar_url
+                    u.id_number, u.default_pickup, u.default_dropoff, u.avatar_url, u.totp_enabled
              FROM users u
              LEFT JOIN bus_operator o ON u.operator_id = o.operator_id
              WHERE u.user_id=?`,
             [req.params.id]
         );
         if (!result.length) return res.status(404).json({ message: "User not found" });
-        res.json(result[0]);
+        const user = result[0];
+        user.id_number = decryptPII(user.id_number); // Enterprise hardening — id_number is AES-256-GCM at rest
+        res.json(user);
     } catch (err) {
         logger.error(err);
         res.status(500).json({ message: "DB error" });
@@ -218,6 +221,11 @@ exports.updateUser = async (req, res) => {
            login() looks the account up by exact email match. Switched to
            the same IFNULL(?, column) "omitted/null = keep existing"
            pattern already used for role/status in this same function. */
+        // Enterprise hardening — encrypt id_number (CCCD/CMND) before it
+        // ever reaches SQL; IFNULL(?,id_number) below still means "omitted
+        // = keep existing (already-encrypted) value", since encryptPII()
+        // of an unset field yields null just like the raw field did.
+        const idNumberEnc = id_number ? encryptPII(id_number) : null;
         let sql, params;
         if (password) {
             const hashed = await bcrypt.hash(password, 10);
@@ -231,7 +239,7 @@ exports.updateUser = async (req, res) => {
             params = [full_name||null, email||null, phone||null, gender||null, birth_date||null,
                       province||null, district||null, address_detail||null,
                       role||null, status||null,
-                      id_number||null, default_pickup||null, default_dropoff||null,
+                      idNumberEnc, default_pickup||null, default_dropoff||null,
                       ...(hasOperatorIdField ? [operatorIdValue] : []),
                       hashed, userId];
         } else {
@@ -245,7 +253,7 @@ exports.updateUser = async (req, res) => {
             params = [full_name||null, email||null, phone||null, gender||null, birth_date||null,
                       province||null, district||null, address_detail||null,
                       role||null, status||null,
-                      id_number||null, default_pickup||null, default_dropoff||null,
+                      idNumberEnc, default_pickup||null, default_dropoff||null,
                       ...(hasOperatorIdField ? [operatorIdValue] : []),
                       userId];
         }
@@ -328,6 +336,41 @@ exports.redeemPoints = async (req, res) => {
         res.json({ message: "Đổi điểm thành công", ...result });
     } catch (err) {
         sendError(res, err, "REDEEM POINTS", 500, "Lỗi đổi điểm");
+    }
+};
+
+/* ═══════════════════════════════════════════
+   VOUCHERS (Sprint 24) — real, server-persisted rewards, replacing the
+   previous entirely-client-side localStorage['smartbus_vouchers'] wallet.
+═══════════════════════════════════════════ */
+exports.redeemVoucher = async (req, res) => {
+    try {
+        const { rewardCode } = req.body;
+        if (!rewardCode) return res.status(400).json({ message: "Thiếu rewardCode" });
+        const result = await loyaltyService.redeemForVoucher(db, req.params.id, rewardCode);
+        res.json({ message: "Đổi điểm thành công", ...result });
+    } catch (err) {
+        sendError(res, err, "REDEEM VOUCHER", 500, "Lỗi đổi voucher");
+    }
+};
+
+exports.getVouchers = async (req, res) => {
+    try {
+        const rows = await loyaltyService.getVouchers(db, req.params.id);
+        res.json(rows);
+    } catch (err) {
+        logger.error("GET VOUCHERS ERROR:", err);
+        res.status(500).json({ message: "DB error" });
+    }
+};
+
+exports.useVoucher = async (req, res) => {
+    try {
+        const { booking_id } = req.body;
+        const result = await loyaltyService.useVoucher(db, req.params.id, req.params.code, booking_id);
+        res.json(result);
+    } catch (err) {
+        sendError(res, err, "USE VOUCHER", 500, "Lỗi cập nhật voucher");
     }
 };
 
@@ -544,6 +587,7 @@ exports.getSavedPassengers = async (req, res) => {
             "SELECT saved_passenger_id, full_name, phone, email, id_number, relationship, created_at FROM saved_passenger WHERE user_id=? ORDER BY created_at DESC",
             [req.params.id]
         );
+        rows.forEach(r => { r.id_number = decryptPII(r.id_number); }); // Enterprise hardening — AES-256-GCM at rest
         res.json(rows);
     } catch (err) {
         logger.error("GET SAVED PASSENGERS ERROR:", err);
@@ -563,7 +607,7 @@ exports.addSavedPassenger = async (req, res) => {
         }
         const [result] = await db.query(
             "INSERT INTO saved_passenger (user_id, full_name, phone, email, id_number, relationship) VALUES (?,?,?,?,?,?)",
-            [req.params.id, full_name.trim(), phone || null, email || null, id_number || null, relationship || null]
+            [req.params.id, full_name.trim(), phone || null, email || null, id_number ? encryptPII(id_number) : null, relationship || null]
         );
         res.status(201).json({ message: "Đã lưu hành khách", saved_passenger_id: result.insertId });
     } catch (err) {

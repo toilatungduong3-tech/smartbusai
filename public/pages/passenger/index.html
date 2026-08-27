@@ -2076,6 +2076,104 @@ nav a.ai-highlight{
 .pts-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.70);}
 .pts-ico{font-size:16px;}
 
+/* ── MEMBER BENEFIT BANNER (guest only) ── */
+.member-benefit-banner{ width:min(1100px,94vw); margin:20px auto 0; }
+.mbb-inner{
+  display:flex; align-items:center; gap:14px; padding:14px 20px; border-radius:16px;
+  background:linear-gradient(120deg,rgba(251,191,36,.14),rgba(245,158,11,.05) 60%,rgba(99,102,241,.08));
+  border:1px solid rgba(251,191,36,.30);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  box-shadow:0 6px 24px rgba(245,158,11,.12), inset 0 1px 0 rgba(255,255,255,.06);
+  animation:mbbGlow 3.2s ease-in-out infinite;
+}
+@keyframes mbbGlow{
+  0%,100%{box-shadow:0 6px 24px rgba(245,158,11,.12), inset 0 1px 0 rgba(255,255,255,.06);}
+  50%{box-shadow:0 6px 32px rgba(245,158,11,.24), inset 0 1px 0 rgba(255,255,255,.09);}
+}
+.mbb-ico{ font-size:26px; flex-shrink:0; filter:drop-shadow(0 0 10px rgba(245,158,11,.55)); }
+.mbb-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.mbb-text b{ font-size:14px; color:#fbbf24; }
+.mbb-text span{ font-size:12px; color:rgba(255,255,255,.62); }
+.mbb-btn{
+  flex-shrink:0; text-decoration:none; padding:10px 18px; border-radius:12px;
+  background:linear-gradient(135deg,#f59e0b,#fb923c); color:#1a0800; font-weight:800; font-size:12.5px;
+  box-shadow:0 0 16px rgba(245,158,11,.35); transition:transform .18s,box-shadow .18s; white-space:nowrap;
+}
+.mbb-btn:hover{ transform:translateY(-1px); box-shadow:0 4px 22px rgba(245,158,11,.5); }
+@media(max-width:640px){ .mbb-inner{flex-wrap:wrap;} .mbb-btn{width:100%;text-align:center;} }
+
+/* ── VÉ GIỜ VÀNG — AI Smart Deal ── */
+#goldenDealSection{ width:min(1100px,94vw); margin:18px auto 0; }
+.gd-card{
+  border-radius:18px; overflow:hidden;
+  background:linear-gradient(160deg,rgba(28,10,6,.92),rgba(10,4,14,.94));
+  border:1px solid rgba(249,115,22,.32);
+  box-shadow:0 10px 36px rgba(249,115,22,.10), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.gd-head{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:12px 18px; background:rgba(249,115,22,.08); border-bottom:1px solid rgba(249,115,22,.20);
+}
+.gd-badge{
+  font-size:11.5px; font-weight:900; letter-spacing:.4px; color:#fff;
+  background:linear-gradient(135deg,#f97316,#ef4444); padding:4px 12px; border-radius:20px;
+  box-shadow:0 0 14px rgba(249,115,22,.5); animation:gdPulse 1.6s ease-in-out infinite;
+}
+@keyframes gdPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.gd-sub{ font-size:12px; color:rgba(255,255,255,.55); font-weight:600; flex:1; min-width:120px; }
+.gd-countdown{
+  font-family:"Courier New",monospace; font-size:14px; font-weight:800; color:#fdba74;
+  background:rgba(0,0,0,.35); padding:4px 12px; border-radius:8px; border:1px solid rgba(249,115,22,.25);
+  letter-spacing:1px;
+}
+.gd-body{ padding:16px 18px; }
+.gd-deal{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; cursor:pointer; }
+.gd-deal-route{ flex:1; min-width:180px; }
+.gd-deal-route .gdr-line{ font-size:15px; font-weight:900; color:#f1f5f9; }
+.gd-deal-route .gdr-meta{ font-size:11.5px; color:rgba(255,255,255,.50); margin-top:3px; }
+.gd-deal-price{ text-align:right; flex-shrink:0; }
+.gd-deal-price .gdp-now{ font-size:20px; font-weight:900; color:#fb923c; }
+.gd-deal-price .gdp-old{ font-size:11px; color:#34d399; font-weight:700; margin-bottom:2px; }
+.gd-deal-cta{
+  flex-shrink:0; padding:10px 20px; border-radius:12px; border:none; cursor:pointer;
+  background:linear-gradient(135deg,#f97316,#fb923c); color:#1a0800; font-weight:800; font-size:12.5px;
+  box-shadow:0 0 16px rgba(249,115,22,.40); transition:transform .18s,box-shadow .18s;
+}
+.gd-deal-cta:hover{ transform:translateY(-1px); box-shadow:0 4px 22px rgba(249,115,22,.55); }
+
+/* ── LOYALTY-DISCOUNTED PRICE (shared: trip cards, AI Reco, Golden Deal) ── */
+.lp-wrap{ display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.lp-old{ font-size:11.5px; color:rgba(255,255,255,.40); text-decoration:line-through; }
+.lp-now{ font-size:inherit; font-weight:inherit; color:inherit; }
+.lp-badge{
+  font-size:9.5px; font-weight:800; color:#04140c; background:linear-gradient(135deg,#34d399,#10b981);
+  padding:2px 8px; border-radius:20px; letter-spacing:.2px; box-shadow:0 0 10px rgba(52,211,153,.35);
+  white-space:nowrap;
+}
+
+/* Gentle login-gate popup */
+.gd-gate-backdrop{
+  position:fixed; inset:0; z-index:9000; background:rgba(4,6,14,.72); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.gd-gate-modal{
+  width:min(380px,100%); text-align:center; padding:30px 26px; border-radius:20px;
+  background:linear-gradient(160deg,#0d1827,#080f1c); border:1px solid rgba(245,158,11,.30);
+  box-shadow:0 30px 70px rgba(0,0,0,.55), 0 0 30px rgba(245,158,11,.10);
+}
+.gd-gate-ico{ font-size:38px; margin-bottom:12px; filter:drop-shadow(0 0 12px rgba(245,158,11,.5)); }
+.gd-gate-modal h3{ font-size:16px; color:#fff; margin-bottom:10px; }
+.gd-gate-modal p{ font-size:12.5px; color:rgba(255,255,255,.60); line-height:1.6; margin-bottom:18px; }
+.gd-gate-cta{
+  display:block; text-decoration:none; padding:12px; border-radius:12px; margin-bottom:10px;
+  background:linear-gradient(135deg,#f59e0b,#fb923c); color:#1a0800; font-weight:800; font-size:13px;
+  box-shadow:0 0 16px rgba(245,158,11,.35);
+}
+.gd-gate-skip{
+  background:none; border:none; color:rgba(255,255,255,.40); font-size:11.5px; cursor:pointer;
+  text-decoration:underline; padding:4px;
+}
+
 /* ============================================================
    HERO SECTION — compact title above search form
 ============================================================ */
@@ -2342,6 +2440,8 @@ function _ensureLeaflet(){
 <script src="/js/api.js"></script>
 <script src="/js/legalModal.js"></script>
 <script src="/js/routeInference.js"></script>
+<script src="/js/mapRouting.js"></script>
+<script src="/js/pricing.js"></script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u)return;if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');}})();
 </script>
@@ -2852,8 +2952,52 @@ function _ensureLeaflet(){
   <div class="pts-item"><span class="pts-ico">🏧</span>Ngân hàng</div>
   <div class="pts-item"><span class="pts-ico">💵</span>Tiền mặt</div>
   <div class="pts-item"><span class="pts-ico">🛡️</span>Hoàn tiền 100%</div>
-  <div class="pts-item"><span class="pts-ico">⭐</span>Đánh giá 4.9/5</div>
+  <div class="pts-item"><span class="pts-ico">⭐</span>Đánh giá <span id="ptsRating">—</span>/5</div>
   <div class="pts-item"><span class="pts-ico">🤖</span>AI Powered</div>
+</div>
+
+<!-- ═══ MEMBER BENEFIT BANNER (guest only) ═══
+     Real SmartPoint loyalty mechanic — every paid booking genuinely
+     earns points via loyaltyService.awardPoints() and tier discounts are
+     applied for real (see login.html's perk-strip for the same fact).
+     Hidden entirely for a logged-in user (see initMemberBenefitBanner). -->
+<div id="memberBenefitBanner" class="member-benefit-banner" style="display:none">
+  <div class="mbb-inner">
+    <span class="mbb-ico">🎁</span>
+    <div class="mbb-text">
+      <b>Đăng nhập ngay để bắt đầu tích điểm SmartPoint</b>
+      <span>100 điểm đổi 10.000đ · Lên hạng thành viên được giảm tự động tới 15% mỗi chuyến</span>
+    </div>
+    <a href="/pages/auth/login.html" class="mbb-btn">Đăng nhập ngay →</a>
+  </div>
+</div>
+
+<!-- ═══ VÉ GIỜ VÀNG — AI Smart Deal ═══
+     Built entirely from the same real /api/recommendations/trending data
+     already fetched for the AI section below (real current_price, real
+     departure_time, real available_seats) — not a separate fabricated
+     "flash sale". The countdown counts down to the trip's real departure,
+     not an invented sale-end time. */ -->
+<div id="goldenDealSection" style="display:none">
+  <div class="gd-card">
+    <div class="gd-head">
+      <span class="gd-badge">🔥 VÉ GIỜ VÀNG</span>
+      <span class="gd-sub">AI chọn chuyến giá tốt nhất hôm nay</span>
+      <span class="gd-countdown" id="gdCountdown">--:--:--</span>
+    </div>
+    <div class="gd-body" id="gdBody"></div>
+  </div>
+</div>
+
+<!-- Gentle login-gate popup for guests clicking the golden deal -->
+<div id="gdLoginGate" class="gd-gate-backdrop" style="display:none" onclick="if(event.target===this)closeGoldenDealGate()">
+  <div class="gd-gate-modal">
+    <div class="gd-gate-ico">🔐</div>
+    <h3>Đăng nhập để áp dụng ưu đãi hạng thành viên</h3>
+    <p>Đăng nhập bằng 1-click để hệ thống tự động tính điểm SmartPoint và áp dụng mức giảm theo hạng thành viên (tới 15%) ngay cho chuyến này.</p>
+    <a href="/pages/auth/login.html" class="gd-gate-cta">Đăng nhập ngay →</a>
+    <button class="gd-gate-skip" onclick="closeGoldenDealGate()">Để sau, xem chuyến không cần đăng nhập</button>
+  </div>
 </div>
 
 <!-- ═══ AI RECOMMENDATION SECTION ═══ -->
@@ -3287,8 +3431,21 @@ function _highlightField(id, msg){
 async function searchTrips(){
   if(_isSearching) return; // block duplicate submissions
 
-  const o=resolveSearchTerm(document.getElementById("origin").value.trim());
-  const d=resolveSearchTerm(document.getElementById("destination").value.trim());
+  /* Bug fix: resolveSearchTerm() used to run unconditionally here, BEFORE
+     ever attempting a search — translating e.g. "Lâm Đồng" to "Đà Lạt"
+     even when "Lâm Đồng" is the real, exact string stored in route.origin
+     for a real route. That's fine for a human typing a colloquial city
+     name that isn't in the DB verbatim, but it actively broke any
+     programmatic search using a value ALREADY known to be exact (Golden
+     Deal / AI Reco widgets fill these fields with real route.origin/
+     destination text) — the alias silently substituted a DIFFERENT,
+     non-matching term, producing the exact "Vé Giờ Vàng shows Lâm Đồng →
+     Gia Lai, but the list below says Không tìm thấy chuyến: Đà Lạt →
+     Pleiku" mismatch that was reported. Kept as raw values here; the
+     alias is now tried only as a fallback, after an exact search comes
+     back empty (see the fetch block below). */
+  const o=document.getElementById("origin").value.trim();
+  const d=document.getElementById("destination").value.trim();
   const dt=document.getElementById("date").value;
   /* Phase 2 fix: these used to read from a pair of hidden, dead <select>
      elements (#busType/#sortPrice) that setBusTypeFilter()/setSortFilter()
@@ -3358,8 +3515,10 @@ async function searchTrips(){
        returns the exact same unranked list/shape as before. */
     const uid=getUserId&&getUserId();
     const uidQS=uid?`&user_id=${encodeURIComponent(uid)}`:'';
+    const buildSearchUrl=(oo,dd)=>`/api/trips/search?origin=${encodeURIComponent(oo)}&destination=${encodeURIComponent(dd)}&date=${dt}&busType=${bt}&sort=${sp}${priceQS}${uidQS}`;
+
     const [tripsRes, transitRoutes] = await Promise.all([
-      fetch(`/api/trips/search?origin=${encodeURIComponent(o)}&destination=${encodeURIComponent(d)}&date=${dt}&busType=${bt}&sort=${sp}${priceQS}${uidQS}`),
+      fetch(buildSearchUrl(o, d)),
       searchTransit(o, d, dt)
     ]);
     if(!tripsRes.ok){
@@ -3368,18 +3527,41 @@ async function searchTrips(){
       _isSearching=false; btn.innerHTML=origBtnHtml; btn.disabled=false;
       return;
     }
-    const trips=await tripsRes.json();
+    let trips=await tripsRes.json();
+    let usedOrigin=o, usedDest=d;
+
+    // Fallback: only now, if the EXACT typed/programmatic values found
+    // nothing, retry with the province↔city alias — helps a human who
+    // typed a colloquial name the DB doesn't store verbatim, without ever
+    // corrupting an already-correct exact search.
+    if((!trips||trips.length===0)){
+      const oAlt=resolveSearchTerm(o), dAlt=resolveSearchTerm(d);
+      if(oAlt!==o || dAlt!==d){
+        const altRes=await fetch(buildSearchUrl(oAlt, dAlt));
+        if(altRes.ok){
+          const altTrips=await altRes.json();
+          if(altTrips && altTrips.length>0){ trips=altTrips; usedOrigin=oAlt; usedDest=dAlt; }
+        }
+      }
+    }
+
     renderTrips(trips);
     renderTransitResults(transitRoutes.routes, 'time', transitRoutes.failed);
     // Update search state
     _searchDone=true;
-    _lastSearchOrigin=o;
-    _lastSearchDest=d;
+    _lastSearchOrigin=usedOrigin;
+    _lastSearchDest=usedDest;
     _lastSearchDate=dt;
     // Show result context bar
-    _updateSearchContext({origin:o, dest:d, date:dt, count:(trips||[]).length});
+    _updateSearchContext({origin:usedOrigin, dest:usedDest, date:dt, count:(trips||[]).length});
     // Feedback toast only when 0 results
     if(!trips||trips.length===0) showToast('Không tìm thấy chuyến nào. Thử thay đổi ngày hoặc tuyến.','info');
+
+    // Checklist #1 — keep Vé Giờ Vàng / AI Reco in sync with whatever the
+    // trip list below is actually showing: when there IS an active search,
+    // those widgets must never show an unrelated route while the list says
+    // "not found" for the searched one.
+    syncSmartWidgetsToSearch(usedOrigin, usedDest, trips||[]);
   }catch(e){
     showToast('Không thể kết nối server. Vui lòng thử lại.','error');
     hideSkeletonLoading();
@@ -3727,7 +3909,7 @@ function renderPage(){
       <div class="tc-right">
         <div class="tc-price-lbl">Giá vé từ</div>
         <div id="dp-${t.trip_id}" class="tc-dp-wrap">
-          <div class="tc-price">${fmt(t.base_price)}</div>
+          <div class="tc-price">${renderPriceWithLoyalty(t.base_price)}</div>
         </div>
         <div class="tc-per-person">/ người</div>
         <button class="tc-book-btn" ${!isOpen?'disabled':''} onclick="${isOpen?`goBooking(${t.trip_id})`:''}">${isOpen?`Chọn ghế${avail>0&&avail<total?' · Còn '+avail+' chỗ':''}`:avail===0&&t.status==='OPEN'?'Hết chỗ':'Hết chỗ'}</button>
@@ -3766,19 +3948,24 @@ async function _loadDynamicPrices(tripIds){
       const tripObj=allTripsData.find(x=>x.trip_id===tid);
       if(tripObj) tripObj._dynPrice=dyn;
       const bookedSeats=tripObj ? (Number(tripObj.total_seats)-Number(tripObj.available_seats)) : 1;
+      // Checklist #2: loyalty tier discount layers ON TOP of whichever
+      // price this demand-based dynamic pricing already resolved to
+      // (surge-adjusted or demand-discounted) — dyn is the real starting
+      // point either way, never the plain base_price once this resolves.
+      const dynPriceHtml=renderPriceWithLoyalty(dyn);
       let html='';
       if(dp.discount_pct>0){
         html=`
           <div class="tc-price-orig">${fmt(base)}</div>
-          <div class="tc-price">${fmt(dyn)}</div>
+          <div class="tc-price">${dynPriceHtml}</div>
           <div class="tc-dp-badge discount">🏷️ Giảm ${dp.discount_pct}%</div>`;
       } else if(dp.surcharge_pct>0 && bookedSeats>0){
         // Only show surge badge when there are actual bookings driving demand
         html=`
-          <div class="tc-price" style="background:linear-gradient(135deg,#ff7675,#fd79a8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${fmt(dyn)}</div>
+          <div class="tc-price">${dynPriceHtml}</div>
           <div class="tc-dp-badge surcharge">🔥 Cao điểm +${dp.surcharge_pct}%</div>`;
       } else {
-        html=`<div class="tc-price">${fmt(dyn)}</div>`;
+        html=`<div class="tc-price">${dynPriceHtml}</div>`;
       }
       wrap.innerHTML=html;
     }catch(e){}
@@ -4018,7 +4205,20 @@ async function _loadAISearchInsight(origin, dest){
     // Phase 2I: server derives the personalization target from the JWT
     // (optionalAuth) — the old ?userId= query param is no longer trusted.
     const token = typeof getAccessToken==='function' ? getAccessToken() : null;
-    const url = `/api/ai/search-insight?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}`;
+    // Single-source-of-truth fix: this used to omit date/busType/price
+    // filters entirely, so the badge's "Còn X chuyến sắp tới" counted
+    // every future trip on the route across ALL dates while the actual
+    // results list below applies whatever filters are currently active —
+    // pass the exact same ones searchTrips() itself uses so the backend
+    // (which now reuses runTripSearch() for this count — see
+    // passengerAIController.getSearchInsight) can never disagree with it.
+    const dateVal = document.getElementById('date')?.value || '';
+    const insightParams = new URLSearchParams({ origin, destination: dest });
+    if(dateVal) insightParams.set('date', dateVal);
+    if(typeof _busTypeFilter!=='undefined' && _busTypeFilter) insightParams.set('busType', _busTypeFilter);
+    if(typeof _minPrice!=='undefined' && _minPrice!=null) insightParams.set('minPrice', _minPrice);
+    if(typeof _maxPrice!=='undefined' && _maxPrice!=null) insightParams.set('maxPrice', _maxPrice);
+    const url = `/api/ai/search-insight?${insightParams.toString()}`;
     const data = await fetch(url, token ? { headers: { Authorization: `Bearer ${token}` } } : {}).then(r=>r.json());
     const insights = data.insights||[];
 
@@ -4694,49 +4894,75 @@ async function submitReview(){
   finally{ btn.disabled=false; btn.innerHTML='<span class="rm-submit-ico">✉️</span><span class="rm-submit-txt">Gửi đánh giá</span>'; }
 }
 
-/* ── REVIEWS CARDS CAROUSEL ── */
-const RV_DATA=[
-  {name:"Nguyễn Minh Khoa",av:"NK",avBg:"linear-gradient(135deg,#6366f1,#818cf8)",route:"HCM → Đà Lạt",rating:5,date:"20/03/2026",tags:["Đúng giờ","Xe sạch sẽ","Tài xế thân thiện"],comment:"Chuyến xe tuyệt vời! Tài xế lái rất ổn định, ghế nằm êm ái. Đặt vé online trong 1 phút, hệ thống AI tư vấn chuyến rất hay."},
-  {name:"Trần Thị Lan Anh",av:"LA",avBg:"linear-gradient(135deg,#fd79a8,#e84393)",route:"HCM → Nha Trang",rating:5,date:"22/03/2026",tags:["Ghế êm ái","Điều hòa tốt","Yên tĩnh"],comment:"Lần đầu dùng SmartBusAI, rất ấn tượng. Thanh toán ZaloPay siêu nhanh, xe đến đúng giờ, nhân viên nhiệt tình."},
-  {name:"Phạm Đức Hùng",av:"PH",avBg:"linear-gradient(135deg,#00b894,#00cec9)",route:"Đà Nẵng → Huế",rating:4,date:"18/03/2026",tags:["Đúng giờ","WiFi ổn"],comment:"Dịch vụ tốt, app dễ dùng. Chỉ tiếc WiFi trên xe hơi chập chờn giữa đường, nhưng ghế ngồi rất OK."},
-  {name:"Lê Thị Mai",av:"LM",avBg:"linear-gradient(135deg,#0984e3,#74b9ff)",route:"HN → Hạ Long",rating:5,date:"25/03/2026",tags:["Tài xế thân thiện","Xe sạch sẽ","Chạy êm"],comment:"Tuyệt vời từ A đến Z! AI phân tích chuyến đi giúp tôi tiết kiệm được 80k. Sẽ dùng mãi."},
-  {name:"Võ Thành Nam",av:"VN",avBg:"linear-gradient(135deg,#e17055,#d63031)",route:"Cần Thơ → HCM",rating:5,date:"15/03/2026",tags:["Ghế êm ái","Đúng giờ"],comment:"Sử dụng dịch vụ thường xuyên, chưa bao giờ thất vọng. Tính năng so sánh chuyến xe rất tiện!"},
-  {name:"Hoàng Phúc Thịnh",av:"HT",avBg:"linear-gradient(135deg,#fdcb6e,#e67e22)",route:"HCM → Vũng Tàu",rating:5,date:"27/03/2026",tags:["Xe sạch sẽ","Điều hòa tốt","Yên tĩnh"],comment:"Ghế VIP xịn lắm, điều hòa mát rượi. Màn hình giải trí hay. Sẽ tiếp tục ủng hộ SmartBusAI!"},
+/* ── REVIEWS CARDS CAROUSEL ──
+   Bug fix (checklist: "Social Proof thật"): this carousel used to render
+   6 entirely fabricated reviews — invented names, invented dates, an
+   invented "tiết kiệm 80k" claim, all stamped "✔ Đã xác minh chuyến đi"
+   (verified trip) despite not one of them being a real review. Replaced
+   with a live fetch of GET /api/stats/featured-reviews — real review
+   rows (rating>=4, has a real comment), joined to the real trip's real
+   route, reviewer name masked server-side the same way the public
+   booking ticker already masks names (last word + first initial) so a
+   real reviewer's full name isn't broadcast to every anonymous visitor.
+   The "✔ Đã xác minh chuyến đi" label is now actually true: every row
+   here is a review tied by foreign key to a real completed trip. */
+const RV_AVATAR_BG=[
+  "linear-gradient(135deg,#6366f1,#818cf8)","linear-gradient(135deg,#fd79a8,#e84393)",
+  "linear-gradient(135deg,#00b894,#00cec9)","linear-gradient(135deg,#0984e3,#74b9ff)",
+  "linear-gradient(135deg,#e17055,#d63031)","linear-gradient(135deg,#fdcb6e,#e67e22)",
 ];
+let RV_DATA=[];
 let rvPage=0;
 const RV_PER=3;
+async function rvLoad(){
+  try{
+    const res=await fetch('/api/stats/featured-reviews');
+    const rows=await res.json();
+    RV_DATA=(Array.isArray(rows)?rows:[]).map((r,i)=>({
+      name:r.reviewer,
+      av:(r.reviewer||'?').replace(/[^\p{L}]/gu,'').slice(0,2).toUpperCase(),
+      avBg:RV_AVATAR_BG[i%RV_AVATAR_BG.length],
+      route:`${r.origin||'?'} → ${r.destination||'?'}`,
+      rating:r.rating,
+      comment:r.comment,
+    }));
+  }catch(e){ RV_DATA=[]; }
+  rvRender();
+}
 function rvRender(){
   const track=document.getElementById("rvTrack");
   const dots=document.getElementById("rvDots");
   if(!track||!dots) return;
+  if(!RV_DATA.length){
+    track.innerHTML='<div style="padding:30px;text-align:center;color:rgba(255,255,255,.35);font-size:13px;grid-column:1/-1">Chưa có đánh giá nào để hiển thị.</div>';
+    dots.innerHTML='';
+    return;
+  }
   const pages=Math.ceil(RV_DATA.length/RV_PER);
   track.innerHTML=RV_DATA.slice(rvPage*RV_PER,(rvPage+1)*RV_PER).map(r=>`
     <div class="rv-card">
       <div class="rv-card-top">
-        <div class="rv-avatar" style="background:${r.avBg}">${r.av}</div>
+        <div class="rv-avatar" style="background:${r.avBg}">${escapeHtml(r.av)}</div>
         <div class="rv-author-info">
-          <div class="rv-author-name">${r.name}</div>
-          <div class="rv-author-route">🚌 ${r.route}</div>
+          <div class="rv-author-name">${escapeHtml(r.name)}</div>
+          <div class="rv-author-route">🚌 ${escapeHtml(r.route)}</div>
         </div>
-        <div class="rv-author-date">${r.date}</div>
       </div>
       <div class="rv-card-stars">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
-      <div class="rv-card-body">${r.comment}</div>
-      <div class="rv-card-tags">${r.tags.map(t=>`<span class="rv-card-tag">${t}</span>`).join("")}</div>
+      <div class="rv-card-body">${escapeHtml(r.comment)}</div>
       <div class="rv-verified">✔ Đã xác minh chuyến đi</div>
     </div>`).join("");
   dots.innerHTML=Array.from({length:pages},(_,i)=>`<div class="rv-dot${i===rvPage?" active":""}" onclick="rvGo(${i})"></div>`).join("");
 }
-function rvSlide(dir){ const pages=Math.ceil(RV_DATA.length/RV_PER); rvPage=(rvPage+dir+pages)%pages; rvRender(); }
+function rvSlide(dir){ const pages=Math.ceil(RV_DATA.length/RV_PER)||1; rvPage=(rvPage+dir+pages)%pages; rvRender(); }
 function rvGo(p){ rvPage=p; rvRender(); }
 // init on load
-setTimeout(rvRender,200);
+setTimeout(rvLoad,200);
 
 /* ============================================================
    AI LEFT PANEL — Trip Analyzer
 ============================================================ */
 let aiPanelOpen=false;
-const ANTHROPIC_MODEL="claude-sonnet-4-20250514";
 
 function toggleAIPanel(){
   aiPanelOpen=!aiPanelOpen;
@@ -4784,22 +5010,26 @@ async function aiSend(){
   appendAIMsg("user",query);
   const typing=appendAIMsg("typing","🤖 Đang phân tích chuyến đi...");
   const tripsContext=buildTripsContext();
-  const messages=[{
-    role:"user",
-    content:`Bạn là AI tư vấn chuyến đi của SmartBusAI. Dưới đây là dữ liệu THỰC TẾ các chuyến xe hiện có (${allTripsData.length} chuyến):\n\n${tripsContext}\n\nYêu cầu: "${query}"\n\nTrả lời bằng tiếng Việt, ngắn gọn, hữu ích. Đưa ra gợi ý cụ thể với: tuyến đường, giờ khởi hành, giá vé, biển số xe. Nếu không có dữ liệu phù hợp, nói rõ.`
-  }];
+  const prompt=`Bạn là AI tư vấn chuyến đi của SmartBusAI. Dưới đây là dữ liệu THỰC TẾ các chuyến xe hiện có (${allTripsData.length} chuyến):\n\n${tripsContext}\n\nYêu cầu: "${query}"\n\nTrả lời bằng tiếng Việt, ngắn gọn, hữu ích. Đưa ra gợi ý cụ thể với: tuyến đường, giờ khởi hành, giá vé, biển số xe. Nếu không có dữ liệu phù hợp, nói rõ.`;
   try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{
+    // Backend proxy — the real Anthropic key lives server-side only (see
+    // server/services/anthropicService.js). Previously this called
+    // https://api.anthropic.com/v1/messages directly from the browser with
+    // no key at all, which always failed (CORS/401) and silently fell back
+    // to the local engine below — moving the call server-side is what
+    // actually lets a real key work, not just what hides it.
+    const res=await fetch("/api/ai/chat",{
       method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ model:ANTHROPIC_MODEL, max_tokens:800, messages })
+      body:JSON.stringify({ prompt })
     });
+    if(!res.ok) throw new Error("AI proxy unavailable");
     const data=await res.json();
     typing.remove();
-    const reply=data?.content?.[0]?.text||"Xin lỗi, tôi không thể phân tích lúc này.";
+    const reply=data?.reply||"Xin lỗi, tôi không thể phân tích lúc này.";
     appendAIMsg("bot",reply);
   }catch(e){
     typing.remove();
-    // Fallback: xử lý local khi không có API
+    // Fallback: xử lý local khi backend AI chưa cấu hình ANTHROPIC_API_KEY
     const fallback=localAIFallback(query);
     appendAIMsg("bot",fallback);
   }
@@ -6414,10 +6644,10 @@ async function _startLeafletMap(){
     preferCanvas:false, zoomSnap:0.5, zoomDelta:0.5
   });
 
-  // High-contrast dark tile
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    subdomains:'abcd', maxZoom:19, opacity:0.88
-  }).addTo(_lfMap);
+  // Terrain tile (hillshade, sông hồ, mảng xanh, ranh giới tỉnh, tên địa
+  // danh) blended to the site's dark theme — replaces the old flat
+  // dark_all base which only showed roads + labels, no real terrain.
+  sbAddTerrainTile(_lfMap);
 
   // Zoom control
   L.control.zoom({position:'bottomright'}).addTo(_lfMap);
@@ -6459,10 +6689,27 @@ async function _startLeafletMap(){
     L.marker([lat,lng],{icon:ico,interactive:false,zIndexOffset:isOnRoute?200:0}).addTo(_lfMap);
   });
 
-  // ── BUILD ROAD ROUTE — snap to QL1A/CT01 where applicable ──
-  const roadPts = buildRoadRoute(stops);
+  // ── BUILD ROAD ROUTE ──
+  // Primary: real road-following geometry from OSRM, using every real stop
+  // as an ordered waypoint so the path is drawn through all of them (not
+  // just start/end), bám 100% theo Quốc lộ/Cao tốc thực tế thay vì cắt
+  // ngang đồi núi/mặt nước. Falls back to the old curated-highway-snap
+  // heuristic (buildRoadRoute) on any OSRM failure — offline, timeout, or
+  // the public demo server rate-limiting us — the map must never break
+  // just because a third-party routing service is unreachable.
+  let roadPts = buildRoadRoute(stops);
+  let usedRealRoad = false;
+  try{
+    const osrm = await sbFetchOsrmRoute(lls, {timeoutMs:7000});
+    if(osrm && osrm.points && osrm.points.length>1){
+      roadPts = osrm.points;
+      roadPts.hasFallback = false;
+      usedRealRoad = true;
+    }
+  }catch(e){ /* keep the buildRoadRoute() fallback already assigned above */ }
+
   // Route-forensics fix: surface when part of the drawn path is a straight-line
-  // estimate rather than a matched highway segment — never let it pass as real
+  // estimate rather than real road geometry — never let it pass as real
   // road geometry silently. Combined with the per-stop `estimated` flag already
   // shown in the sidebar (rteDataProvenance / buildTimeline).
   if(roadPts.hasFallback){
@@ -6471,7 +6718,10 @@ async function _startLeafletMap(){
       provEl.innerHTML+='<br>⚠️ Một phần đường vẽ trên bản đồ là <b>ước tính đường thẳng</b>, không snap theo cao tốc thực tế.';
     }
   }
-  // Light catmull-rom smoothing (less aggressive since points already follow road)
+  // Light catmull-rom smoothing — only needed for the curated-highway/
+  // straight-line fallback (its points are sparse). Real OSRM geometry is
+  // already dense and road-accurate; smoothing it further would drag the
+  // line off the actual road surface.
   function catmullRom(pts,tension,segments){
     tension=tension===undefined?0.3:tension;
     segments=segments===undefined?6:segments;
@@ -6491,7 +6741,7 @@ async function _startLeafletMap(){
     out.push(pts[pts.length-1]);
     return out;
   }
-  const smoothLls=catmullRom(roadPts,0.3,6);
+  const smoothLls = usedRealRoad ? roadPts : catmullRom(roadPts,0.3,6);
 
   // ── Helper: find nearest stop to a lat/lng ──
   function nearestStop(lat,lng){
@@ -6589,9 +6839,9 @@ async function _startLeafletMap(){
     const stopTime=new Date(depMs+durMs*ratio).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
     const kmEst=totalDist?Math.round(totalDist*ratio)+' km':'—';
     const stype=stops[i].stop_type;
-    const stopLbl = stype==='PICKUP' ? '📥 Điểm đón' : stype==='DROPOFF' ? '📤 Điểm trả' : stype==='BOTH' ? '🔄 Đón & Trả' : '📍 Điểm dừng';
-    const stopClr = stype==='PICKUP' ? '#34d399' : stype==='DROPOFF' ? '#f59e0b' : '#6366f1';
-    L.circleMarker(lls[i],{radius:7,fillColor:stopClr,color:'#040d18',weight:2,opacity:1,fillOpacity:1})
+    const stopLbl = stype==='PICKUP' ? '📥 Điểm đón' : stype==='DROPOFF' ? '📤 Điểm trả' : stype==='BOTH' ? '🔄 Đón & Trả' : '🚏 Điểm dừng';
+    const stopKind = stype==='PICKUP' ? 'PICKUP' : stype==='DROPOFF' ? 'DROPOFF' : stype==='BOTH' ? 'BOTH' : 'STATION';
+    L.marker(lls[i],{icon:sbStopIcon(stopKind)})
       .bindPopup(`<b>${stopLbl}: ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}<br><span style="color:#94a3b8;font-size:10px;">📍 ${lls[i][0].toFixed(4)}°N, ${lls[i][1].toFixed(4)}°E</span>`)
       .addTo(_lfMap)
       .bindTooltip(`<b>${stopLbl}: ${stops[i].name}</b><br>⏱ ${stopTime} &nbsp;·&nbsp; 📏 ${kmEst}`,{direction:'top',className:'rte-tip'});
@@ -7325,6 +7575,17 @@ if ('serviceWorker' in navigator) {
    Shows category labels, score breakdown, explainable reasons.
 ══════════════════════════════════════════════════════════ */
 async function loadAIRecommendations(){
+  /* Bug fix: this runs on a 200ms setTimeout from DOMContentLoaded — if a
+     search completes (via searchTrips() -> syncSmartWidgetsToSearch())
+     BEFORE that timer fires, this used to unconditionally overwrite the
+     search-derived widgets with unrelated global trending data a moment
+     later. Live-reproduced: searching "Lâm Đồng → Gia Lai" right after
+     page load correctly synced the widgets for an instant, then 200ms
+     later this function clobbered them back to "Tuyên Quang → Yên Bái".
+     _searchDone is the same flag searchTrips() already sets — skip
+     entirely once a real search is active; syncSmartWidgetsToSearch()
+     is the sole owner of these widgets from that point on. */
+  if(_searchDone) return;
   const uid = getUserId();
   const section  = document.getElementById('aiRecoSection');
   const cardsEl  = document.getElementById('aiRecoCards');
@@ -7350,6 +7611,12 @@ async function loadAIRecommendations(){
       fetch(`/api/recommendations/trending`).then(r=>r.json())
     ]);
 
+    // Same guard, other direction: a search can complete WHILE these two
+    // fetches were in flight — don't let a slower trending/personal fetch
+    // land after the fact and stomp on what syncSmartWidgetsToSearch()
+    // already rendered for a real, active search.
+    if(_searchDone) return;
+
     const recoData  = recoRes.status==='fulfilled'  ? recoRes.value  : null;
     const trendData = trendRes.status==='fulfilled' ? trendRes.value : null;
 
@@ -7357,6 +7624,8 @@ async function loadAIRecommendations(){
     const trending  = trendData?.recommendations || [];
     const meta      = recoData?.meta || null;
     const totalSaved= meta?.total_saved || 0;
+
+    renderGoldenDeal(trending);
 
     // Decide which cards to show (personalized first, fill with trending)
     const seen = new Set();
@@ -7385,13 +7654,31 @@ async function loadAIRecommendations(){
     // Update subtitle + meta
     if(subtitle){
       const dp = meta?.data_points||0;
-      // Fix #1: cold start — don't claim personalization when data_points===0
-      if(personal.length>0 && dp>0){
-        subtitle.textContent=`${personal.length} tuyến cá nhân hóa · dựa trên ${dp} điểm dữ liệu của bạn`;
+      const u = typeof getUser==='function' ? getUser() : null;
+      const displayName = u?.full_name || u?.email || null;
+      // Fix #1: cold start — don't claim personalization when there are
+      // literally zero personal recommendations (pure trending fallback).
+      // Fix (checklist #3): logged-in vs logged-out copy must read as two
+      // genuinely different experiences, not the same generic sentence with
+      // a number swapped in — logged-in names the actual user, logged-out
+      // is honest about being a popularity ranking, not a personal match.
+      // Bug found live: meta.data_points isn't actually present on the real
+      // /api/recommendations/me response (confirmed via direct fetch — the
+      // field is undefined, not 0), so gating the named-personalization
+      // message on `dp>0` meant it could never fire for any real user,
+      // even one with 8 real personalized recommendations computed from
+      // genuine booking/search history. Gate on personal.length>0 instead
+      // — that's the actual real signal — and only mention a specific
+      // "N điểm dữ liệu" count when the backend happens to supply one,
+      // rather than requiring it to show personalized copy at all.
+      if(personal.length>0 && displayName){
+        subtitle.textContent = dp>0
+          ? `🧑 Gợi ý cá nhân hóa dành cho ${displayName} · dựa trên ${dp} điểm dữ liệu lịch sử đi lại`
+          : `🧑 Gợi ý cá nhân hóa dành cho ${displayName} · dựa trên lịch sử tìm kiếm và đặt vé của bạn`;
       } else if(personal.length>0){
         subtitle.textContent=`${personal.length} tuyến phù hợp · AI phân tích theo tuyến đang hoạt động`;
       } else {
-        subtitle.textContent='Tuyến phổ biến tuần này · Đăng nhập để nhận gợi ý cá nhân hóa';
+        subtitle.textContent='🔥 Các tuyến đường HOT nhất tuần này được AI tổng hợp · Đăng nhập để nhận gợi ý cá nhân hóa riêng cho bạn';
       }
     }
     if(algoLbl){ algoLbl.style.display='block'; }
@@ -7430,6 +7717,10 @@ const _CAT_META = {
   trending: {label:'🔥 Đang nóng', color:'#f97316', bg:'rgba(249,115,22,.09)', border:'rgba(249,115,22,.26)'},
   cf:       {label:'👥 Người dùng tương tự', color:'#818cf8', bg:'rgba(167,139,250,.10)', border:'rgba(167,139,250,.26)'},
   ai:       {label:'🤖 AI Gợi ý', color:'#a5b4fc', bg:'rgba(99,102,241,.10)', border:'rgba(99,102,241,.26)'},
+  // Checklist fix: cards derived directly from the active search's own
+  // real results (see syncSmartWidgetsToSearch) — never a separate,
+  // possibly-mismatched trending/AI fetch while a search is active.
+  search:   {label:'🔍 Khớp tìm kiếm', color:'#34d399', bg:'rgba(52,211,153,.10)', border:'rgba(52,211,153,.28)'},
 };
 
 function _renderRecoCard(r, idx){
@@ -7454,8 +7745,8 @@ function _renderRecoCard(r, idx){
   const weeklyBk = popM ? popM[2] : null;
   const priceM   = (bd.price_attract?.basis||'').match(/([+\-]?\d+)%/);
   const priceDiff= priceM ? (parseInt(priceM[1])>0?'+':'')+priceM[1]+'%' : null;
-  const price    = r.current_price ? r.current_price.toLocaleString('vi-VN')+'đ' : null;
-  const rating   = r.avg_rating ? r.avg_rating.toFixed(1) : null;
+  const price    = r.current_price ? Number(r.current_price).toLocaleString('vi-VN')+'đ' : null;
+  const rating   = r.avg_rating ? Number(r.avg_rating).toFixed(1) : null;
   const trips    = r.trip_count || 0;
 
   // Reasons (top 3, human-friendly)
@@ -7512,24 +7803,61 @@ function _renderRecoCard(r, idx){
           </div>
           <div style="font-size:14px;font-weight:900;color:#f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.destination||''}</div>
         </div>
+        ${cat==='trending' ? `
+        <!-- Bug fix: a "trending" card has no real personal signal behind
+             it (bd.user_history/booking_history are 0 for a route the
+             visitor never searched/booked) — computedPct above only ever
+             reflects population-level popularity+price, so it showed an
+             unconvincing, meaningless "25% PHÙ HỢP" on every trending card
+             regardless of viewer. Real, honest data IS available for this
+             case (popRank/weeklyBk, already parsed from the API's own
+             popularity.basis string) — show that instead of a fake-looking
+             match score. -->
+        <div style="text-align:center;flex-shrink:0;background:rgba(0,0,0,.30);border:1px solid ${cm.border};border-radius:12px;padding:8px 10px;min-width:68px">
+          <div style="font-size:20px;font-weight:900;color:${cm.color};line-height:1">${popRank}</div>
+          <div style="font-size:8px;color:${cm.color};font-weight:800;letter-spacing:.4px;margin-top:2px">HOT TUẦN NÀY</div>
+          ${weeklyBk?`<div style="font-size:8px;color:#94a3b8;margin-top:3px">${weeklyBk} lượt đặt</div>`:''}
+        </div>` : cat==='search' ? `
+        <!-- syncSmartWidgetsToSearch()-derived card: this is a plain real
+             search result, not an AI-scored recommendation at all — a
+             "0% PHÙ HỢP" (from empty breakdown data) would be actively
+             misleading, so show the one real, honest fact available
+             instead: real seats left on this real trip. -->
+        <div style="text-align:center;flex-shrink:0;background:rgba(0,0,0,.30);border:1px solid ${cm.border};border-radius:12px;padding:8px 10px;min-width:68px">
+          <div style="font-size:20px;font-weight:900;color:${cm.color};line-height:1">${r.available_seats??'—'}</div>
+          <div style="font-size:8px;color:${cm.color};font-weight:800;letter-spacing:.4px;margin-top:2px">GHẾ TRỐNG</div>
+        </div>` : `
         <div style="text-align:center;flex-shrink:0;background:rgba(0,0,0,.30);border:1px solid ${cm.border};border-radius:12px;padding:8px 14px;min-width:68px">
           <div style="font-size:26px;font-weight:900;color:${clr};line-height:1">${pct}</div>
           <div style="font-size:8px;color:${clr};font-weight:800;letter-spacing:.6px;margin-top:2px">% PHÙ HỢP</div>
-        </div>
+        </div>`}
       </div>
+
+      <!-- Checklist #2: prominent price, discounted per real loyalty tier
+           when the caller has one (CURRENT_USER_TIER, loaded from the
+           real /api/users/:id/loyalty endpoint — see loadCurrentUserTier).
+           Same applyUserTierDiscount() math bookingController.createBooking
+           uses server-side, so this is never a display-only promise —
+           booking this exact trip charges this exact number. -->
+      ${r.current_price?`<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.18);border-radius:8px;padding:8px 10px">
+        <span style="font-size:10px;color:#94a3b8;font-weight:700">${priceDiff?'Giá vé · So TB '+priceDiff:'Giá vé'}</span>
+        <span style="font-size:15px;font-weight:900;color:${clr}">${renderPriceWithLoyalty(r.current_price)}</span>
+      </div>`:''}
 
       <!-- Stats grid -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px">
         ${stat('🎫',bkgNum!=='0'?bkgNum:null,'Lần đặt','#34d399')}
         ${stat('🔍',schNum!=='0'?schNum:null,'Lần tìm','#60a5fa')}
-        ${stat('✅',trips>0?trips:null,'Còn chỗ','#a3e635')}
+        ${cat!=='search'?stat('✅',trips>0?trips:null,'Còn chỗ','#a3e635'):''}
         ${stat('📈',weeklyBk,'lượt/tuần','#f59e0b')}
         ${stat('⭐',rating,'Đánh giá','#fbbf24')}
-        ${stat('💰',price,priceDiff?'So TB '+priceDiff:'Giá từ',priceDiff?.startsWith('-')?'#34d399':clr)}
       </div>
 
-      <!-- Score breakdown bars -->
-      <div style="background:rgba(0,0,0,.18);border-radius:8px;padding:8px 10px">
+      <!-- Score breakdown bars — skip for cat==='search': a plain search
+           match has no AI score behind it (bd is {}), so an all-zero
+           "CÔNG THỨC AI SCORE" panel would look like a broken score rather
+           than the honest "no score computed" it actually is. -->
+      ${cat!=='search'?`<div style="background:rgba(0,0,0,.18);border-radius:8px;padding:8px 10px">
         <div style="font-size:9px;color:#94a3b8;font-weight:700;margin-bottom:6px;letter-spacing:.3px">📊 CÔNG THỨC AI SCORE</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${bar('Lịch sử tìm',bd.user_history?.score||0,'40%','#60a5fa')}
@@ -7537,7 +7865,7 @@ function _renderRecoCard(r, idx){
           ${bar('Phổ biến',bd.popularity?.score||0,'20%','#f59e0b')}
           ${bar('Giá hấp dẫn',bd.price_attract?.score||0,'15%','#818cf8')}
         </div>
-      </div>
+      </div>`:''}
 
       <!-- Reasons -->
       ${rsnHtml?`<div style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;background:rgba(0,0,0,.12);border-radius:8px;border-left:3px solid ${cm.color}40">
@@ -8162,9 +8490,7 @@ async function openTransitMap(route){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     if(transitLeafletMap){ transitLeafletMap.remove(); transitLeafletMap=null; }
     transitLeafletMap = L.map('transitMapContainer',{zoomControl:true}).setView([16,106],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:18
-    }).addTo(transitLeafletMap);
+    sbAddTerrainTile(transitLeafletMap);
 
     const allPoints = [];
 
@@ -8231,9 +8557,18 @@ async function openTransitMap(route){
       }
 
       if(fromCoords&&toCoords){
-        // Solid line for first leg, dashed for subsequent to distinguish visually
-        L.polyline([fromCoords,toCoords],{color:clr,weight:5,opacity:0.88,
+        // Solid line for first leg, dashed for subsequent to distinguish visually.
+        // Drawn as a straight line immediately for instant feedback, then
+        // upgraded in place to the real road-following path once OSRM
+        // resolves (never blocks render; silently keeps the straight line
+        // on any OSRM failure).
+        const legLine = L.polyline([fromCoords,toCoords],{color:clr,weight:5,opacity:0.88,
           dashArray:i===0?null:'10,5',lineCap:'round'}).addTo(transitLeafletMap);
+        sbFetchOsrmRoute([fromCoords,toCoords],{timeoutMs:6000}).then(osrm=>{
+          if(osrm && osrm.points && osrm.points.length>1 && transitLeafletMap){
+            legLine.setLatLngs(osrm.points);
+          }
+        });
         // Arrowhead approximation using a circle at midpoint
         const mid=[(fromCoords[0]+toCoords[0])/2,(fromCoords[1]+toCoords[1])/2];
         L.circleMarker(mid,{radius:4,color:'#fff',weight:1.5,fillColor:clr,fillOpacity:1}).addTo(transitLeafletMap);
@@ -8247,7 +8582,207 @@ async function openTransitMap(route){
   }));
 }
 
+/* ── LOYALTY TIER PRICING ──
+   applyUserTierDiscount() (shared, /js/pricing.js) mirrors server/services/
+   loyaltyService.js's applyUserTierDiscount() exactly — same tier table,
+   same formula, same single rounding point — so the price a card DISPLAYS
+   matches what bookingController.createBooking will actually CHARGE. The
+   server is still the authority for the real charge (from the caller's
+   verified JWT, never a client value); this is purely for rendering the
+   same number ahead of time without a round trip per card. */
+let CURRENT_USER_TIER='BRONZE'; // real tier once loadCurrentUserTier() resolves; BRONZE (0%) until then/if guest
+let CURRENT_SYSTEM_FEE_PCT=0;   // real % once loadSystemFeePct() resolves; 0 until then
+async function loadCurrentUserTier(){
+  const uid=typeof getUserId==='function'?getUserId():null;
+  const token=typeof getAccessToken==='function'?getAccessToken():null;
+  if(!uid||!token) return; // guest — stays BRONZE, matches the price shown before login
+  try{
+    const res=await fetch(`/api/users/${uid}/loyalty`,{headers:{Authorization:`Bearer ${token}`}});
+    if(!res.ok) return; // expired/invalid token — fall back to BRONZE display rather than guess
+    const data=await res.json();
+    CURRENT_USER_TIER=data.tier||'BRONZE';
+  }catch(e){ /* network failure — BRONZE display; booking itself still computes the real tier server-side */ }
+}
+async function loadSystemFeePct(){
+  try{
+    const res=await fetch('/api/settings');
+    if(res.ok){ const data=await res.json(); CURRENT_SYSTEM_FEE_PCT=Number(data.systemFee)||0; }
+  }catch(e){ /* network failure — display without fee; booking.html still applies the real fee server-side */ }
+}
+/* Renders a price block: if a real discount applies, the discounted+fee
+   price is prominent with the raw original struck through and a tier
+   badge — the exact "[Giảm X% Hạng Y]" pattern the checklist asks for.
+   With no discount (guest/BRONZE), still shows the fee-inclusive price
+   (no badge) — the system fee is unconditional, only the discount is
+   tier-gated. Used by trip list cards, AI Reco cards, and the Golden Deal
+   widget so all three agree on the same number for the same trip. */
+function renderPriceWithLoyalty(originalPrice){
+  const { finalPrice, discountPct, tierLabel } = applyUserTierDiscount(originalPrice, CURRENT_USER_TIER, CURRENT_SYSTEM_FEE_PCT);
+  const fmt=v=>Number(v||0).toLocaleString('vi-VN')+'đ';
+  if(discountPct<=0){
+    return `<span class="lp-now">${fmt(finalPrice)}</span>`;
+  }
+  return `<span class="lp-wrap"><span class="lp-old">${fmt(originalPrice)}</span><span class="lp-now">${fmt(finalPrice)}</span><span class="lp-badge">Giảm ${discountPct}% ${tierLabel}</span></span>`;
+}
+
+/* ── MEMBER BENEFIT BANNER — guest only ── */
+function initMemberBenefitBanner(){
+  const banner=document.getElementById('memberBenefitBanner');
+  if(!banner) return;
+  const isGuest = typeof getUser!=='function' || !getUser();
+  banner.style.display = isGuest ? 'block' : 'none';
+}
+
+/* Real avg rating for the payment-trust-strip (was hardcoded "4.9/5"
+   regardless of the DB — a fabricated number sitting right next to
+   Member Benefit / Vé Giờ Vàng content that is otherwise all real). */
+async function loadTrustStripRating(){
+  const el=document.getElementById('ptsRating');
+  if(!el) return;
+  try{
+    const res=await fetch('/api/stats/public-summary');
+    const d=await res.json();
+    el.textContent = d.avgRating ?? '—';
+  }catch(e){ /* leave the "—" placeholder — never fabricate a fallback number */ }
+}
+
+/* ── VÉ GIỜ VÀNG — AI Smart Deal ──
+   Built from the same real trending-recommendation data the AI section
+   below already fetches (real current_price/avg_price/departure_time/
+   available_seats) — picks whichever trending route has the best real
+   price discount vs its own average, so "giá tốt nhất hôm nay" is an
+   actual computed fact, not a fixed made-up deal. */
+let _gdDeal=null, _gdCountdownTimer=null;
+function _pickGoldenDeal(trending){
+  if(!Array.isArray(trending)||!trending.length) return null;
+  // Real signal: breakdown.price_attract.basis is a string like "-13%"/"+0%"
+  // (same field _renderRecoCard already parses for its own cards) — no
+  // separate "average price" field exists on this endpoint to diff
+  // against, so this is the only honest way to rank "best price today"
+  // without inventing a number.
+  const withPct = trending.map(r=>{
+    const m=(r.breakdown?.price_attract?.basis||'').match(/(-?\d+)%/);
+    return {...r, _pricePct: m ? parseInt(m[1]) : 0};
+  });
+  return withPct.slice().sort((a,b)=>a._pricePct - b._pricePct)[0] || null;
+}
+function renderGoldenDeal(trending){
+  const section=document.getElementById('goldenDealSection');
+  const body=document.getElementById('gdBody');
+  if(!section||!body) return;
+  const deal=_pickGoldenDeal(trending);
+  _gdDeal=deal;
+  if(!deal){ section.style.display='none'; return; }
+  section.style.display='block';
+  // Checklist #2: same renderPriceWithLoyalty() every other card uses —
+  // if the caller has a real tier, this shows the actual discounted
+  // price they'd be charged, not the pre-discount base_price.
+  const priceHtml=renderPriceWithLoyalty(deal.current_price);
+  const pctBadge = deal._pricePct<0 ? `<div class="gdp-old">Rẻ hơn ${Math.abs(deal._pricePct)}% so với trung bình</div>` : null;
+  const seatsTxt=deal.available_seats ? `Còn ${deal.available_seats} ghế` : '';
+  const depTxt = deal.departure_time ? new Date(deal.departure_time).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  body.innerHTML=`
+    <div class="gd-deal" onclick="onGoldenDealClick()">
+      <div class="gd-deal-route">
+        <div class="gdr-line">${escapeHtml(deal.origin||'')} → ${escapeHtml(deal.destination||'')}</div>
+        <div class="gdr-meta">🚌 ${escapeHtml(deal.bus_type||'Xe khách')} · 🕐 Khởi hành ${depTxt}${seatsTxt?' · '+seatsTxt:''}</div>
+      </div>
+      <div class="gd-deal-price">
+        ${pctBadge||''}
+        <div class="gdp-now">${priceHtml}</div>
+      </div>
+      <button class="gd-deal-cta" onclick="event.stopPropagation();onGoldenDealClick()">Xem ngay →</button>
+    </div>`;
+  _startGoldenDealCountdown(deal.departure_time);
+}
+function _startGoldenDealCountdown(departureTimeIso){
+  const el=document.getElementById('gdCountdown');
+  if(!el) return;
+  if(_gdCountdownTimer) clearInterval(_gdCountdownTimer);
+  const target=new Date(departureTimeIso).getTime();
+  function tick(){
+    const diff=target-Date.now();
+    if(!departureTimeIso || isNaN(target) || diff<=0){ el.textContent='Đang khởi hành'; return; }
+    const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
+    el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  tick();
+  _gdCountdownTimer=setInterval(tick,1000);
+}
+function onGoldenDealClick(){
+  const isGuest = typeof getUser!=='function' || !getUser();
+  if(isGuest){ openGoldenDealGate(); return; }
+  if(_gdDeal) _aiRecoClick(_gdDeal.origin, _gdDeal.destination);
+}
+function openGoldenDealGate(){ document.getElementById('gdLoginGate').style.display='flex'; }
+function closeGoldenDealGate(){
+  document.getElementById('gdLoginGate').style.display='none';
+  // "Để sau" still honors the click — takes the guest straight to the
+  // real search results, same as a logged-in user, just without the
+  // member-tier discount framing.
+  if(_gdDeal) _aiRecoClick(_gdDeal.origin, _gdDeal.destination);
+}
+
+/* ── CHECKLIST #1: keep Vé Giờ Vàng / AI Reco in sync with an active
+   search — called from searchTrips() right after it resolves. Both
+   widgets must show data DERIVED FROM the same real trip list the user
+   sees below (single source of truth), never an independent trending/
+   AI fetch that could legitimately disagree with what was searched. */
+function syncSmartWidgetsToSearch(origin, destination, trips){
+  const aiSection=document.getElementById('aiRecoSection');
+  const gdSection=document.getElementById('goldenDealSection');
+  if(!trips || !trips.length){
+    // The trip list below is showing "Không tìm thấy chuyến" — the
+    // widgets above must never keep showing an unrelated province's
+    // trending/AI card while that's true (this was the exact bug
+    // reported: "Lâm Đồng → Gia Lai" shown above a "not found" list).
+    if(aiSection) aiSection.style.display='none';
+    if(gdSection) gdSection.style.display='none';
+    if(_gdCountdownTimer){ clearInterval(_gdCountdownTimer); _gdCountdownTimer=null; }
+    return;
+  }
+
+  // Build cards directly from the real search results — one per distinct
+  // route among the results, cheapest-first so the most attractive real
+  // option leads.
+  const seen=new Set();
+  const cards=[];
+  trips.slice().sort((a,b)=>Number(a.base_price||0)-Number(b.base_price||0)).forEach(t=>{
+    const key=t.route_id!=null?('r'+t.route_id):(t.origin+'|'+t.destination);
+    if(seen.has(key)) return; seen.add(key);
+    cards.push({
+      route_id:t.route_id, trip_id:t.trip_id, origin:t.origin, destination:t.destination,
+      current_price:t.base_price, bus_type:t.bus_type, available_seats:t.available_seats,
+      departure_time:t.departure_time, avg_rating:t.avg_rating, trip_count:1,
+      _cat:'search', reasons:[], breakdown:{},
+    });
+  });
+  const top=cards.slice(0,4);
+
+  if(aiSection){
+    aiSection.style.display='block';
+    const cardsEl=document.getElementById('aiRecoCards');
+    const subtitle=document.getElementById('aiRecoSubtitle');
+    const metaEl=document.getElementById('aiRecoMeta');
+    const algoLbl=document.getElementById('aiRecoAlgoLabel');
+    if(cardsEl) cardsEl.innerHTML=top.map((r,i)=>_renderRecoCard(r,i)).join('');
+    if(subtitle) subtitle.textContent=`🔍 ${cards.length} chuyến khớp với tìm kiếm ${escapeHtml(origin)} → ${escapeHtml(destination)}`;
+    if(metaEl) metaEl.textContent='';
+    if(algoLbl) algoLbl.style.display='none'; // no AI-score formula behind a plain search match — don't imply there is one
+  }
+
+  if(gdSection){
+    // Golden Deal narrows to the single cheapest real trip among the
+    // results actually being shown below — never a separate pick.
+    renderGoldenDeal([cards[0]]);
+  }
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
+  initMemberBenefitBanner();
+  loadTrustStripRating();
+  loadCurrentUserTier();
+  loadSystemFeePct();
   // Defer AI reco so it doesn't compete with critical first-paint resources
   setTimeout(loadAIRecommendations, 200);
   document.getElementById('transitMapModal').addEventListener('click',function(e){

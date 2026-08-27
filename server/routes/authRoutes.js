@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const authController = require("../controllers/authController");
-const { strictLimiter } = require("../middleware/rateLimiter");
+const { strictLimiter, twoFactorLimiter } = require("../middleware/rateLimiter");
 const { authenticate } = require("../middleware/authMiddleware");
 
 // =============================
@@ -73,6 +73,16 @@ router.get("/facebook-config", (req, res) => {
     const configured = appId && appId !== "YOUR_FACEBOOK_APP_ID_HERE";
     res.json({ appId: configured ? appId : null, configured });
 });
+
+// =============================
+// 2FA (TOTP) — server-side (see authController.js's block comment)
+// =============================
+router.post("/2fa/setup", authenticate, authController.setup2FA);
+router.post("/2fa/verify-setup", authenticate, twoFactorLimiter, authController.verify2FASetup);
+router.post("/2fa/disable", authenticate, twoFactorLimiter, authController.disable2FA);
+// Public: caller only has a 2fa_pending token at this point, not a real
+// Bearer token — authMiddleware.authenticate would reject it anyway.
+router.post("/2fa/login-verify", twoFactorLimiter, authController.verify2FALogin);
 
 // =============================
 // TEST ROUTE

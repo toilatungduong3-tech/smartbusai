@@ -29,9 +29,14 @@ beforeEach(async () => { jest.clearAllMocks(); await cache.clear(); }); // each 
 ══════════════════════════════════════════ */
 describe('statsController.getPublicSummary', () => {
     test('returns real aggregate counts from a single query', async () => {
+        /* Fields extended for the "sức hút" UX pass (checklist: real
+           social-proof numbers instead of a fabricated "12,000+/month") —
+           reviewCount and completedTripsThisMonth back the homepage's
+           real review carousel / trust-strip rating, and completedTrips
+           is exposed alongside the derived completionRate. */
         db.query.mockResolvedValueOnce([[{
-            totalRoutes: 42, totalPassengers: 1234, avgRating: '4.6',
-            completedTrips: 900, canceledTrips: 100,
+            totalRoutes: 42, totalPassengers: 1234, avgRating: '4.6', reviewCount: 55,
+            completedTrips: 900, canceledTrips: 100, completedTripsThisMonth: 9,
         }]]);
         const req = {}, res = mockRes();
         await statsCtrl.getPublicSummary(req, res);
@@ -40,7 +45,8 @@ describe('statsController.getPublicSummary', () => {
         expect(db.query.mock.calls[0][0]).toMatch(/FROM users WHERE role = 'PASSENGER'/);
         expect(db.query.mock.calls[0][0]).toMatch(/FROM review/);
         expect(res.json).toHaveBeenCalledWith({
-            totalRoutes: 42, totalPassengers: 1234, avgRating: '4.6', completionRate: 90,
+            totalRoutes: 42, totalPassengers: 1234, avgRating: '4.6', reviewCount: 55,
+            completionRate: 90, completedTrips: 900, completedTripsThisMonth: 9,
         });
     });
 
@@ -58,6 +64,46 @@ describe('statsController.getPublicSummary', () => {
         db.query.mockRejectedValueOnce(new Error('connection lost'));
         const req = {}, res = mockRes();
         await statsCtrl.getPublicSummary(req, res);
+        expect(res.status).toHaveBeenCalledWith(500);
+    });
+});
+
+/* ══════════════════════════════════════════
+   2. statsController.getFeaturedReviews
+   Added for the "sức hút" UX pass — the homepage review carousel used
+   to render 6 entirely fabricated testimonials (invented names, dates,
+   a made-up "tiết kiệm 80k" claim) stamped "✔ Đã xác minh chuyến đi"
+   despite none of it being real. This endpoint replaces that with real
+   review rows, reviewer name masked the same way the public booking
+   ticker already masks names (bookingController._maskName).
+══════════════════════════════════════════ */
+describe('statsController.getFeaturedReviews', () => {
+    test('masks the reviewer full name the same way the booking ticker does, and only returns real fields', async () => {
+        db.query.mockResolvedValueOnce([[
+            { rating: 5, comment: 'Xe rất sạch sẽ!', full_name: 'Nguyễn Văn An', origin: 'Hà Nội', destination: 'Đà Nẵng' },
+        ]]);
+        const req = {}, res = mockRes();
+        await statsCtrl.getFeaturedReviews(req, res);
+        expect(db.query.mock.calls[0][0]).toMatch(/FROM review r/);
+        expect(db.query.mock.calls[0][0]).toMatch(/r\.rating >= 4/);
+        expect(res.json).toHaveBeenCalledWith([
+            { rating: 5, comment: 'Xe rất sạch sẽ!', reviewer: 'An N.', origin: 'Hà Nội', destination: 'Đà Nẵng' },
+        ]);
+    });
+
+    test('a single-word name masks to initial + *** (matches _maskName\'s own edge case)', async () => {
+        db.query.mockResolvedValueOnce([[
+            { rating: 4, comment: 'Tốt', full_name: 'Madonna', origin: 'A', destination: 'B' },
+        ]]);
+        const req = {}, res = mockRes();
+        await statsCtrl.getFeaturedReviews(req, res);
+        expect(res.json.mock.calls[0][0][0].reviewer).toBe('M***');
+    });
+
+    test('DB failure -> 500, never falls back to fabricated testimonials', async () => {
+        db.query.mockRejectedValueOnce(new Error('connection lost'));
+        const req = {}, res = mockRes();
+        await statsCtrl.getFeaturedReviews(req, res);
         expect(res.status).toHaveBeenCalledWith(500);
     });
 });

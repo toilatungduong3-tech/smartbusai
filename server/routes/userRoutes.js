@@ -22,6 +22,12 @@ router.delete("/:id", authenticate, requireAdmin,       ctrl.deleteUser);
 /* User data — self or admin */
 router.get("/:id/loyalty",        authenticate, requireSelfOrAdmin, ctrl.getUserLoyalty);
 router.post("/:id/redeem-points", authenticate, requireSelfOrAdmin, ctrl.redeemPoints);
+
+/* Sprint 24 — real, server-persisted vouchers (replaces the previous
+   entirely client-side localStorage['smartbus_vouchers'] wallet). */
+router.post("/:id/vouchers/redeem",    authenticate, requireSelfOrAdmin, ctrl.redeemVoucher);
+router.get("/:id/vouchers",            authenticate, requireSelfOrAdmin, ctrl.getVouchers);
+router.put("/:id/vouchers/:code/use",  authenticate, requireSelfOrAdmin, ctrl.useVoucher);
 router.get("/:id/stats",          authenticate, requireSelfOrAdmin, ctrl.getUserStats);
 router.get("/:id/monthly-stats",  authenticate, requireSelfOrAdmin, ctrl.getMonthlyStats);
 router.get("/:id/travel-profile", authenticate, requireSelfOrAdmin, ctrl.getTravelProfile);

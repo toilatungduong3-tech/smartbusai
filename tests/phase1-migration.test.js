@@ -79,8 +79,12 @@ describe('migrate.js — verifySchema() catches a migration that "succeeded" but
        column (Sprint 7), avatar_url column (Sprint 8), route_stop.stop_type
        WAYPOINT enum value (Sprint 10), user_behavior.event_type column and
        user_profiles_ai table (Sprint 11), booking user/status/time index
-       (Sprint 12). This queues a "everything present" response for all
-       seventeen, with `overrides` replacing specific positions — keeps
+       (Sprint 12), stale backup tables / invalid bus.status inverse checks
+       (Enterprise Hardening Pass), users.totp_enabled column and
+       users.id_number varchar(255) width (Sprint 23 — server-side 2FA +
+       PII encryption), voucher table (Sprint 24 — server-persisted
+       vouchers). This queues a "everything present" response for all
+       twenty-two, with `overrides` replacing specific positions — keeps
        each test declaring only what it's actually testing instead of
        re-typing the whole chain every time a check is added. */
     function queueAllPresent(overrides = {}) {
@@ -104,6 +108,9 @@ describe('migrate.js — verifySchema() catches a migration that "succeeded" but
             [[{ c: 1 }]],                                                          // 16: booking(user_id,status,booking_time) index
             [[{ c: 0 }]],                                                          // 17: stale backup tables (0 = both dropped, passes)
             [[{ c: 0 }]],                                                          // 18: invalid/blank bus.status rows (0 = all normalized, passes)
+            [[{ c: 1 }]],                                                          // 19: users.totp_enabled column (Sprint 23 — server-side 2FA)
+            [[{ len: 255 }]],                                                      // 20: users.id_number widened to varchar(255) (Sprint 23 — PII encryption)
+            [[{ c: 1 }]],                                                          // 21: voucher table (Sprint 24 — server-persisted loyalty vouchers)
         ];
         Object.entries(overrides).forEach(([i, v]) => { defaults[i] = v; });
         defaults.forEach(v => db.query.mockResolvedValueOnce(v));
@@ -222,5 +229,23 @@ describe('migrate.js — verifySchema() catches a migration that "succeeded" but
         queueAllPresent({ 18: [[{ c: 40 }]] }); // 40 buses still have status=''
         const missing = await verifySchema();
         expect(missing.some(m => m.includes('invalid/blank status'))).toBe(true);
+    });
+
+    test('users.totp_enabled column missing is reported (Sprint 23 — server-side 2FA depends on this)', async () => {
+        queueAllPresent({ 19: [[{ c: 0 }]] });
+        const missing = await verifySchema();
+        expect(missing.some(m => m.includes('totp_enabled'))).toBe(true);
+    });
+
+    test('users.id_number not widened to varchar(255) is reported (Sprint 23 — AES-256-GCM ciphertext no longer fits varchar(20))', async () => {
+        queueAllPresent({ 20: [[{ len: 20 }]] }); // still the old pre-encryption width
+        const missing = await verifySchema();
+        expect(missing.some(m => m.includes('id_number') && m.includes('varchar(255)'))).toBe(true);
+    });
+
+    test('voucher table missing is reported (Sprint 24 — server-persisted loyalty vouchers depends on this)', async () => {
+        queueAllPresent({ 21: [[{ c: 0 }]] });
+        const missing = await verifySchema();
+        expect(missing.some(m => m.includes('voucher table'))).toBe(true);
     });
 });

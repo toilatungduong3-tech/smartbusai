@@ -439,6 +439,7 @@ select.form-control option{background:#0d1827;}
 </style>
 <link rel="preconnect" href="https://unpkg.com">
 <script src="/js/api.js"></script>
+<script src="/js/mapRouting.js"></script>
 <script>
 /* Sprint 7 — same on-demand lazy-load pattern already proven for the
    passenger homepage (Sprint 4): Leaflet is only ever used inside
@@ -1719,17 +1720,26 @@ async function openMapModal(tripId) {
     const mid = [(c1[0]+c2[0])/2, (c1[1]+c2[1])/2];
     _opMap = L.map('opMapLeaflet', { center: mid, zoom: 6, zoomControl: true, attributionControl: false });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd', maxZoom: 19
-    }).addTo(_opMap);
+    sbAddTerrainTile(_opMap);
 
     try { _opMap.fitBounds(L.latLngBounds([c1, c2]).pad(0.22)); } catch(e) {}
 
     // Dashed background line
     L.polyline([c1, c2], { color: 'rgba(99,102,241,0.18)', weight: 3, dashArray: '10 7' }).addTo(_opMap);
 
-    // Main route line
-    L.polyline([c1, c2], { color: '#818cf8', weight: 5, lineCap: 'round' }).addTo(_opMap);
+    // Main route line — real road-following path from OSRM, using every
+    // real route_stop as an ordered waypoint when available so it bends
+    // through them instead of just the two endpoints. Starts as a straight
+    // line for instant feedback, upgraded in place once OSRM resolves;
+    // falls back to the straight line on any OSRM failure.
+    const mainRouteLine = L.polyline([c1, c2], { color: '#818cf8', weight: 5, lineCap: 'round' }).addTo(_opMap);
+    try{
+      const osrm = await sbFetchOsrmRoute([c1, c2], { timeoutMs: 7000 });
+      if(osrm && osrm.points && osrm.points.length>1 && _opMap){
+        mainRouteLine.setLatLngs(osrm.points);
+        try{ _opMap.fitBounds(L.latLngBounds(osrm.points).pad(0.12)); }catch(e){}
+      }
+    }catch(e){ /* keep the straight-line fallback already on the map */ }
 
     // Origin marker (green)
     const mkStart = L.divIcon({ html: `<div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(46,204,113,.8))">🟢</div>`, iconSize: [26,26], iconAnchor: [13,13], className: '' });

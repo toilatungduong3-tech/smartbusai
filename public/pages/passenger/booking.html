@@ -1686,6 +1686,7 @@ header{
 </style>
 <script src="/js/api.js"></script>
 <script src="/js/legalModal.js"></script>
+<script src="/js/pricing.js"></script>
 <script>
 (function(){var u;try{u=JSON.parse(localStorage.getItem('user')||'null');}catch(e){}if(!u)return;if(u.role==='ADMIN'){window.location.replace('/pages/admin/admin.html');return;}if(u.role==='OPERATOR'){window.location.replace('/pages/operator/operator.html');}})();
 </script>
@@ -2590,7 +2591,7 @@ function updateSeatBadge(){
     badge.innerHTML = `
       <div class="ssb-seats">Đã chọn: <b id="ssbSeatNames">—</b></div>
       <div class="ssb-price" id="ssbTotal">0 ₫</div>
-      <button class="ssb-confirm" onclick="document.querySelector('.btn-confirm-seats, #confirmSeatsBtn, [onclick*=\\"confirm\\"]')?.click()">Xác nhận →</button>
+      <button class="ssb-confirm" id="ssbConfirmBtn" onclick="createBooking()">Xác nhận →</button>
     `;
     document.body.appendChild(badge);
   }
@@ -2600,7 +2601,18 @@ function updateSeatBadge(){
   }
   badge.style.display = 'flex';
   document.getElementById('ssbSeatNames').textContent = selectedSeats.map(s=>s.number||s.seat_number||s).join(', ');
-  const total = selectedSeats.reduce((acc,s)=>acc+(s.price||seatPrice||0),0);
+  // Bug fix: this used to fall back to `s.price` for every seat, but
+  // selectedSeats entries never carry a .price field (see the push() in
+  // the seat-toggle handler) — it silently used the same non-VIP seatPrice
+  // for VIP seats too, both under- and over-counting the real total shown
+  // here vs. the actual sidebar/DB total. Mirror the same
+  // Math.round(seatPrice*vipMult) VIP math used everywhere else on this
+  // page (updatePrice/createBooking/etc), and round the sum defensively —
+  // a % fee/discount multiplication upstream should already be integer
+  // VND by the time it reaches seatPrice, but this is the last line of
+  // defense against a stray decimal ever reaching the display.
+  const vipMult = 1 + (_sysSettings.vipSurcharge||50)/100;
+  const total = Math.round(selectedSeats.reduce((acc,s)=>acc+(s.type==='VIP'?Math.round(seatPrice*vipMult):seatPrice),0));
   document.getElementById('ssbTotal').textContent = total.toLocaleString('vi-VN') + ' ₫';
 }
 
@@ -2623,15 +2635,60 @@ let _sysSettings = { systemFee:0, payTimeout:15, vipSurcharge:50, maxTickets:10 
   try{ if(typeof initProfileDropdown==="function") initProfileDropdown("sbProfile"); }catch{}
 })();
 
+/* ── LOYALTY TIER PRICING (checklist: booking page total must match the
+   discounted price already shown on the homepage cards for this same
+   trip) — applyUserTierDiscount() (shared, /js/pricing.js) mirrors
+   server/services/loyaltyService.js's own version exactly, same formula
+   index.html's trip list/AI Reco/Golden Deal use. The actual charge is
+   still computed server-side in bookingController.createBooking from the
+   caller's verified JWT (never trusted from here) — this is only so the
+   PREVIEW on this page, before the user ever submits, already shows that
+   same real number instead of the pre-discount one. */
+let _loyaltyTier='BRONZE';
+async function _loadLoyaltyTier(){
+  const uid=typeof getUserId==='function'?getUserId():null;
+  const token=typeof getAccessToken==='function'?getAccessToken():null;
+  if(!uid||!token) return 'BRONZE';
+  try{
+    const res=await fetch(`/api/users/${uid}/loyalty`,{headers:{Authorization:`Bearer ${token}`}});
+    if(!res.ok) return 'BRONZE';
+    const data=await res.json();
+    return data.tier||'BRONZE';
+  }catch(e){ return 'BRONZE'; }
+}
+
 /* ── LOAD TRIP (plate_number from BUS table via JOIN) ── */
 async function loadTrip(){
   try{
     const res=await fetch(`/api/trips/${tripId}`);
     if(!res.ok) throw new Error();
     const t=await res.json();
-    /* Apply system fee to base price */
+    /* Dynamic pricing (early-bird/last-minute + occupancy) — the same
+       calculation index.html's search results already showed for this
+       trip. This page previously read t.base_price directly, skipping
+       dynamic pricing entirely: for a >14-day-ahead booking (a real -15%
+       early-bird discount on the search list), the seat price shown here
+       — and what createBooking then actually charged — came out ~17.6%
+       higher than what the user had just seen in search results. Falls
+       back to base_price only if the dynamic-price endpoint is
+       unreachable, so a transient error here never blocks booking. */
+    let dynamicBase = Number(t.base_price) || 0;
+    try{
+      const dynRes = await fetch(`/api/trips/dynamic-price/${tripId}`);
+      if(dynRes.ok){
+        const dyn = await dynRes.json();
+        if(dyn.dynamicPrice) dynamicBase = Number(dyn.dynamicPrice);
+      }
+    }catch(e){ /* keep base_price fallback */ }
+
+    /* Apply the loyalty tier discount and system fee via the shared
+       applyUserTierDiscount() helper — every downstream seat/VIP/total
+       calculation in this file reads from seatPrice, so folding it in
+       here once is enough to keep the whole page consistent with what
+       createBooking will actually charge. */
     const fee = _sysSettings.systemFee || 0;
-    seatPrice=Math.round((Number(t.base_price)||0) * (1 + fee/100));
+    _loyaltyTier = await _loadLoyaltyTier();
+    seatPrice = applyUserTierDiscount(dynamicBase, _loyaltyTier, fee).finalPrice;
 
     /* plate_number is the ERD field from BUS table */
     const plate=t.plate_number||t.plate||"BSX–0000";
@@ -2641,7 +2698,6 @@ async function loadTrip(){
     if(t.origin&&t.destination)
       document.getElementById("busRouteDisplay").textContent=t.origin+" → "+t.destination;
 
-    currentBusType=t.bus_type||"NORMAL";
     _tripDistance=Number(t.distance_km||t.distance||t.route_distance||t.estimated_distance||0);
 
     let dur="";
@@ -2652,6 +2708,19 @@ async function loadTrip(){
       // Fallback: if distance not stored in DB, estimate from duration (65 km/h avg)
       if(_tripDistance===0 && d>0) _tripDistance=Math.round((d/3600000)*65);
     }
+
+    /* Checklist: distance_km is now the single source of truth for which
+       vehicle model/seat layout renders — previously currentBusType came
+       straight from the DB's own bus_type string, which could disagree
+       with the trip's real distance (e.g. an 800km route still stored as
+       "NORMAL"). Left ambiguous like that, the 2D seat map and the 3D
+       panorama each independently guessed from the same fuzzy string and
+       could render two DIFFERENT vehicle models for the one trip. Forcing
+       it here — >200km always sleeper/2-floor, <=200km always seated —
+       makes every downstream consumer (buildSeatMap's isSleeper/
+       isDoubleFloor, _b3isSleeper/_b3isLuxury in the 3D panorama) agree,
+       since they all read this same currentBusType value. */
+    currentBusType = _tripDistance>200 ? "SLEEPER" : "NORMAL";
 
     const dep=new Date(t.departure_time), arr=new Date(t.arrival_time);
     const depTime=isNaN(dep.getTime())?"—":dep.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
@@ -2693,7 +2762,7 @@ async function loadTrip(){
         <div class="meta-item"><span class="meta-label">Ghế thường</span><span class="meta-value" style="color:#2ecc71;">${fmt(seatPrice)} đ</span></div>
         <div class="meta-item"><span class="meta-label">Ghế VIP (+${_sysSettings.vipSurcharge}%)</span><span class="meta-value" style="color:#c4b5fd;">${fmt(Math.round(seatPrice*(1+_sysSettings.vipSurcharge/100)))} đ</span></div>
         <div class="meta-item"><span class="meta-label">Khoảng cách</span><span class="meta-value">${t.distance_km?t.distance_km+" km":"—"}</span></div>
-        <div class="meta-item"><span class="meta-label">Loại xe</span><span class="meta-value">${t.bus_type||"NORMAL"}</span></div>
+        <div class="meta-item"><span class="meta-label">Loại xe</span><span class="meta-value">${currentBusType==="SLEEPER"?"🛏️ Giường nằm":"💺 Ghế ngồi"}</span></div>
         <div class="meta-item"><span class="meta-label">Đánh giá</span><span class="meta-value">⭐ ${t.avg_rating?Number(t.avg_rating).toFixed(1):"Mới"}</span></div>
       </div>`;
     if(t.departure_time) startPanelCountdown(t.departure_time);
@@ -2762,7 +2831,7 @@ function buildSeatMap(seats, busType){
   document.getElementById("seatSubtitle").textContent=
     `${seats.length} ghế · ${free} còn trống · Chạm để chọn`;
   document.getElementById("busTypeLabel").textContent=
-    _tripDistance>150?"🛏️ Xe Giường Nằm Hạng Sang":layout.label;
+    _tripDistance>200?"🛏️ Xe Giường Nằm Hạng Sang":layout.label;
 
   /* Update legend counts */
   const lcAvail=document.getElementById("lc-available");
@@ -3354,42 +3423,49 @@ function updatePrice(){
 /* ── VOUCHER SYSTEM ── */
 let _appliedVoucher=null, _voucherDiscount=0;
 
-function _getVoucherFreeCount(codeType){
-  if(!codeType)return 0;
-  const m=codeType.match(/FREE(\d+)/);
-  return m?parseInt(m[1]):0;
+/* Sprint 24 — vouchers are now real, server-persisted rows
+   (GET/POST/PUT /api/users/:id/vouchers*, see loyaltyService.js) instead
+   of a JSON blob in localStorage['smartbus_vouchers'] that only existed on
+   one browser/device and was never actually verified against a real
+   points balance at redemption time. */
+async function _fetchActiveVouchers(){
+  const uid=typeof getUserId==='function'?getUserId():null;
+  if(!uid) return [];
+  try{
+    const vouchers=await api.get(`/users/${uid}/vouchers`);
+    return (vouchers||[]).filter(v=>!v.is_used);
+  }catch(e){ return []; }
 }
 
-function initVoucherSection(){
-  const vouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
-  const active=vouchers.filter(v=>!v.used);
+async function initVoucherSection(){
+  const active=await _fetchActiveVouchers();
   const badge=document.getElementById('voucherBadge');
   const selBtn=document.getElementById('voucherSelectBtn');
   if(badge){badge.textContent=active.length+' khả dụng';badge.style.display=active.length>0?'':'none';}
   if(selBtn){selBtn.style.display=active.length>0?'':'none';}
 }
 
-function applyVoucher(){
+async function applyVoucher(){
   const code=(document.getElementById('voucherInp').value||'').trim().toUpperCase();
   if(!code){showToast('Vui lòng nhập mã voucher','error');return;}
-  const vouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
-  const v=vouchers.find(x=>x.code===code&&!x.used);
+  const active=await _fetchActiveVouchers();
+  const v=active.find(x=>x.code===code);
   if(!v){showToast('Mã voucher không hợp lệ hoặc đã được sử dụng','error');return;}
   _setVoucher(v);
 }
 
 function _setVoucher(v){
   _appliedVoucher=v;
-  const freeCount=_getVoucherFreeCount(v.codeType);
+  const freeCount=v.free_seats||0;
   const seats=selectedSeats.length||1;
   _voucherDiscount=seatPrice*(Math.min(seats,freeCount));
   const fmt=n=>Number(n).toLocaleString('vi-VN');
   document.getElementById('voucherInp').value=v.code;
   const ap=document.getElementById('voucherApplied');
   ap.classList.add('show');
-  document.getElementById('voucherAppliedTxt').textContent=`✅ ${v.name} · Giảm ${fmt(_voucherDiscount)}đ (${freeCount} vé miễn phí)`;
+  document.getElementById('voucherAppliedTxt').textContent=`✅ ${v.reward_name} · Giảm ${fmt(_voucherDiscount)}đ (${freeCount} vé miễn phí)`;
   showToast('✅ Đã áp dụng voucher '+v.code+' — giảm '+fmt(_voucherDiscount)+'đ','success');
-  updateSeatDisplay();
+  updatePrice();
 }
 
 function removeVoucher(){
@@ -3397,19 +3473,18 @@ function removeVoucher(){
   document.getElementById('voucherInp').value='';
   document.getElementById('voucherApplied').classList.remove('show');
   showToast('Đã xoá voucher','info');
-  updateSeatDisplay();
+  updatePrice();
 }
 
-function openVoucherPicker(){
-  const vouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
-  const active=vouchers.filter(v=>!v.used);
+async function openVoucherPicker(){
+  const active=await _fetchActiveVouchers();
   const list=document.getElementById('voucherPickerList');
   if(!active.length){list.innerHTML='<div class="voucher-picker-empty">🎟 Không có voucher khả dụng</div>';
   }else{
     list.innerHTML=active.map(v=>`<div class="voucher-picker-item" onclick="pickVoucher('${v.code}')">
       <div style="flex:1;">
         <div class="voucher-picker-code">${v.code}</div>
-        <div class="voucher-picker-desc">${v.name} · Lưu lúc ${new Date(v.savedAt).toLocaleDateString('vi-VN')}</div>
+        <div class="voucher-picker-desc">${v.reward_name} · Lưu lúc ${new Date(v.created_at).toLocaleDateString('vi-VN')}</div>
       </div>
       <span style="font-size:18px;">🎟</span>
     </div>`).join('');
@@ -3417,10 +3492,10 @@ function openVoucherPicker(){
   document.getElementById('voucherPickerModal').classList.add('open');
 }
 function closeVoucherPicker(){document.getElementById('voucherPickerModal').classList.remove('open');}
-function pickVoucher(code){
+async function pickVoucher(code){
   closeVoucherPicker();
-  const vouchers=JSON.parse(localStorage.getItem('smartbus_vouchers')||'[]');
-  const v=vouchers.find(x=>x.code===code&&!x.used);
+  const active=await _fetchActiveVouchers();
+  const v=active.find(x=>x.code===code);
   if(v)_setVoucher(v);
 }
 
@@ -3881,11 +3956,16 @@ async function submitBooking(payment, totalAmount, bookingStatus="PAID"){
     const data=await res.json();
     if(res.ok){
       if(_appliedVoucher){
-        const key='smartbus_vouchers';
-        const vouchers=JSON.parse(localStorage.getItem(key)||'[]');
-        const idx=vouchers.findIndex(x=>x.code===_appliedVoucher.code);
-        if(idx>=0){vouchers[idx].used=true;vouchers[idx].usedAt=new Date().toISOString();}
-        localStorage.setItem(key,JSON.stringify(vouchers));
+        // Sprint 24 — mark the real, server-persisted voucher used (was:
+        // flip a `used` flag inside localStorage['smartbus_vouchers']).
+        // Best-effort: a failure here must never block the booking that
+        // already succeeded — the voucher would just remain "unused" and
+        // block a future redeem until an admin/backend cleanup, which is
+        // safer than silently losing a successful booking.
+        try{
+          await api.put(`/users/${userId}/vouchers/${_appliedVoucher.code}/use`, { booking_id: data.booking_id });
+          api.clearCache(`/users/${userId}/vouchers`);
+        }catch(e){ /* non-critical */ }
         _appliedVoucher=null;_voucherDiscount=0;
       }
       if(bookingStatus==="PAID"){
@@ -4009,7 +4089,10 @@ function renderBusFeatures(trip){
   const grid=document.getElementById('bfsGrid');
   if(!card||!grid||!trip) return;
   const busType=(trip.bus_type||'').toUpperCase();
-  const isSleeper=/SLEEPER|LIMOUSINE/i.test(busType);
+  // isSleeper follows the same distance-derived currentBusType the seat
+  // map/3D panorama use (see loadTrip) — not the raw DB bus_type string —
+  // so this amenities card never contradicts what the seat map is showing.
+  const isSleeper=currentBusType==="SLEEPER";
   const isVip=/VIP/i.test(busType);
   const features=[
     {icon:'❄️', label:'Điều hoà', always:true, hl:false},
@@ -4719,11 +4802,11 @@ function _b3isSleeper(){
   const t=currentBusType.toUpperCase();
   return currentLayoutId==='CAPSULE'
       || /VIP|SLEEPER|BED|CABIN|LUX|GIUONG|GIƯỜNG/.test(t)
-      || _tripDistance>150;
+      || _tripDistance>200;
 }
 function _b3isLuxury(){
   const t=currentBusType.toUpperCase();
-  return /VIP|LUX|CABIN/.test(t)||_tripDistance>150;
+  return /VIP|LUX|CABIN/.test(t)||_tripDistance>200;
 }
 
 function enterBus3D(){

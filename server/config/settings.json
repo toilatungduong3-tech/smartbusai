@@ -13,9 +13,9 @@
     "zalopay": true,
     "bank": true
   },
-  "systemFee": 9,
+  "systemFee": 1,
   "minAmount": 10000,
-  "payTimeout": 15,
+  "payTimeout": 16,
   "refundMode": "auto",
   "cancelTime": 24,
   "maxTickets": 4,

@@ -36,4 +36,11 @@ router.post('/predict-intent',       aiLimiter, optionalAuth, ctrl.predictIntent
 router.get('/demand-forecast',       authenticate, requireAdminOrOperator, ctrl.demandForecast);
 router.get('/behavioral-analytics',  authenticate, requireAdminOrOperator, ctrl.getBehavioralAnalytics);
 
+// Backend proxy for the two client-side "call Anthropic directly" AI chat
+// features (index.html passenger chat, admin/support.html ticket AI) — see
+// passengerAIController.aiChat / server/services/anthropicService.js.
+// optionalAuth: used by both anonymous visitors (index.html) and admins
+// (support.html); aiLimiter caps abuse since there's no per-user quota.
+router.post('/chat', aiLimiter, optionalAuth, ctrl.aiChat);
+
 module.exports = router;

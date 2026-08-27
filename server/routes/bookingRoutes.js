@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bookingController = require("../controllers/bookingController");
-const { authenticate, requireSelfOrAdmin, requireAdminOrOperator } = require("../middleware/authMiddleware");
+const { authenticate, optionalAuth, requireSelfOrAdmin, requireAdminOrOperator } = require("../middleware/authMiddleware");
 const { attachOperatorId } = require("../middleware/operatorScope");
 
 /* GET guest lookup  — /api/bookings/lookup?code=X&phone=Y (public, no auth) */
@@ -25,8 +25,16 @@ router.get("/",          authenticate, requireAdminOrOperator, attachOperatorId,
    Phase 2I: profile.html already sends a JWT here via authFetch(). */
 router.get("/user/:id",  authenticate, requireSelfOrAdmin, bookingController.getBookingsByUser);
 
-/* POST create       — /api/bookings (stays public: guest checkout) */
-router.post("/",         bookingController.createBooking);
+/* POST create       — /api/bookings (stays public: guest checkout)
+   optionalAuth added for real loyalty-tier discount pricing: if a valid
+   Bearer token is present, req.user carries the CRYPTOGRAPHICALLY
+   VERIFIED caller identity, which createBooking uses to look up that
+   user's real tier server-side. The client-supplied body.user_id is
+   still accepted for guest/association purposes exactly as before, but
+   is NEVER trusted for discount eligibility — only req.user (verified)
+   can grant a discount, closing off the obvious spoof ("claim a Diamond
+   user's user_id in the body while not authenticated as them"). */
+router.post("/",         optionalAuth, bookingController.createBooking);
 
 /* POST pay           — /api/bookings/:id/pay  (before /:id to avoid clash)
    Phase 2I: previously unauthenticated — anyone could mark any booking PAID

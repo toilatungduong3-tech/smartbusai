@@ -10,6 +10,12 @@ const crypto  = require("crypto");
 const emailService = require("../services/emailService");
 const { validatePasswordStrength } = require("../utils/passwordPolicy");
 const logger = require('../utils/logger');
+const totp = require("../utils/totp");
+const { encryptPII, decryptPII } = require("../utils/piiCrypto");
+
+// 2FA-pending token: short-lived, single-purpose — see authMiddleware.js's
+// rejection of purpose:'2fa_pending' on every other endpoint.
+const TWOFA_PENDING_EXPIRES = "5m";
 
 // Khóa bí mật JWT — nguồn duy nhất, xem server/config/jwtSecret.js
 const JWT_SECRET = require("../config/jwtSecret");
@@ -319,6 +325,20 @@ exports.login = async (req, res) => {
             } catch (_) { /* settings file missing — allow login */ }
         }
 
+        /* Server-side 2FA gate (real, not the old client-only simulation):
+           a user with totp_enabled=1 does NOT get real tokens from a
+           correct password alone. They get a short-lived, single-purpose
+           pending token that only POST /api/auth/2fa/login-verify accepts
+           — authMiddleware.js rejects it everywhere else. */
+        if (user.totp_enabled) {
+            const pendingToken = jwt.sign(
+                { user_id: user.user_id, purpose: "2fa_pending" },
+                JWT_SECRET,
+                { expiresIn: TWOFA_PENDING_EXPIRES }
+            );
+            return res.json({ requires2FA: true, pendingToken });
+        }
+
         // ── Tạo JWT tokens ──
         const { accessToken, refreshToken } = generateTokens(user);
 
@@ -451,6 +471,164 @@ exports.logout = async (req, res) => {
         // because the revocation write failed — fail open on the response,
         // the tokens still naturally expire within 15m/7d regardless.
         return res.json({ message: "Đăng xuất thành công" });
+    }
+};
+
+// =================================
+// 2FA (TOTP) — server-side, replaces the old fully client-side simulation
+// in profile.html (secret generated + verified in the browser, state kept
+// in localStorage['smartbus_2fa'] — an attacker with DevTools access could
+// read the secret directly, or just flip the "enabled" flag in
+// localStorage, defeating the entire point of a second factor).
+// =================================
+
+// POST /api/auth/2fa/setup  (requires authenticate)
+// Generates a new secret, stores it encrypted, but does NOT enable 2FA yet
+// — enabling only happens after verify2FASetup proves the user actually
+// scanned it into a real authenticator app.
+exports.setup2FA = async (req, res) => {
+    try {
+        const [[user]] = await db.query("SELECT email FROM users WHERE user_id=?", [req.user.user_id]);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const secret = totp.generateSecret();
+        await db.query(
+            "UPDATE users SET totp_secret_enc=?, totp_enabled=0, totp_backup_codes=NULL WHERE user_id=?",
+            [encryptPII(secret), req.user.user_id]
+        );
+
+        res.json({
+            secret, // shown once, for manual entry as a fallback to scanning the QR
+            otpauthUrl: totp.buildOtpauthUrl(secret, user.email || `user${req.user.user_id}@smartbusai.vn`),
+        });
+    } catch (err) {
+        logger.error("2FA setup error:", err);
+        res.status(500).json({ message: "Không thể khởi tạo 2FA" });
+    }
+};
+
+// POST /api/auth/2fa/verify-setup  (requires authenticate)  body: { code }
+// Confirms the user's authenticator app is actually in sync, then flips
+// totp_enabled=1 and issues one-time-viewable backup codes (hashed with
+// bcrypt before storage — same as a password, never kept recoverable).
+exports.verify2FASetup = async (req, res) => {
+    try {
+        const { code } = req.body;
+        const [[row]] = await db.query("SELECT totp_secret_enc FROM users WHERE user_id=?", [req.user.user_id]);
+        const secret = row && decryptPII(row.totp_secret_enc);
+        if (!secret) return res.status(400).json({ message: "Chưa khởi tạo 2FA — gọi /2fa/setup trước" });
+
+        if (!totp.verifyTotp(secret, code)) {
+            return res.status(400).json({ message: "Mã xác minh không đúng" });
+        }
+
+        const backupCodes = totp.generateBackupCodes(8);
+        const hashed = await Promise.all(backupCodes.map(c => bcrypt.hash(c, 10)));
+        await db.query(
+            "UPDATE users SET totp_enabled=1, totp_backup_codes=? WHERE user_id=?",
+            [JSON.stringify(hashed), req.user.user_id]
+        );
+
+        res.json({ message: "Đã bật xác thực 2 bước", backupCodes });
+    } catch (err) {
+        logger.error("2FA verify-setup error:", err);
+        res.status(500).json({ message: "Không thể xác minh 2FA" });
+    }
+};
+
+// POST /api/auth/2fa/disable  (requires authenticate)  body: { code }
+// Accepts either a live TOTP code or one of the unused backup codes.
+exports.disable2FA = async (req, res) => {
+    try {
+        const { code } = req.body;
+        const [[row]] = await db.query(
+            "SELECT totp_secret_enc, totp_backup_codes FROM users WHERE user_id=?", [req.user.user_id]
+        );
+        if (!row || !row.totp_secret_enc) return res.status(400).json({ message: "2FA chưa được bật" });
+
+        const secret = decryptPII(row.totp_secret_enc);
+        let ok = totp.verifyTotp(secret, code);
+        if (!ok && row.totp_backup_codes) {
+            const hashes = JSON.parse(row.totp_backup_codes);
+            for (const h of hashes) {
+                if (await bcrypt.compare(String(code || "").trim(), h)) { ok = true; break; }
+            }
+        }
+        if (!ok) return res.status(400).json({ message: "Mã xác minh không đúng" });
+
+        await db.query(
+            "UPDATE users SET totp_enabled=0, totp_secret_enc=NULL, totp_backup_codes=NULL WHERE user_id=?",
+            [req.user.user_id]
+        );
+        res.json({ message: "Đã tắt xác thực 2 bước" });
+    } catch (err) {
+        logger.error("2FA disable error:", err);
+        res.status(500).json({ message: "Không thể tắt 2FA" });
+    }
+};
+
+// POST /api/auth/2fa/login-verify  (public — the caller only has a
+// 2fa_pending token, not yet authenticated)  body: { pendingToken, code }
+// Second half of login() when totp_enabled=1 — verifies the pending token
+// itself (signature + purpose + expiry) before trusting decoded.user_id.
+exports.verify2FALogin = async (req, res) => {
+    try {
+        const { pendingToken, code } = req.body;
+        if (!pendingToken || !code) return res.status(400).json({ message: "Thiếu pendingToken hoặc code" });
+
+        let decoded;
+        try {
+            decoded = jwt.verify(pendingToken, JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ message: "Phiên xác thực 2FA đã hết hạn, vui lòng đăng nhập lại" });
+        }
+        if (decoded.purpose !== "2fa_pending") {
+            return res.status(401).json({ message: "Token không hợp lệ cho bước xác thực này" });
+        }
+
+        const [[user]] = await db.query("SELECT * FROM users WHERE user_id=?", [decoded.user_id]);
+        if (!user || !user.totp_enabled) return res.status(400).json({ message: "Tài khoản này không bật 2FA" });
+        if (user.status !== "ACTIVE") return res.status(403).json({ message: "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ." });
+
+        const secret = decryptPII(user.totp_secret_enc);
+        let ok = totp.verifyTotp(secret, code);
+        let usedBackupHash = null;
+        if (!ok && user.totp_backup_codes) {
+            const hashes = JSON.parse(user.totp_backup_codes);
+            for (const h of hashes) {
+                if (await bcrypt.compare(String(code).trim(), h)) { ok = true; usedBackupHash = h; break; }
+            }
+        }
+        if (!ok) return res.status(400).json({ message: "Mã xác minh không đúng" });
+
+        // A consumed backup code is single-use — remove it so it can't be replayed.
+        if (usedBackupHash) {
+            const hashes = JSON.parse(user.totp_backup_codes).filter(h => h !== usedBackupHash);
+            await db.query("UPDATE users SET totp_backup_codes=? WHERE user_id=?", [JSON.stringify(hashes), user.user_id]);
+        }
+
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        let operator_id = null, operator_name = null;
+        if (user.role === "OPERATOR" && user.operator_id != null) {
+            try {
+                const [[op]] = await db.query("SELECT operator_id, name FROM bus_operator WHERE operator_id=? LIMIT 1", [user.operator_id]);
+                if (op) { operator_id = op.operator_id; operator_name = op.name; }
+            } catch (_) { /* non-critical */ }
+        }
+
+        res.json({
+            message: "Login successful",
+            user: {
+                user_id: user.user_id, username: user.username, full_name: user.full_name,
+                email: user.email, role: user.role, avatar_url: user.avatar_url || null,
+                operator_id, operator_name,
+            },
+            accessToken, refreshToken,
+        });
+    } catch (err) {
+        logger.error("2FA login-verify error:", err);
+        res.status(500).json({ message: "Không thể xác minh đăng nhập" });
     }
 };
 

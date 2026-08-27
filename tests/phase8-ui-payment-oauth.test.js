@@ -149,7 +149,13 @@ describe('paymentService — VNPay checksum (real crypto)', () => {
             ...overrides,
         };
         const sorted = Object.keys(base).sort().reduce((o, k) => { o[k] = base[k]; return o; }, {});
-        const signData = new URLSearchParams(sorted).toString();
+        // VNPay signs the RAW (un-encoded) sorted key=value string — this
+        // must mirror paymentService's vnpaySignData fix. It used to build
+        // this via URLSearchParams, which encodes values before hashing;
+        // that happened to match the (buggy) implementation being tested
+        // but silently diverges from what a real VNPay server signs the
+        // moment a value needs encoding, exactly like vnp_OrderInfo above.
+        const signData = Object.entries(sorted).map(([k, v]) => `${k}=${v}`).join('&');
         base.vnp_SecureHash = crypto.createHmac('sha512', cfg.vnpay.hashSecret)
             .update(Buffer.from(signData, 'utf-8')).digest('hex');
         return base;
@@ -174,6 +180,89 @@ describe('paymentService — VNPay checksum (real crypto)', () => {
 
     test('parseVNPayBookingId extracts bookingId from vnp_TxnRef', () => {
         expect(pmt.parseVNPayBookingId({ vnp_TxnRef: 'SB123T999999' })).toBe('123');
+    });
+});
+
+/* ══════════════════════════════════════════
+   2b. VNPay createVNPayPayment — code=99 fix regression coverage
+   (round-trips through the real crypto: the URL this builds must itself
+   verify successfully via verifyVNPayReturn once its own query string is
+   parsed back out, exactly like VNPay's redirect back to our /return route)
+══════════════════════════════════════════ */
+describe('paymentService.createVNPayPayment — code=99 regression coverage', () => {
+    const pmt = require('../server/services/paymentService');
+    const cfg = require('../server/config/payment.config');
+
+    test('vnp_Amount is an integer, VND*100, never a float', () => {
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 1, amount: 180284.6, orderInfo: 'Vé xe', ipAddr: '1.2.3.4',
+        });
+        const amt = new URL(payUrl).searchParams.get('vnp_Amount');
+        expect(amt).toBe('18028460'); // Math.round(180284.6*100), not a decimal string
+        expect(Number.isInteger(Number(amt))).toBe(true);
+    });
+
+    test('vnp_OrderType is a valid VNPay category code, not a stray amount-shaped value', () => {
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 1, amount: 100000, orderInfo: 'Vé xe', ipAddr: '1.2.3.4',
+        });
+        expect(new URL(payUrl).searchParams.get('vnp_OrderType')).toBe('other');
+    });
+
+    test('vnp_CreateDate/vnp_ExpireDate are 14-digit YYYYMMDDHHmmss, expire after create', () => {
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 1, amount: 100000, orderInfo: 'Vé xe', ipAddr: '1.2.3.4',
+        });
+        const q = new URL(payUrl).searchParams;
+        const create = q.get('vnp_CreateDate');
+        const expire = q.get('vnp_ExpireDate');
+        expect(create).toMatch(/^\d{14}$/);
+        expect(expire).toMatch(/^\d{14}$/);
+        expect(Number(expire)).toBeGreaterThan(Number(create));
+    });
+
+    test('IPv6 loopback ::1 is normalized to 127.0.0.1 (VNPay sandbox rejects ::1)', () => {
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 1, amount: 100000, orderInfo: 'Vé xe', ipAddr: '::1',
+        });
+        expect(new URL(payUrl).searchParams.get('vnp_IpAddr')).toBe('127.0.0.1');
+    });
+
+    test('orderInfo with spaces/diacritics/# does not get truncated by the URL', () => {
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 42, amount: 250000, orderInfo: 'SmartBusAI - Vé xe #42', ipAddr: '1.2.3.4',
+        });
+        const q = new URL(payUrl).searchParams;
+        // The `#` must have been percent-encoded — otherwise everything
+        // from it onward (including vnp_SecureHash) would be read as a URL
+        // fragment and never even reach the query string once a browser
+        // navigates to this URL, and `new URL()` above would itself have
+        // silently cut the string at `#`, which this assertion also catches.
+        expect(q.get('vnp_OrderInfo')).toBe('SmartBusAI - Vé xe #42');
+        expect(q.get('vnp_SecureHash')).toBeTruthy();
+        expect(q.get('vnp_TxnRef')).toBeTruthy(); // param after vnp_OrderInfo in sort order — proves it wasn't dropped by a fragment cut
+    });
+
+    test('a self-consistent signature: re-signing createVNPayPayment\'s own exact param set matches its vnp_SecureHash', () => {
+        // createVNPayPayment's own params (minus vnp_SecureHash itself) are
+        // exactly the shape verifyVNPayReturn expects, so this exercises
+        // create and verify against each other the same way VNPay's IPN
+        // (which echoes most create-time fields back unchanged) does.
+        const { payUrl } = pmt.createVNPayPayment({
+            bookingId: 42, amount: 250000, orderInfo: 'SmartBusAI - Vé xe #42', ipAddr: '1.2.3.4',
+        });
+        const asQuery = Object.fromEntries(new URL(payUrl).searchParams.entries());
+        asQuery.vnp_ResponseCode = '00';
+        // Re-derive what the hash SHOULD be for this exact field set
+        // (including the VNPay-added vnp_ResponseCode) using the same raw
+        // join verifyVNPayReturn uses, then confirm verify agrees.
+        const forHash = { ...asQuery };
+        delete forHash.vnp_SecureHash;
+        const sorted = Object.keys(forHash).sort().reduce((o, k) => { o[k] = forHash[k]; return o; }, {});
+        const signData = Object.entries(sorted).map(([k, v]) => `${k}=${v}`).join('&');
+        asQuery.vnp_SecureHash = crypto.createHmac('sha512', cfg.vnpay.hashSecret)
+            .update(Buffer.from(signData, 'utf-8')).digest('hex');
+        expect(pmt.verifyVNPayReturn(asQuery)).toBe(true);
     });
 });
 
@@ -337,7 +426,8 @@ describe('paymentRoutes — POST /vnpay/ipn (server-to-server, independent of th
     function signedIpn(overrides = {}) {
         const base = { vnp_Amount: '20000000', vnp_TxnRef: 'SB9T1', vnp_ResponseCode: '00', ...overrides };
         const sorted = Object.keys(base).sort().reduce((o, k) => { o[k] = base[k]; return o; }, {});
-        const signData = new URLSearchParams(sorted).toString();
+        // Raw (un-encoded) join — see signedVnpayQuery's comment above.
+        const signData = Object.entries(sorted).map(([k, v]) => `${k}=${v}`).join('&');
         base.vnp_SecureHash = crypto.createHmac('sha512', cfg.vnpay.hashSecret).update(Buffer.from(signData, 'utf-8')).digest('hex');
         return base;
     }

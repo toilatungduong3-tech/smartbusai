@@ -447,6 +447,40 @@ exports.updateTrip = async (req, res) => {
                     message: `Không thể đổi tuyến/xe/giờ khởi hành — chuyến này đang có ${activeBooking.cnt} vé ở trạng thái đã đặt/chờ thanh toán`
                 });
             }
+
+            /* Bus double-booking guard — createTrip has always checked this
+               (a bus can't run two trips whose time windows overlap), but
+               updateTrip never did: editing a trip's bus_id or times was a
+               second, unguarded path to the exact same real-world conflict
+               (e.g. reassigning "xe A" onto a trip that overlaps xe A's
+               5h-9h run elsewhere). Same advisory lock discipline as
+               createTrip, scoped to the bus being assigned, so a concurrent
+               createTrip/updateTrip for that same bus can't race past each
+               other's check. trip_id != id excludes the row being edited
+               from conflicting with itself. */
+            const conn = await db.getConnection();
+            const lockName = `trip_create_bus_${merged.bus_id}`;
+            try {
+                const [[{ locked }]] = await conn.query('SELECT GET_LOCK(?, 10) AS locked', [lockName]);
+                if (!locked) {
+                    return res.status(409).json({ message: "Hệ thống đang bận xử lý chuyến khác cho xe này, vui lòng thử lại" });
+                }
+                try {
+                    const [[conflict]] = await conn.query(
+                        `SELECT trip_id FROM trip
+                         WHERE bus_id=? AND trip_id != ? AND status != 'CANCELED'
+                           AND departure_time < ? AND arrival_time > ?`,
+                        [merged.bus_id, id, merged.arrival_time, merged.departure_time]
+                    );
+                    if (conflict) {
+                        return res.status(409).json({ message: "Xe này đã có chuyến trong khung giờ đó", conflict_trip_id: conflict.trip_id });
+                    }
+                } finally {
+                    await conn.query('SELECT RELEASE_LOCK(?)', [lockName]);
+                }
+            } finally {
+                conn.release();
+            }
         }
 
         await db.query(

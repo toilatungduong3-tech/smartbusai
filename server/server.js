@@ -133,12 +133,21 @@ const cspDirectives = {
     imgSrc: [
         "'self'", "data:", "blob:",
         "https://*.tile.openstreetmap.org", "https://lh3.googleusercontent.com", "https://platform-lookaside.fbsbx.com",
+        // Route-map terrain tile base (mapRouting.js sbAddTerrainTile) —
+        // Esri World Topo Map, no API key required.
+        "https://server.arcgisonline.com",
+        // Old dark_all base some map instances still reference directly.
+        "https://*.basemaps.cartocdn.com",
     ],
     connectSrc: [
         "'self'",
         "https://accounts.google.com", "https://www.googleapis.com",
         "https://graph.facebook.com", "https://connect.facebook.net",
         "https://*.tile.openstreetmap.org",
+        // Real road-following route geometry (mapRouting.js sbFetchOsrmRoute)
+        // — without this, fetch() to OSRM is silently CSP-blocked and every
+        // route map falls back to the straight-line/curated-highway path.
+        "https://router.project-osrm.org",
     ],
     frameSrc: ["https://accounts.google.com", "https://www.facebook.com"], // OAuth popup/iframe flows
     objectSrc: ["'none'"],
