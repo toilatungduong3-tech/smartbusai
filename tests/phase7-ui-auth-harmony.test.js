@@ -4,7 +4,7 @@
  * System Harmonization.
  * Covers: Google/Facebook OAuth login/register (mocked tokens — real
  * end-to-end verification needs live provider credentials this
- * environment doesn't have, see SPRINT7_FINAL_REPORT.md), forgot/reset
+ * environment doesn't have, see test case sửa đổi/SPRINT7_FINAL_REPORT.md), forgot/reset
  * password token issuance+validation+strength policy, real server-side
  * logout via token_version revocation, and the compression/cache-control
  * middleware (content-level checks, matching the same convention already

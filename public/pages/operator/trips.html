@@ -723,21 +723,19 @@ function _ensureLeaflet(){
     </div>
     <div class="modal-body">
       <div class="form-section-title">Tuyến đường — ROUTE</div>
-      <div class="form-row">
+      <div class="form-row" style="grid-template-columns:2fr 1fr;">
         <div class="form-group">
-          <label>Điểm xuất phát *</label>
-          <input class="form-control" id="f_origin" placeholder="VD: Hà Nội">
+          <label>Chọn tuyến đường *</label>
+          <input class="form-control" id="f_route_search" list="f_route_list" placeholder="Gõ để tìm, VD: Hà Nội → Đà Nẵng" autocomplete="off">
+          <datalist id="f_route_list"></datalist>
+          <input type="hidden" id="f_route_id">
         </div>
-        <div class="form-group">
-          <label>Điểm đến *</label>
-          <input class="form-control" id="f_dest" placeholder="VD: TP.HCM">
-        </div>
-      </div>
-      <div class="form-row three">
         <div class="form-group">
           <label>Khoảng cách (km)</label>
-          <input class="form-control" id="f_dist" type="number" placeholder="1726">
+          <input class="form-control" id="f_dist" placeholder="—" readonly style="opacity:.6;">
         </div>
+      </div>
+      <div class="form-row">
         <div class="form-group">
           <label>Giờ khởi hành *</label>
           <input class="form-control" id="f_dep" type="datetime-local">
@@ -1502,13 +1500,45 @@ function viewTrip(id){
   document.getElementById("viewModal").classList.add("open");
 }
 
+/* ── Route picker (Add/Edit trip form) ──
+   Bug fix: this form used to collect free-text origin/destination and
+   send that straight to createTrip, which has always required a real
+   route_id — routes are shared reference data (distance, lat/lng) that a
+   trip can't invent on the fly. Every "Thêm chuyến xe mới" submission
+   400'd with "Thiếu dữ liệu bắt buộc" because route_id was never sent.
+   A plain <select> would be unwieldy with 1000+ routes, so this uses a
+   native <input list="..."> (datalist) for type-to-filter, matched back
+   to its route_id by exact "origin → destination" label. */
+let _routesCache=null;
+async function loadRoutesForPicker(){
+  if(_routesCache) return _routesCache;
+  try{
+    const res=await fetch("/api/trips/routes/list",{headers:_authHeaders()});
+    _routesCache=res.ok?await res.json():[];
+  }catch{ _routesCache=[]; }
+  const dl=document.getElementById("f_route_list");
+  dl.innerHTML=_routesCache.map(r=>
+    `<option value="${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}">`
+  ).join("");
+  return _routesCache;
+}
+function _routeLabel(r){ return `${r.origin} → ${r.destination}`; }
+document.getElementById("f_route_search").addEventListener("input",function(){
+  const match=(_routesCache||[]).find(r=>_routeLabel(r)===this.value.trim());
+  document.getElementById("f_route_id").value=match?match.route_id:"";
+  document.getElementById("f_dist").value=match?(match.distance_km??""):"";
+});
+
 /* ── Open Add ── */
 function openAdd(){
   editingId=null;
+  loadRoutesForPicker();
+  document.getElementById("f_route_search").value="";
+  document.getElementById("f_route_id").value="";
   document.getElementById("formIco").textContent="➕";
   document.getElementById("formTitle").textContent="Thêm chuyến xe mới";
   document.getElementById("formSaveBtn").textContent="💾 Thêm chuyến";
-  ["f_origin","f_dest","f_price"].forEach(i=>document.getElementById(i).value="");
+  document.getElementById("f_price").value="";
   document.getElementById("f_dist").value="";
   document.getElementById("f_dep").value="";
   document.getElementById("f_arr").value="";
@@ -1520,14 +1550,15 @@ function openAdd(){
 }
 
 /* ── Open Edit ── */
-function openEdit(id){
+async function openEdit(id){
   const t=allTrips.find(x=>x.trip_id==id);if(!t)return;
   editingId=id;
+  await loadRoutesForPicker();
   document.getElementById("formIco").textContent="✏️";
   document.getElementById("formTitle").textContent="Chỉnh sửa chuyến xe";
   document.getElementById("formSaveBtn").textContent="💾 Cập nhật";
-  document.getElementById("f_origin").value=t.origin||"";
-  document.getElementById("f_dest").value=t.destination||"";
+  document.getElementById("f_route_search").value=t.origin&&t.destination?`${t.origin} → ${t.destination}`:"";
+  document.getElementById("f_route_id").value=t.route_id||"";
   document.getElementById("f_dist").value=t.distance_km||"";
   document.getElementById("f_dep").value=_toLocalInputValue(t.departure_time);
   document.getElementById("f_arr").value=_toLocalInputValue(t.arrival_time);
@@ -1535,28 +1566,46 @@ function openEdit(id){
   document.getElementById("f_status").value=t.status||"OPEN";
   document.getElementById("f_bustype").value=t.bus_type||"";
   document.getElementById("f_seats").value=t.available_seats||"";
+  /* Bug fix: openEdit() never pre-selected the trip's actual assigned bus,
+     so f_bus kept whatever was left over from a previous add/edit (often
+     the blank "-- Chọn xe --" placeholder) — saving without manually
+     re-picking a bus sent bus_id:null, which updateTrip correctly rejects
+     with 422 "Trường bus_id không được đặt thành null", making every
+     save via this form fail unless the operator happened to reselect the
+     same bus by hand first. */
+  document.getElementById("f_bus").value=t.bus_id||"";
   document.getElementById("formModal").classList.add("open");
 }
 
 /* ── Save ── */
 async function saveTrip(){
-  const origin=document.getElementById("f_origin").value.trim();
-  const dest=document.getElementById("f_dest").value.trim();
+  const routeId=document.getElementById("f_route_id").value;
   const price=document.getElementById("f_price").value;
   const dep=document.getElementById("f_dep").value;
-  if(!origin||!dest||!price||!dep){toast("Vui lòng điền đầy đủ thông tin bắt buộc (*)","error");return;}
+  if(!routeId){toast("Vui lòng chọn tuyến đường có sẵn trong danh sách gợi ý","error");return;}
+  if(!price||!dep){toast("Vui lòng điền đầy đủ thông tin bắt buộc (*)","error");return;}
   const busEl=document.getElementById("f_bus");
   const data={
-    origin,destination:dest,
-    distance_km:document.getElementById("f_dist").value||null,
+    route_id:routeId,
     departure_time:dep,arrival_time:document.getElementById("f_arr").value||null,
     base_price:price,status:document.getElementById("f_status").value,
     bus_id:busEl.value||null
   };
   try{
-    const url=editingId?`${API}/${editingId}`:API;
+    /* Bug fix: API already carries "?operator_id=..." (a legacy, server-
+       ignored param — real ownership scoping comes from the JWT via
+       attachOperatorId/ownsOperator, not any query string), so appending
+       `/${editingId}` after it produced a malformed URL like
+       "/api/trips?operator_id=1/4109" — the server saw path "/api/trips"
+       with everything after "?" as one query string, never matched
+       PUT /api/trips/:id, and 404'd every single edit. Also missing the
+       Authorization header the route requires (authenticate), unlike the
+       price/status update calls just below which already send it via
+       _authHeaders() — every save silently 401'd/404'd before reaching
+       the toast, both editing AND creating a trip were broken. */
+    const url=editingId?`/api/trips/${editingId}`:'/api/trips';
     const method=editingId?"PUT":"POST";
-    const res=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    const res=await fetch(url,{method,headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify(data)});
     if(!res.ok)throw new Error();
     toast(editingId?"Cập nhật chuyến xe thành công!":"Thêm chuyến xe thành công!");
     closeModal("formModal");loadTrips();
@@ -1572,7 +1621,7 @@ function openEditPrice(id){
     const p=document.getElementById("newPriceInp").value;
     if(!p){toast("Nhập giá vé mới","error");return;}
     try{
-      await fetch(`${API}/price/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({price:p})});
+      await fetch(`/api/trips/price/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({price:p})});
       toast("Cập nhật giá vé thành công!");closeModal("priceModal");loadTrips();
     }catch{toast("Lỗi khi cập nhật giá","error");}
   };
@@ -1592,7 +1641,7 @@ function confirmAction(id,action){
   document.getElementById("confirmBtn").onclick=async()=>{
     try{
       const newStatus=isCancel?"CANCELED":"OPEN";
-      await fetch(`${API}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:newStatus})});
+      await fetch(`/api/trips/status/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",..._authHeaders()},body:JSON.stringify({status:newStatus})});
       toast(isCancel?"Đã hủy chuyến xe":"Đã mở lại chuyến xe");
       closeModal("confirmModal");loadTrips();
     }catch{toast("Lỗi cập nhật trạng thái","error");}

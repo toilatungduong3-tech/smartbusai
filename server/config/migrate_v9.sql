@@ -1,6 +1,6 @@
 -- migrate_v9.sql
 -- Phase 1 hardening — DB-level seat-uniqueness backstop
--- (SMARTBUSAI_MASTER_COMPLETION_MATRIX.md blocker #7).
+-- (test case sửa đổi/SMARTBUSAI_MASTER_COMPLETION_MATRIX.md blocker #7).
 --
 -- Previously the ONLY guarantee against double-booking a seat was
 -- application-level (SELECT ... FOR UPDATE inside a transaction in
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS trip_seat_hold (
 -- un-booked). This migration does NOT retroactively resolve pre-existing
 -- double-bookings; deciding which booking is "the real one" is a business
 -- decision outside the scope of a schema migration. See
--- PHASE1_BACKEND_TIME_FINAL_REPORT.md for the known, unresolved
+-- test case sửa đổi/PHASE1_BACKEND_TIME_FINAL_REPORT.md for the known, unresolved
 -- pre-existing conflicts this does not silently fix.
 INSERT IGNORE INTO trip_seat_hold (trip_id, seat_id, booking_id)
 SELECT b.trip_id, bd.seat_id, bd.booking_id

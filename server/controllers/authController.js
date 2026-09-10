@@ -74,6 +74,20 @@ const GENERIC_RESET_MESSAGE = "Nếu tài khoản tồn tại trong hệ thống
 exports.checkEmail = async (req, res) => {
     const identifier = (req.body.account_identifier ?? req.body.email ?? "").trim();
     if (!identifier) return res.status(400).json({ message: "Thiếu email, tên đăng nhập hoặc số điện thoại" });
+
+    /* Bug fix: the generic response TEXT never leaked which branch ran, but
+       the response TIMING did — an existing account used to await 2 extra
+       DB writes plus a real SMTP send before responding, while a
+       non-existent one returned almost immediately after a single SELECT.
+       That timing gap alone lets an attacker enumerate valid accounts even
+       though every response body is byte-identical, defeating the whole
+       point of GENERIC_RESET_MESSAGE. Sending the response first, then
+       doing the account-dependent work (lookup, token issuance, email
+       send) afterward, means the client always gets the same response at
+       the same time regardless of whether the account exists — none of
+       that later work can affect what was already sent. */
+    res.json({ message: GENERIC_RESET_MESSAGE });
+
     try {
         const [rows] = await db.query(
             "SELECT user_id, full_name, email FROM users WHERE email = ? OR username = ? OR phone = ? LIMIT 1",
@@ -109,10 +123,9 @@ exports.checkEmail = async (req, res) => {
                 logger.error("[checkEmail] gửi email thất bại (không ảnh hưởng phản hồi):", mailErr.message);
             }
         }
-        return res.json({ message: GENERIC_RESET_MESSAGE });
     } catch (err) {
-        logger.error("Check email error:", err);
-        return res.status(500).json({ message: "Database error" });
+        // Response was already sent above — nothing left to do but log.
+        logger.error("Check email error (post-response):", err);
     }
 };
 

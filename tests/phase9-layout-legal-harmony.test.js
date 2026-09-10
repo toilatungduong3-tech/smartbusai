@@ -10,7 +10,7 @@
  * this suite: read the real files from disk and assert on their actual
  * content/structure. The legal pages and CSS hardening were additionally
  * live-verified against the real running server this session (real HTTP
- * 200s, DOM measurements) — see SPRINT9_FINAL_REPORT.md.
+ * 200s, DOM measurements) — see test case sửa đổi/SPRINT9_FINAL_REPORT.md.
  */
 
 const fs = require('fs');

@@ -276,7 +276,7 @@ async function runScenario1(){
   const btn = document.getElementById('btnSc1'), out = document.getElementById('resSc1');
   btn.disabled = true; btn.textContent = '⏳ Đang chạy…';
   out.className = 'sc-result show'; out.textContent = 'Đang gọi POST /api/ai/concierge…';
-  const message = 'Sơn La đi Nam Định hôm nay';
+  const message = 'TP. Hồ Chí Minh đi Đà Lạt hôm nay';
   const t0 = performance.now();
   try{
     const res = await fetch('/api/ai/concierge', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ message }) });

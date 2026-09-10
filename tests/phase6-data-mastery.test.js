@@ -8,7 +8,7 @@
  * test file in this repo — live proof (real route_stop backfill, real
  * seat-layout generation, real CRUD-guard 409s, real pagination responses)
  * was run against the real server/DB this sprint and is documented in
- * DATA_CRUD_MASTERY_REPORT.md, not re-measured here.
+ * test case sửa đổi/DATA_CRUD_MASTERY_REPORT.md, not re-measured here.
  */
 
 jest.mock('../server/config/db', () => ({ query: jest.fn(), getConnection: jest.fn() }));

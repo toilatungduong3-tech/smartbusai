@@ -5,7 +5,7 @@
  * bus_operator.email against the JWT's email claim. That silently failed
  * whenever a user's own email legitimately differed from their company's
  * contact email (confirmed against real seed data — see
- * tests/phase2i_operator_identity_audit.md). It now derives operator_id
+ * test case sửa đổi/phase2i_operator_identity_audit.md). It now derives operator_id
  * from the explicit users.operator_id -> bus_operator.operator_id FK
  * (migrate_v8.sql), looked up by user_id — never by email, and never
  * trusting req.body/req.query/req.params.

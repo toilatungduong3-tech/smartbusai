@@ -553,6 +553,17 @@ exports.getMyRecommendations = async (req, res) => {
 ═══════════════════════════════════════════════════════════ */
 exports.getTrending = async (req, res) => {
     try {
+        /* Bug fix: previously aggregated MIN(t.base_price)/trip_count with
+           no date bound at all (`departure_time > NOW()`, any day). "Vé giờ
+           vàng" (Golden Deal, index.html's renderGoldenDeal) advertises
+           whichever route/price comes out of this endpoint — with trips
+           spread out over a very long future window (some pushed months
+           ahead by schedule maintenance), the cheapest trip system-wide is
+           routinely one nobody would ever reach by browsing/searching that
+           route today, so the advertised deal had no matching trip in the
+           actual results list ("vé giờ vàng ... không có chuyến ở dưới").
+           Bounding to the same near-term window normal search/browsing
+           actually surfaces (14 days) keeps every number here honest. */
         const [rows] = await db.query(`
             SELECT r.route_id,
                    CONCAT(r.origin,' → ',r.destination) AS route,
@@ -560,7 +571,6 @@ exports.getTrending = async (req, res) => {
                    COUNT(DISTINCT b.booking_id) AS total_bookings,
                    COUNT(DISTINCT CASE WHEN b.booking_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                                        THEN b.booking_id END) AS recent_bookings,
-                   MIN(t.base_price) AS min_price,
                    AVG(t.base_price) AS avg_price,
                    COUNT(DISTINCT t.trip_id) AS trip_count,
                    IFNULL(AVG(rv.rating),0) AS avg_rating
@@ -568,17 +578,42 @@ exports.getTrending = async (req, res) => {
             JOIN trip t ON t.route_id = r.route_id
             LEFT JOIN booking b ON b.trip_id = t.trip_id AND b.status = 'PAID'
             LEFT JOIN review rv ON rv.trip_id = t.trip_id
-            WHERE t.status = 'OPEN' AND t.departure_time > NOW()
+            WHERE t.status = 'OPEN'
+              AND t.departure_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 14 DAY)
             GROUP BY r.route_id
             ORDER BY recent_bookings DESC, total_bookings DESC
             LIMIT 8
         `);
 
-        const maxRecent = Math.max(1, ...rows.map(r => Number(r.recent_bookings)));
+        /* For each candidate route, resolve the actual cheapest trip that
+           (a) departs within that same 14-day window and (b) still has a
+           free seat right now — the one concrete trip a click should land
+           on. Routes with no such trip are dropped below instead of being
+           advertised with a stale/unreachable price. */
+        const withRealTrip = await Promise.all(rows.map(async (r) => {
+            const [[best]] = await db.query(`
+                SELECT t.trip_id, t.departure_time, t.base_price, b.total_seats,
+                       (b.total_seats - COUNT(DISTINCT bd.seat_id)) AS available_seats
+                FROM trip t
+                JOIN bus b ON t.bus_id = b.bus_id
+                LEFT JOIN booking bk ON bk.trip_id = t.trip_id AND bk.status IN ('PAID','PENDING','CONFIRMED')
+                LEFT JOIN booking_detail bd ON bd.booking_id = bk.booking_id
+                WHERE t.route_id = ? AND t.status = 'OPEN'
+                  AND t.departure_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 14 DAY)
+                GROUP BY t.trip_id
+                HAVING available_seats > 0
+                ORDER BY t.base_price ASC, t.departure_time ASC
+                LIMIT 1
+            `, [r.route_id]);
+            return { ...r, _bestTrip: best || null };
+        }));
+        const trendable = withRealTrip.filter(r => r._bestTrip);
 
-        const result = rows.map((r, idx) => {
+        const maxRecent = Math.max(1, ...trendable.map(r => Number(r.recent_bookings)));
+
+        const result = trendable.map((r, idx) => {
             const popularityPct = Math.round(Number(r.recent_bookings) / maxRecent * 100);
-            const minP = Number(r.min_price), avgP = Number(r.avg_price);
+            const minP = Number(r._bestTrip.base_price), avgP = Number(r.avg_price);
             const priceDiff = avgP > 0 ? Math.round((minP - avgP) / avgP * 100) : 0;
             const avgRating = Number(r.avg_rating);
 
@@ -608,16 +643,19 @@ exports.getTrending = async (req, res) => {
             }
 
             return {
-                route_id:      r.route_id,
-                route:         r.route,
-                origin:        r.origin,
-                destination:   r.destination,
-                score:         scores.finalScore,
-                current_price: minP,
-                trip_count:    Number(r.trip_count),
-                avg_rating:    avgRating >= 1 ? Math.round(avgRating * 10) / 10 : null,
+                route_id:        r.route_id,
+                route:           r.route,
+                origin:          r.origin,
+                destination:     r.destination,
+                score:           scores.finalScore,
+                current_price:   minP,
+                trip_id:         r._bestTrip.trip_id,
+                departure_time:  r._bestTrip.departure_time,
+                available_seats: Number(r._bestTrip.available_seats),
+                trip_count:      Number(r.trip_count),
+                avg_rating:      avgRating >= 1 ? Math.round(avgRating * 10) / 10 : null,
                 reasons,
-                algorithm:     'popularity_based'
+                algorithm:       'popularity_based'
             };
         });
 

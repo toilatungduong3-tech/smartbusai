@@ -1455,7 +1455,7 @@ function renderTable(){
           <button class="act-btn act-view" onclick="viewUser(${u.user_id})" data-tip="Xem chi tiết">👁</button>
           <button class="act-btn act-edit" onclick="openEdit(${u.user_id})" data-tip="Chỉnh sửa">✏️</button>
           <button class="act-btn act-toggle ${isActive?"":"blocked"}" onclick="toggleStatus(${u.user_id},'${u.status}')" data-tip="${isActive?"Khóa tài khoản":"Mở khóa"}">${isActive?"🔒":"🔓"}</button>
-          <button class="act-btn act-del" onclick="confirmDelete(${u.user_id},'${(u.full_name||"").replace(/'/g,"")}')" data-tip="Xóa">🗑️</button>
+          <button class="act-btn act-del" onclick="confirmDelete(${u.user_id})" data-tip="Xóa">🗑️</button>
         </div>
       </td>
     </tr>`;
@@ -1708,7 +1708,17 @@ async function toggleStatus(id,currentStatus){
 }
 
 /* ── Delete ── */
-function confirmDelete(id,name){
+function confirmDelete(id){
+  /* Bug fix: this used to take `name` as a second onclick(...) argument
+     built by string-interpolating u.full_name straight into the button's
+     onclick="..." HTML attribute — a name containing a literal `"` broke
+     out of the attribute (sanitizeInput only escapes </>, not quotes) and
+     could inject an arbitrary event-handler attribute on that button,
+     running in the admin's session. Looking the row up from the already-
+     fetched filteredUsers by user_id (always a safe integer) instead
+     removes the string-interpolation-into-HTML-attribute entirely. */
+  const u=filteredUsers.find(x=>x.user_id===id);
+  const name=u?u.full_name:"";
   document.getElementById("confirmTitle").textContent="Xóa người dùng?";
   document.getElementById("confirmMsg").innerHTML=`Bạn sắp xóa <span class="confirm-target">${escapeHtml(name)}</span>.<br>Hành động này <strong>không thể hoàn tác</strong>.`;
   document.getElementById("confirmDelBtn").onclick=async()=>{

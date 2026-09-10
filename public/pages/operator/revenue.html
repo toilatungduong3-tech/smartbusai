@@ -642,12 +642,12 @@ async function refreshAll(){
   const days=Math.max(1,Math.ceil((new Date(to)-new Date(from))/86400000)+1);
   try{
     const[s0,s1,s2,s3,s4,s5]=await Promise.allSettled([
-      fetch(`${API}/operators/dashboard/stats`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/stats`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
       fetch(`${API}/operators/dashboard/bookings?from=${from}&to=${to}`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
       fetch(`${API}/operators/dashboard/payments?from=${from}&to=${to}`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
-      fetch(`${API}/operators/dashboard/booking-status`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
-      fetch(`${API}/operators/dashboard/routes`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
-      fetch(`${API}/operators/dashboard/revenue`,{signal:AbortSignal.timeout(6000)}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/booking-status`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/routes`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
+      fetch(`${API}/operators/dashboard/revenue`,{signal:AbortSignal.timeout(6000),headers:_authHeaders()}).then(r=>r.json()),
     ]);
     statsData     = s0.status==="fulfilled"&&s0.value&&!s0.value.message ? s0.value : null;
     dailyData     = s1.status==="fulfilled"&&Array.isArray(s1.value) ? s1.value : genDailyDemo(days);

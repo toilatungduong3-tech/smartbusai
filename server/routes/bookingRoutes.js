@@ -39,13 +39,16 @@ router.post("/",         optionalAuth, bookingController.createBooking);
 /* POST pay           — /api/bookings/:id/pay  (before /:id to avoid clash)
    Phase 2I: previously unauthenticated — anyone could mark any booking PAID
    with no booking_code, no ownership check at all. profile.html already
-   sends a JWT here via authFetch(); ownership enforced in the controller. */
-router.post("/:id/pay",  authenticate, bookingController.payBooking);
+   sends a JWT here via authFetch(); ownership enforced in the controller.
+   attachOperatorId populates req.operatorId so canAccessBooking's
+   ownsOperator() check can scope an OPERATOR caller to their own fleet
+   (previously any OPERATOR passed unconditionally — see bookingController.js). */
+router.post("/:id/pay",  authenticate, attachOperatorId, bookingController.payBooking);
 
 /* GET QR ticket       — /api/bookings/:id/qr
    Phase 2I: was an IDOR (any booking_id leaked full name/email/QR/checksum).
    profile.html already sends a JWT here via api.get(). */
-router.get("/:id/qr",    authenticate, bookingController.getBookingQR);
+router.get("/:id/qr",    authenticate, attachOperatorId, bookingController.getBookingQR);
 
 /* POST verify QR      — /api/bookings/verify-qr (operator scanner)
    Sprint 7: closes the Phase 2I KNOWN GAP noted above — verifyBookingQR
@@ -60,11 +63,11 @@ router.post("/verify-qr", authenticate, requireAdminOrOperator, bookingControlle
    Phase 2I: was unauthenticated AND accepted any string as `status` with
    zero validation. profile.html already sends a JWT here (cancel flow).
    Ownership + a status whitelist are now enforced in the controller. */
-router.put("/:id",       authenticate, bookingController.updateBookingStatus);
+router.put("/:id",       authenticate, attachOperatorId, bookingController.updateBookingStatus);
 
 /* POST service-order — /api/bookings/:id/service-order
    Phase 2I: was unauthenticated, no ownership check.
    profile.html already sends a JWT here via authFetch(). */
-router.post("/:id/service-order", authenticate, bookingController.addServiceOrder);
+router.post("/:id/service-order", authenticate, attachOperatorId, bookingController.addServiceOrder);
 
 module.exports = router;

@@ -94,9 +94,10 @@ describe('Phase 2I — vnpay/return amount cross-check', () => {
         pmt.parseVNPayBookingId.mockReturnValue('1');
         db.query
             .mockResolvedValueOnce([[{ total_amount: 500000 }]]) // amount cross-check
-            .mockResolvedValueOnce([{}])                          // UPDATE
+            .mockResolvedValueOnce([{ affectedRows: 1 }])         // UPDATE (Sprint 24: markBookingPaidOnce gates on this)
             .mockResolvedValueOnce([{}])                          // INSERT payment
-            .mockResolvedValueOnce([[{ booking_code: 'ABC123' }]]); // bookingCode lookup for redirect
+            .mockResolvedValueOnce([[{ user_id: null }]])         // markBookingPaidOnce's post-insert user_id lookup (guest -> no awardPoints)
+            .mockResolvedValueOnce([[{ booking_code: 'ABC123', status: 'PAID' }]]); // bookingCode+status lookup for redirect
         const req = { query: { vnp_Amount: '50000000' } }; // 500,000đ * 100
         const res = mockRes();
         await handler(req, res);

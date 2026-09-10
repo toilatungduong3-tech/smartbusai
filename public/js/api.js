@@ -73,7 +73,7 @@ function logout() {
    of topbar width with no responsive collapse — on a real 1280px
    viewport the logout button's right edge landed 159px past the visible
    viewport edge (measured via getBoundingClientRect() against the real
-   running admin.html before this fix; see SPRINT8_FINAL_REPORT.md).
+   running admin.html before this fix; see test case sửa đổi/SPRINT8_FINAL_REPORT.md).
    One shared implementation, called from every admin/operator/passenger
    topbar, instead of duplicating bespoke chip markup per page — CSS is
    in /css/style.css (.sb-profile*).

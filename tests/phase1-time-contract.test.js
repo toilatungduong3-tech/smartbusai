@@ -141,10 +141,11 @@ describe('autoGenerateRecurringTrips — 7h UTC-drift regression guard', () => {
             .mockResolvedValueOnce([[sourceRow]])                         // eligibility SELECT
             .mockResolvedValueOnce([[{ nowMs: mockNowMs }]])              // UNIX_TIMESTAMP(NOW())
             .mockResolvedValueOnce([[{ cnt: 0 }]])                        // booking count -> in-place
+            .mockResolvedValueOnce([[]])                                  // Sprint 24: bus-conflict check -> no conflict
             .mockResolvedValueOnce([{}]);                                 // the in-place UPDATE
         await ctrl.autoGenerateRecurringTrips();
 
-        const [newDepStr, newArrStr] = db.query.mock.calls[3][1];
+        const [newDepStr, newArrStr] = db.query.mock.calls[4][1];
         // Before the fix, fmtUTC() would have written UTC-field-extracted
         // strings — on this +07:00 host that silently shifts the apparent
         // local hour by -7h (08:00 -> 01:00). Assert the local hour survives.
@@ -165,10 +166,11 @@ describe('autoGenerateRecurringTrips — 7h UTC-drift regression guard', () => {
             .mockResolvedValueOnce([[sourceRow]])
             .mockResolvedValueOnce([[{ nowMs: mockNowMs }]])
             .mockResolvedValueOnce([[{ cnt: 0 }]])
+            .mockResolvedValueOnce([[]])              // Sprint 24: bus-conflict check -> no conflict
             .mockResolvedValueOnce([{}]);
         await ctrl.autoGenerateRecurringTrips();
 
-        const [newDepStr, newArrStr] = db.query.mock.calls[3][1];
+        const [newDepStr, newArrStr] = db.query.mock.calls[4][1];
         expect(newDepStr).toBe('2026-08-11 23:30:00');
         expect(newArrStr).toBe('2026-08-12 00:30:00'); // arrival date correctly advances too — not lost
         // Duration must still be exactly 1 hour, not corrupted into a
@@ -191,12 +193,13 @@ describe('autoGenerateRecurringTrips — 7h UTC-drift regression guard', () => {
             .mockResolvedValueOnce([[sourceRow]])            // eligibility SELECT
             .mockResolvedValueOnce([[{ nowMs: mockNowMs }]])
             .mockResolvedValueOnce([[{ cnt: 3 }]])            // has bookings -> clone branch
+            .mockResolvedValueOnce([[]])                      // Sprint 24: bus-conflict check -> no conflict
             .mockResolvedValueOnce([[]])                      // no existing future trip -> proceed to INSERT
             .mockResolvedValueOnce([{ insertId: 9001 }])      // INSERT
             .mockResolvedValueOnce([{}]);                     // mark old trip COMPLETED
         await ctrl.autoGenerateRecurringTrips();
 
-        const insertCall = db.query.mock.calls[4];
+        const insertCall = db.query.mock.calls[5];
         expect(insertCall[0]).toMatch(/INSERT INTO trip/);
         const [, , newDepStr, newArrStr] = insertCall[1];
         expect(newDepStr).toBe('2026-08-11 22:00:00');
@@ -219,10 +222,11 @@ describe('autoGenerateRecurringTrips — 7h UTC-drift regression guard', () => {
             .mockResolvedValueOnce([[sourceRow]])
             .mockResolvedValueOnce([[{ nowMs: farFutureNow }]])
             .mockResolvedValueOnce([[{ cnt: 0 }]])
+            .mockResolvedValueOnce([[]])                      // Sprint 24: bus-conflict check -> no conflict
             .mockResolvedValueOnce([{}]);
         await ctrl.autoGenerateRecurringTrips();
 
-        const [newDepStr] = db.query.mock.calls[3][1];
+        const [newDepStr] = db.query.mock.calls[4][1];
         const newDep = parseDbDateTime(newDepStr);
         expect(newDep.getTime()).toBeGreaterThan(farFutureNow);
         expect(newDep.getHours()).toBe(9); // local hour still preserved after multi-day skip

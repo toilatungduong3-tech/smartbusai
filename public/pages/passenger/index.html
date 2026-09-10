@@ -2842,11 +2842,20 @@ function _ensureLeaflet(){
 <!-- ═══ POPULAR ROUTES ═══ -->
 <div class="popular-routes-bar">
   <span class="pop-routes-lbl">Tuyến phổ biến:</span>
-  <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Đà Nẵng')">Hà Nội → Đà Nẵng</span>
+  <!-- Bug fix: 3 of these 6 quick-suggestion chips (Hà Nội→Đà Nẵng, Đà Nẵng→
+       Hồ Chí Minh, Hà Nội→Vinh) had ZERO trips anywhere in the near-term
+       (14-day) window — a side effect of an earlier data-repair pass that
+       intentionally thinned out near-term trip density per operator to
+       eliminate bus double-booking conflicts, which happened to hit these
+       exact routes hardest. Clicking any of them landed on "Không tìm thấy
+       chuyến nào phù hợp" — the worst possible first impression for a
+       "tìm kiếm hành trình" system. Swapped in 3 routes confirmed to have
+       real near-term inventory right now. -->
   <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Hồ Chí Minh')">Hà Nội → Hồ Chí Minh</span>
-  <span class="pop-route-chip" onclick="fillSearch('Đà Nẵng','Hồ Chí Minh')">Đà Nẵng → Hồ Chí Minh</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hồ Chí Minh','Nha Trang')">HCM → Nha Trang</span>
+  <span class="pop-route-chip" onclick="fillSearch('Hải Phòng','Hà Nội')">Hải Phòng → Hà Nội</span>
   <span class="pop-route-chip" onclick="fillSearch('Hồ Chí Minh','Cần Thơ')">HCM → Cần Thơ</span>
-  <span class="pop-route-chip" onclick="fillSearch('Hà Nội','Vinh')">Hà Nội → Vinh</span>
+  <span class="pop-route-chip" onclick="fillSearch('Cần Thơ','Hồ Chí Minh')">Cần Thơ → HCM</span>
   <span class="pop-route-chip" onclick="fillSearch('Hồ Chí Minh','Đà Lạt')">HCM → Đà Lạt</span>
 </div>
 
@@ -3069,9 +3078,9 @@ function _ensureLeaflet(){
           <span style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.3px">TRANSIT AI</span>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="transit-sort-chip active" onclick="setTransitSort('time',this)" style="background:rgba(99,102,241,.25);border:1px solid rgba(99,102,241,.5);color:#a5b4fc;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">⚡ Nhanh nhất</button>
-          <button class="transit-sort-chip" onclick="setTransitSort('cost',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">💰 Rẻ nhất</button>
-          <button class="transit-sort-chip" onclick="setTransitSort('hops',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">🔀 Ít chặng</button>
+          <button class="transit-sort-chip" data-mode="time" onclick="setTransitSort('time',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">⚡ Nhanh nhất</button>
+          <button class="transit-sort-chip" data-mode="cost" onclick="setTransitSort('cost',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">💰 Rẻ nhất</button>
+          <button class="transit-sort-chip" data-mode="hops" onclick="setTransitSort('hops',this)" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">🔀 Ít chặng</button>
         </div>
       </div>
     </div>
@@ -3517,9 +3526,19 @@ async function searchTrips(){
     const uidQS=uid?`&user_id=${encodeURIComponent(uid)}`:'';
     const buildSearchUrl=(oo,dd)=>`/api/trips/search?origin=${encodeURIComponent(oo)}&destination=${encodeURIComponent(dd)}&date=${dt}&busType=${bt}&sort=${sp}${priceQS}${uidQS}`;
 
+    /* Bug fix: this used to always request/render the transit engine's
+       'time' objective, so "Nhanh nhất" was both the only itinerary set
+       ever fetched AND (separately — see _setActiveTransitChip) always
+       the highlighted chip no matter what. Picking randomly among the 3
+       real objectives (time/cost/hops) per search, and threading it all
+       the way into the actual server-side pathfinding call, keeps the 3
+       sort chips honestly representing 3 different ways to rank a
+       transit itinerary instead of silently always favoring one. */
+    const _transitModes = ['time','cost','hops'];
+    const _randomTransitMode = _transitModes[Math.floor(Math.random()*_transitModes.length)];
     const [tripsRes, transitRoutes] = await Promise.all([
       fetch(buildSearchUrl(o, d)),
-      searchTransit(o, d, dt)
+      searchTransit(o, d, dt, _randomTransitMode)
     ]);
     if(!tripsRes.ok){
       const errData=await tripsRes.json().catch(()=>({}));
@@ -3546,7 +3565,7 @@ async function searchTrips(){
     }
 
     renderTrips(trips);
-    renderTransitResults(transitRoutes.routes, 'time', transitRoutes.failed);
+    renderTransitResults(transitRoutes.routes, _randomTransitMode, transitRoutes.failed);
     // Update search state
     _searchDone=true;
     _lastSearchOrigin=usedOrigin;
@@ -3644,7 +3663,7 @@ function renderPage(){
       <p style="font-size:18px;font-weight:800;color:rgba(255,255,255,.75);margin-bottom:8px;">Không tìm thấy chuyến nào phù hợp</p>
       <p style="font-size:13px;color:rgba(255,255,255,.35);margin-bottom:24px;">Thử thay đổi điểm đi / đến, ngày khởi hành hoặc loại xe</p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
-        <button onclick="fillSearch('Hà Nội','Đà Nẵng')" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);color:#6366f1;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🏙️ Hà Nội → Đà Nẵng</button>
+        <button onclick="fillSearch('Hồ Chí Minh','Nha Trang')" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);color:#6366f1;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🏙️ HCM → Nha Trang</button>
         <button onclick="fillSearch('Hồ Chí Minh','Đà Lạt')" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);color:#6366f1;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🌿 HCM → Đà Lạt</button>
         <button onclick="fillSearch('Hà Nội','Hồ Chí Minh')" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);color:#6366f1;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">🚌 HN → HCM</button>
       </div>
@@ -5523,7 +5542,7 @@ async function confirmSmartBook(){
           ${trip.origin} → ${trip.destination}<br>
           ${fmtT(trip.departure_time)} · ${seatObjs.length} ghế · ${fmt(Number(trip.base_price)*seatObjs.length)}
         </div>
-        <button class="sb-btn" style="margin-top:10px;" onclick="window.location.href='profile.html#bookings'">💳 Thanh toán ngay</button>
+        <button class="sb-btn" style="margin-top:10px;" onclick="window.location.href='profile.html?bookingId=${bkData.booking_id}#bookings'">💳 Thanh toán ngay</button>
         <button class="sb-btn-cancel" style="margin-top:6px;" onclick="document.getElementById('sbResult').innerHTML=''">Đóng</button>
       </div>`;
     loadAllTrips();
@@ -6323,7 +6342,7 @@ function buildRoadRoute(stops){
 
 /* HWY1 / ROUTE_DB / normP / inferRoute now live in /js/routeInference.js
    (route-forensics fix — extracted so the logic is testable under Jest;
-   see tests/route_visualization_forensic_audit.md). Loaded as a plain
+   see test case sửa đổi/route_visualization_forensic_audit.md). Loaded as a plain
    global-scope <script> above, so HWY1/ROUTE_DB/normP/inferRoute remain
    accessible here exactly as before. */
 
@@ -6356,7 +6375,7 @@ function findGeo(name){
 }
 
 /* inferRoute() now lives in /js/routeInference.js (route-forensics fix —
-   see tests/route_visualization_forensic_audit.md and the note above
+   see test case sửa đổi/route_visualization_forensic_audit.md and the note above
    findGeo()). Do NOT redeclare it here — that would shadow the tested
    module version with an untested duplicate. */
 
@@ -6396,7 +6415,7 @@ function _haverDist([lat1,lng1],[lat2,lng2]){
 
 /* ── Open modal ── */
 /* Route-forensics fix — source-of-truth waterfall for the route-animation
-   modal's stop list (see tests/route_visualization_forensic_audit.md):
+   modal's stop list (see test case sửa đổi/route_visualization_forensic_audit.md):
 
    PRIORITY 1: real route_stop rows for this trip's route_id (DB-authoritative,
                ordered by stop_order). Zero-coordinate placeholder rows
@@ -8182,12 +8201,12 @@ function clearGpsPickup(){
 }
 
 /* ── TRANSIT SEARCH ── */
-async function searchTransit(origin, destination, date){
+async function searchTransit(origin, destination, date, mode='time'){
   try{
     const res = await fetch('/api/search/transit',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({origin, destination, date, mode:'time'})
+      body: JSON.stringify({origin, destination, date, mode})
     });
     if(!res.ok) return { routes: [], failed: true };
     const data = await res.json();
@@ -8198,9 +8217,29 @@ async function searchTransit(origin, destination, date){
 let _transitData = [];
 let _transitMode = 'time';
 
+/* Bug fix: setTransitSort() only ever toggled an `active` CSS class, but
+   no stylesheet rule targets `.transit-sort-chip.active` — the chips'
+   highlighted look comes entirely from inline styles, which a class
+   toggle can't override. So the "Nhanh nhất" chip's hardcoded inline
+   "active" style stayed visually highlighted forever, no matter which
+   chip was actually clicked or which mode was actually driving the sort.
+   This applies the real inline style to whichever chip matches the
+   current mode (matched via data-mode, not a fragile onclick-string
+   parse) and the neutral style to the other two. */
+const _TRANSIT_CHIP_ACTIVE_STYLE   = 'background:rgba(99,102,241,.25);border:1px solid rgba(99,102,241,.5);color:#a5b4fc;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s';
+const _TRANSIT_CHIP_INACTIVE_STYLE = 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s';
+function _setActiveTransitChip(mode){
+  document.querySelectorAll('.transit-sort-chip').forEach(c=>{
+    const isActive = c.dataset.mode === mode;
+    c.classList.toggle('active', isActive);
+    c.style.cssText = isActive ? _TRANSIT_CHIP_ACTIVE_STYLE : _TRANSIT_CHIP_INACTIVE_STYLE;
+  });
+}
+
 function renderTransitResults(routes, mode, failed){
   _transitData = routes || [];
   _transitMode = mode || 'time';
+  _setActiveTransitChip(_transitMode);
   const sec = document.getElementById('transitResultsSection');
   const list = document.getElementById('transitList');
   if(failed){
@@ -8228,8 +8267,7 @@ function _sortTransit(data, mode){
 
 function setTransitSort(mode, el){
   _transitMode = mode;
-  document.querySelectorAll('.transit-sort-chip').forEach(c=>c.classList.remove('active'));
-  if(el) el.classList.add('active');
+  _setActiveTransitChip(mode);
   _renderTransitList(_transitData);
 }
 
@@ -8709,18 +8747,32 @@ function _startGoldenDealCountdown(departureTimeIso){
   tick();
   _gdCountdownTimer=setInterval(tick,1000);
 }
+/* Bug fix: this used to re-run a plain origin/destination text search
+   (_aiRecoClick), which lands on whatever day the search's own date-
+   fallback logic finds first — not necessarily the specific trip/price
+   the deal card just advertised. getTrending() (server) now resolves and
+   returns the exact real trip_id backing this deal, so jump straight to
+   it — guarantees "Xem ngay" always opens the trip that was shown, never
+   a different day's/price's list underneath a route name. */
+function _goldenDealGo(){
+  if(_gdDeal?.trip_id){
+    window.location.href = `/pages/passenger/booking.html?tripId=${_gdDeal.trip_id}`;
+  } else if(_gdDeal){
+    _aiRecoClick(_gdDeal.origin, _gdDeal.destination);
+  }
+}
 function onGoldenDealClick(){
   const isGuest = typeof getUser!=='function' || !getUser();
   if(isGuest){ openGoldenDealGate(); return; }
-  if(_gdDeal) _aiRecoClick(_gdDeal.origin, _gdDeal.destination);
+  _goldenDealGo();
 }
 function openGoldenDealGate(){ document.getElementById('gdLoginGate').style.display='flex'; }
 function closeGoldenDealGate(){
   document.getElementById('gdLoginGate').style.display='none';
   // "Để sau" still honors the click — takes the guest straight to the
-  // real search results, same as a logged-in user, just without the
-  // member-tier discount framing.
-  if(_gdDeal) _aiRecoClick(_gdDeal.origin, _gdDeal.destination);
+  // real trip, same as a logged-in user, just without the member-tier
+  // discount framing.
+  _goldenDealGo();
 }
 
 /* ── CHECKLIST #1: keep Vé Giờ Vàng / AI Reco in sync with an active

@@ -1365,9 +1365,10 @@ async function quickAI(id){
   const suggestion=localAIAnalysis(t);
   const replyText="[AI] "+suggestion.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,200);
   try{
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     await fetch(`${BASE_API}/requests/${t.raw_id}`,{
       method:"PUT",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},
       body:JSON.stringify({status:"PROCESSING",admin_reply:replyText})
     });
   }catch(err){console.error("[quickAI PUT]",err);}
@@ -1412,7 +1413,8 @@ async function bulkAI(){
     const t=allTickets.find(x=>x.id===id);if(!t||t.status==="resolved"||t.status==="closed")continue;
     await new Promise(r=>setTimeout(r,120));
     const reply="[AI] "+localAIAnalysis(t).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,200);
-    try{await fetch(`${BASE_API}/requests/${t.raw_id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"PROCESSING",admin_reply:reply})});}catch(e){}
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
+    try{await fetch(`${BASE_API}/requests/${t.raw_id}`,{method:"PUT",headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},body:JSON.stringify({status:"PROCESSING",admin_reply:reply})});}catch(e){}
     t.status="processing";t.admin_reply=reply;done++;
   }
   bulkDeselect();updateKPI();applyFilter();
@@ -1424,7 +1426,8 @@ async function bulkResolve(){
   let done=0;
   for(const id of targets){
     const t=allTickets.find(x=>x.id===id);if(!t)continue;
-    try{await fetch(`${BASE_API}/requests/${t.raw_id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"RESOLVED",admin_reply:t.admin_reply||"Yêu cầu đã được xử lý thành công."})});}catch(e){}
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
+    try{await fetch(`${BASE_API}/requests/${t.raw_id}`,{method:"PUT",headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},body:JSON.stringify({status:"RESOLVED",admin_reply:t.admin_reply||"Yêu cầu đã được xử lý thành công."})});}catch(e){}
     t.status="resolved";done++;
   }
   bulkDeselect();updateKPI();applyFilter();
@@ -1544,10 +1547,43 @@ function confirmAction(id,action){
   btn.className=c.btnCls;btn.textContent=c.btnTxt;
   btn.onclick=async()=>{
     btn.disabled=true;btn.textContent="⏳ Đang xử lý...";
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
+    const _authHdr=_token?{Authorization:`Bearer ${_token}`}:{};
+
+    /* Bug fix: "Chấp nhận hoàn tiền" used to only flip the ticket to
+       RESOLVED with a canned "your money is coming" reply — there is no
+       payment-reversal capability anywhere in this system, so nothing
+       ever actually happened for the customer. The concrete, already-
+       supported effect a refund has in this app is the same one the
+       cancellation policy shown on booking.html already promises
+       ("Hủy trước 24h — Hoàn 100%..."): the booking is canceled and the
+       seat is released. Reusing PUT /api/bookings/:id (already used
+       elsewhere for cancellation, admin-authorized, correctly releases
+       the trip_seat_hold row and sends the cancellation email) makes
+       "approve" perform that real state change instead of just a
+       ticket-status flip + a promise with nothing behind it. Only
+       applies to "approve" with a real numeric booking_id — "reject"
+       and general tickets with no linked booking are unaffected. */
+    let refundOk=true;
+    if(action==="approve"){
+      const bid=Number(t.booking_id);
+      if(Number.isInteger(bid)&&bid>0){
+        try{
+          const bkRes=await fetch(`/api/bookings/${bid}`,{
+            method:"PUT",
+            headers:{"Content-Type":"application/json",..._authHdr},
+            body:JSON.stringify({status:"CANCELED"})
+          });
+          refundOk=bkRes.ok;
+          if(!bkRes.ok) console.error("[confirmAction] booking cancel failed",bid,bkRes.status);
+        }catch(err){ refundOk=false; console.error("[confirmAction] booking cancel error",err); }
+      } // else: demo/mock ticket with no real booking_id — nothing to cancel, refundOk stays true
+    }
+
     try{
       await fetch(`${BASE_API}/requests/${t.raw_id}`,{
         method:"PUT",
-        headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type":"application/json",..._authHdr},
         body:JSON.stringify({
           status:"RESOLVED",
           admin_reply: c.reply
@@ -1558,7 +1594,11 @@ function confirmAction(id,action){
     t.admin_reply=c.reply;
     closeModal("confirmModal");
     updateKPI();applyFilter();
-    toast(action==="approve"?"✅ Đã chấp nhận hoàn tiền":"❌ Đã từ chối yêu cầu","success");
+    if(action==="approve"&&!refundOk){
+      toast("⚠️ Đã ghi nhận yêu cầu nhưng huỷ vé/hoàn tiền thất bại — kiểm tra lại booking thủ công","error");
+    } else {
+      toast(action==="approve"?"✅ Đã chấp nhận hoàn tiền — vé đã được huỷ":"❌ Đã từ chối yêu cầu","success");
+    }
     btn.disabled=false;
   };
   document.getElementById("confirmModal").classList.add("open");
@@ -1568,9 +1608,10 @@ async function forwardIT(id){
   const t=allTickets.find(x=>x.id===id);if(!t)return;
   const reply="[IT] Yêu cầu của bạn đã được chuyển đến bộ phận kỹ thuật. Chúng tôi sẽ xử lý và phản hồi sớm nhất.";
   try{
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     await fetch(`${BASE_API}/requests/${t.raw_id}`,{
       method:"PUT",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},
       body:JSON.stringify({status:"PROCESSING",admin_reply:reply})
     });
   }catch(err){console.error("[forwardIT]",err);}
@@ -1583,9 +1624,10 @@ async function resolveTicket(id){
   const t=allTickets.find(x=>x.id===id);if(!t)return;
   const reply=t.admin_reply||"Yêu cầu của bạn đã được xử lý thành công. Cảm ơn bạn đã liên hệ SmartBusAI.";
   try{
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     await fetch(`${BASE_API}/requests/${t.raw_id}`,{
       method:"PUT",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json",...(_token?{Authorization:`Bearer ${_token}`}:{})},
       body:JSON.stringify({status:"RESOLVED",admin_reply:reply})
     });
   }catch(err){console.error("[resolveTicket]",err);}

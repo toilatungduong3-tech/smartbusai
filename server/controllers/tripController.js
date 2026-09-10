@@ -289,6 +289,33 @@ exports.getTripById = async (req, res) => {
 };
 
 /* ===============================
+   LIST ROUTES (for the operator's "Thêm chuyến xe mới" route picker)
+   Bug fix: that form only ever collected free-text origin/destination
+   strings and sent them straight to createTrip, which has always required
+   a real route_id (routes are shared reference data — origin/destination/
+   distance/lat-lng — not something a trip invents on the fly). Every
+   "Thêm chuyến xe mới" submission 400'd with "Thiếu dữ liệu bắt buộc"
+   because route_id was never in the payload at all. Route data itself
+   isn't sensitive (already public via /api/trips search results), so
+   this stays a plain authenticated (not admin-gated) list — any operator
+   needs it to pick an existing route when scheduling a new trip.
+=============================== */
+exports.getAllRoutesForPicker = async (req, res) => {
+    try {
+        const [routes] = await db.query(
+            `SELECT route_id, origin, destination, distance_km
+             FROM route
+             WHERE status = 'ACTIVE'
+             ORDER BY origin, destination`
+        );
+        res.json(routes);
+    } catch (err) {
+        logger.error("GET ROUTES FOR PICKER ERROR:", err);
+        res.status(500).json({ message: "Database error" });
+    }
+};
+
+/* ===============================
    CREATE TRIP (Operator)
 =============================== */
 exports.createTrip = async (req, res) => {
@@ -436,8 +463,24 @@ exports.updateTrip = async (req, res) => {
            (e.g. the auto-advance cron job must still be able to mark a
            booked trip COMPLETED). Re-submitting the same values is a no-op,
            not a change, and is not blocked. */
+        /* Bug fix: departure_time/arrival_time need a timestamp comparison,
+           not a raw String() one — `existing[f]` is a mysql2 Date object
+           (e.g. "Sat Sep 05 2026 10:00:00 GMT+0700 (...)"), while
+           `merged[f]` (when the caller supplied it) is whatever string the
+           client sent (e.g. a <input type="datetime-local"> value like
+           "2026-09-05T10:00"). These two string forms can never be equal
+           for the same instant, so this used to treat EVERY edit that
+           merely re-submits the trip's own unchanged time (which trips.html
+           always does, on every save) as "changing structure" — rejecting
+           a plain price/status edit on any trip that already has a booking
+           with a false "you can't change the schedule" 409. route_id/bus_id
+           are plain IDs, so a string comparison for those two is unaffected
+           and left as-is. */
         const structuralFields = ['route_id', 'bus_id', 'departure_time', 'arrival_time'];
-        const changingStructure = structuralFields.some(f => String(merged[f]) !== String(existing[f]));
+        const DATE_FIELDS = new Set(['departure_time', 'arrival_time']);
+        const changingStructure = structuralFields.some(f => DATE_FIELDS.has(f)
+            ? parseDbDateTime(merged[f]).getTime() !== parseDbDateTime(existing[f]).getTime()
+            : String(merged[f]) !== String(existing[f]));
         if (changingStructure) {
             const [[activeBooking]] = await db.query(
                 "SELECT COUNT(*) AS cnt FROM booking WHERE trip_id=? AND status IN ('PAID','PENDING')", [id]
@@ -622,6 +665,33 @@ exports.autoGenerateRecurringTrips = async () => {
             const [[{ cnt }]] = await db.query(
                 `SELECT COUNT(*) AS cnt FROM booking WHERE trip_id=?`, [t.trip_id]
             );
+
+            /* Bus double-booking guard (Sprint 24) — createTrip/updateTrip
+               have always rejected assigning a bus to two overlapping
+               trips; this cron path was a third, unguarded way to produce
+               the exact same real-world conflict. A live audit found it
+               actively doing so: on one server restart alone it advanced
+               153 trips in-place with zero cross-route conflict checking,
+               re-introducing overlaps a prior data-repair pass had just
+               eliminated. `trip_id != t.trip_id` excludes the row being
+               advanced from conflicting with itself; the clone branch has
+               no self row yet, so no exclusion is needed there. Skipping
+               (not advancing) is the same fail-safe pattern already used
+               above for invalid source dates — leaves the trip as-is to
+               be retried next cycle rather than corrupting the schedule. */
+            const [[conflict]] = await db.query(
+                `SELECT trip_id FROM trip
+                 WHERE bus_id=? AND trip_id != ? AND status != 'CANCELED'
+                   AND departure_time < ? AND arrival_time > ?`,
+                [t.bus_id, t.trip_id, toDbDateTime(nextArr), toDbDateTime(nextDep)]
+            );
+            if (conflict) {
+                if (!warnedInvalidTripIds.has(`conflict_${t.trip_id}`)) {
+                    warnedInvalidTripIds.add(`conflict_${t.trip_id}`);
+                    logger.warn(`⚠️ [AutoTrip] Skipping advance for trip_id=${t.trip_id} — would conflict with trip_id=${conflict.trip_id} on the same bus_id=${t.bus_id}`);
+                }
+                continue;
+            }
 
             if (Number(cnt) > 0) {
                 /* Có booking → KHÔNG sửa departure_time cũ (bảo toàn lịch sử).

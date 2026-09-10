@@ -311,10 +311,14 @@ smartbusai/
 ├── 📄 Jenkinsfile               # CI/CD pipeline (Jenkins)
 ├── 📄 report.html               # Báo cáo rà soát kỹ thuật toàn diện
 │
-├── 📂 scripts/                  # Script tiện ích một-lần / bảo trì dữ liệu
-│   ├── 📄 fix-null-data.js
-│   ├── 📄 backfill_bus_fleet.js
+├── 📂 scripts/                  # Script tiện ích đang dùng
 │   └── 📄 reset_demo_password.js
+│
+├── 📂 test case sửa đổi/        # Toàn bộ báo cáo/tài liệu theo từng lần sửa lỗi
+│   │                             #   (SPRINT*/PHASE*_FINAL_REPORT.md, các audit .md
+│   │                             #   trong docs/ cũ, và script sửa dữ liệu một-lần đã
+│   │                             #   dùng xong: fix-null-data.js, backfill_bus_fleet.js,
+│   │                             #   fix_near_term_schedule.js, redistribute_trips.js)
 │
 ├── 📂 server/                   # Backend (Node.js + Express)
 │   ├── 📄 server.js             # Entry point — HTTP + Socket.io + 4 tiến trình nền

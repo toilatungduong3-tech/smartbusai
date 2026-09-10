@@ -360,8 +360,9 @@ describe('paymentRoutes — POST /zalopay/callback (IPN)', () => {
         const mac = crypto.createHmac('sha256', cfg.zalopay.key2).update(data).digest('hex');
 
         db.query.mockResolvedValueOnce([[{ total_amount: 200000 }]]); // amount lookup
-        db.query.mockResolvedValueOnce([{}]); // UPDATE booking
+        db.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // UPDATE booking (Sprint 24: markBookingPaidOnce gates on this)
         db.query.mockResolvedValueOnce([{}]); // INSERT payment
+        db.query.mockResolvedValueOnce([[{ user_id: null }]]); // markBookingPaidOnce's post-insert user_id lookup (guest booking -> no awardPoints call)
 
         const handler = getHandler('/zalopay/callback', 'post');
         const req = { body: { data, mac } };
@@ -371,7 +372,9 @@ describe('paymentRoutes — POST /zalopay/callback (IPN)', () => {
         expect(res.json).toHaveBeenCalledWith({ return_code: 1, return_message: 'success' });
         expect(db.query.mock.calls[1][0]).toMatch(/UPDATE booking SET status='PAID'/);
         expect(db.query.mock.calls[2][0]).toMatch(/INSERT INTO payment/);
-        expect(db.query.mock.calls[2][1]).toEqual([9, 200000]);
+        // Sprint 24: markBookingPaidOnce parameterizes the method instead of
+        // hardcoding it into the SQL text per gateway (same effect, safer default).
+        expect(db.query.mock.calls[2][1]).toEqual([9, 'ZALOPAY', 200000]);
     });
 
     test('tampered mac -> booking untouched, ack return_code -1', async () => {
@@ -434,8 +437,9 @@ describe('paymentRoutes — POST /vnpay/ipn (server-to-server, independent of th
 
     test('valid signature + matching amount + PENDING booking -> PAID, RspCode 00', async () => {
         db.query.mockResolvedValueOnce([[{ total_amount: 200000, status: 'PENDING' }]]);
-        db.query.mockResolvedValueOnce([{}]);
-        db.query.mockResolvedValueOnce([{}]);
+        db.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // UPDATE booking (Sprint 24: markBookingPaidOnce gates on this)
+        db.query.mockResolvedValueOnce([{}]); // INSERT payment
+        db.query.mockResolvedValueOnce([[{ user_id: null }]]); // markBookingPaidOnce's post-insert user_id lookup (guest booking -> no awardPoints call)
         const handler = getHandler('/vnpay/ipn', 'post');
         const req = { query: signedIpn(), body: {} };
         const res = mockRes();

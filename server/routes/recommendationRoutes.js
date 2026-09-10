@@ -28,6 +28,14 @@ router.get('/trending', async (req, res) => {
 
 async function computeTrending() {
     const db = require('../config/db');
+    /* Bug fix: this had no upper date bound at all — "Vé giờ vàng"
+       (Golden Deal) could and did surface a trip departing next week or
+       next month just because it happened to have the most bookings,
+       which reads as stale/wrong for a widget framed as "today's best
+       deal, going soon". Restricting to DATE(departure_time) = CURDATE()
+       means the widget only ever shows a trip that actually departs
+       later today; if none qualify, renderGoldenDeal() already hides the
+       section entirely rather than showing a mismatched day. */
     const [rows] = await db.query(`
       SELECT
         t.trip_id     AS route_id,
@@ -48,6 +56,7 @@ async function computeTrending() {
       LEFT JOIN review rv         ON rv.trip_id    = t.trip_id
       WHERE t.status = 'OPEN'
         AND t.departure_time > NOW()
+        AND DATE(t.departure_time) = CURDATE()
       GROUP BY t.trip_id, r.origin, r.destination, t.departure_time,
                t.arrival_time, t.base_price, b.bus_type, b.total_seats
       ORDER BY booking_count DESC, avg_rating DESC
@@ -55,6 +64,19 @@ async function computeTrending() {
     `);
     const recommendations = rows.map(r => ({
       route_id:      r.route_id,
+      // Bug fix: `route_id` here is actually t.trip_id (see the SELECT
+      // above — misleading alias kept for backwards compat with existing
+      // consumers of this field). index.html's Golden Deal card used to
+      // click through via a plain origin/destination text search, which
+      // reruns with whatever date is currently in the search box (often
+      // "today") — if this specific advertised trip departs on a
+      // different day (routine here, since this query has no date window;
+      // it just picks whichever real trip has the most bookings), that
+      // search finds zero matching trips for the route on that date and
+      // the deal looks broken ("vé giờ vàng không có chuyến ở dưới").
+      // Exposing the real trip_id explicitly lets the frontend jump
+      // straight to this exact trip instead of re-searching by name.
+      trip_id:       r.route_id,
       origin:        r.origin,
       destination:   r.destination,
       departure_time:r.departure_time,

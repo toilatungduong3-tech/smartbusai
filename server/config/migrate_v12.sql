@@ -36,7 +36,7 @@
 --    Live-measured, real search queries (tripController.runTripSearch's
 --    exact SQL shape) at 103,401 total trip rows (90,000 synthetic rows
 --    added inside a transaction, rolled back after measuring — see
---    SPRINT5_FINAL_REPORT.md for the full methodology and numbers):
+--    test case sửa đổi/SPRINT5_FINAL_REPORT.md for the full methodology and numbers):
 --      Hà Nội → Đà Nẵng:        13 ms  (target: <50ms)
 --      Hà Nội → Hồ Chí Minh:     8 ms
 --      Sơn La → Nam Định:        5 ms

@@ -12,13 +12,19 @@ router.get("/running",           ctrl.getRunningTrips);
 // (Sprint 11 — see aiSearchRanking.js). Never blocks or requires a token.
 router.get("/search",            optionalAuth, ctrl.searchTrips);
 router.get("/dynamic-price/:id", ctrl.getDynamicPriceForTrip);
+
+/* Route picker for operator/trips.html's "Thêm chuyến xe mới" — must stay
+   ahead of the generic "/:id" below or "/routes/list" would be swallowed
+   as :id="routes" and 404 on the trailing "/list" segment. */
+router.get("/routes/list",       authenticate, ctrl.getAllRoutesForPicker);
+
 router.get("/:id",               ctrl.getTripById);
 
 /* ADMIN OR OPERATOR — tạo, sửa, hủy chuyến.
    Phase 2I Step 2: createTrip/updateTrip had their own inline ownership
    check using the now-obsolete bus_operator.email = req.user.email scheme
    (same root cause as operatorScope.js's old design — see
-   tests/phase2i_operator_identity_audit.md); updateTripStatus/
+   test case sửa đổi/phase2i_operator_identity_audit.md); updateTripStatus/
    updateTripPrice had NO ownership check at all, letting any OPERATOR
    modify any other operator's trip. All four now use the canonical
    users.operator_id-derived req.operatorId via attachOperatorId +

@@ -12,7 +12,7 @@
    support message, full_name, ...) containing a literal `<script>` tag
    that later gets rendered somewhere without the frontend re-escaping it.
    This is input-side defense-in-depth, not a replacement for
-   render-time escaping — see SPRINT12_FINAL_REPORT.md for the scope
+   render-time escaping — see test case sửa đổi/SPRINT12_FINAL_REPORT.md for the scope
    note on why a full output-escaping audit of every frontend render site
    is out of this pass's budget.
 

@@ -5,6 +5,54 @@ const router  = express.Router();
 const db      = require('../config/db');
 const pmt     = require('../services/paymentService');
 const { paymentLimiter } = require('../middleware/rateLimiter');
+const { awardPoints } = require('../services/loyaltyService');
+
+/* Bug fix: the gateway callback handlers below (vnpay/return, momo/return,
+   momo/notify, zalopay/callback, vnpay/ipn) each independently ran
+   `UPDATE ... SET status='PAID'` then unconditionally `INSERT INTO
+   payment`, wrapped in a bare `.catch(()=>{})` — three separate real bugs:
+   (1) VNPay fires both a browser return AND a server-to-server IPN for the
+   same transaction (its own documented behavior), and ZaloPay retries its
+   callback on any non-ack — whichever call lands second still ran its
+   INSERT even though the booking was already PAID, creating a duplicate
+   payment row every time; (2) a genuine DB error during the write was
+   silently swallowed, and the caller still told the gateway/browser the
+   callback fully succeeded, leaving a booking stuck PENDING with no retry
+   and no visible failure; (3) loyalty points were never awarded here at
+   all — only bookingController.js's CASH/payBooking path called
+   awardPoints, so a booking paid via any of these four gateways silently
+   earned no points. This single gated helper is now the only place any of
+   them marks a booking PAID: the UPDATE's `WHERE status='PENDING'` +
+   affectedRows check makes it safe to call more than once for the same
+   booking (a retried/duplicate callback becomes a no-op, not a duplicate
+   row or a double points award), and it throws on a real DB error instead
+   of swallowing it, so each caller can tell "already processed" apart
+   from "the write actually failed" and respond to the gateway/browser
+   accordingly. */
+async function markBookingPaidOnce(bookingId, method, amount) {
+    const [updResult] = await db.query(
+        `UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`,
+        [bookingId]
+    );
+    if (updResult.affectedRows !== 1) return { justPaid: false };
+
+    await db.query(
+        `INSERT INTO payment (booking_id, method, amount, status, payment_time)
+         VALUES (?, ?, ?, 'COMPLETED', NOW())`,
+        [bookingId, method, amount]
+    );
+
+    // Award loyalty points for a registered user, mirroring payBooking's
+    // CASH path (bookingController.js) — best-effort: a points-crediting
+    // failure must never undo/hide a real, already-committed payment.
+    try {
+        const [[bk]] = await db.query('SELECT user_id FROM booking WHERE booking_id=?', [bookingId]);
+        if (bk?.user_id) await awardPoints(db, bk.user_id, bookingId, amount);
+    } catch (e) {
+        logger.error(`[markBookingPaidOnce] awardPoints failed booking=${bookingId}:`, e.message);
+    }
+    return { justPaid: true };
+}
 
 /* Sprint 12 — paymentLimiter applied only to the two endpoints an actual
    browser client calls directly (/create, /vietqr/confirm). The gateway
@@ -93,26 +141,28 @@ router.get('/vnpay/return', async (req, res) => {
   if (isValid && bookingId) {
     const [[bkAmt]] = await db.query('SELECT total_amount FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
     if (bkAmt && Math.round(Number(bkAmt.total_amount)) === amount) {
-      await db.query(
-        `UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`,
-        [bookingId]
-      ).catch(() => {});
-      await db.query(
-        `INSERT INTO payment (booking_id, method, amount, status, payment_time)
-         VALUES (?, 'VNPAY', ?, 'COMPLETED', NOW())`,
-        [bookingId, amount]
-      ).catch(() => {});
+      try {
+        await markBookingPaidOnce(bookingId, 'VNPAY', amount);
+      } catch (e) {
+        logger.error(`[vnpay/return] failed to mark booking=${bookingId} PAID:`, e.message);
+      }
     } else {
       logger.error(`[vnpay/return] amount mismatch booking=${bookingId} paid=${amount} expected=${bkAmt?.total_amount}`);
     }
   }
 
-  let bookingCode = '';
+  // Bug fix: this used to derive the shown status purely from `isValid`
+  // (the signature check), never from whether the booking was actually
+  // marked PAID — a swallowed write error above used to still show the
+  // passenger a success page. Re-reading the real DB status here reflects
+  // what actually happened, not just what the gateway signature claimed.
+  let bookingCode = '', finalStatus = null;
   if (bookingId) {
-    const [[bk]] = await db.query('SELECT booking_code FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
+    const [[bk]] = await db.query('SELECT booking_code, status FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
     bookingCode = bk?.booking_code || '';
+    finalStatus = bk?.status || null;
   }
-  const status = isValid ? 'success' : 'failed';
+  const status = (isValid && finalStatus === 'PAID') ? 'success' : 'failed';
   res.redirect(`/pages/passenger/payment-result.html?status=${status}&bookingId=${bookingId||''}&method=vnpay&bookingCode=${encodeURIComponent(bookingCode)}`);
 });
 
@@ -126,26 +176,26 @@ router.get('/momo/return', async (req, res) => {
   if (isValid && bookingId) {
     const [[bkAmt]] = await db.query('SELECT total_amount FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
     if (bkAmt && Math.round(Number(bkAmt.total_amount)) === Math.round(amount)) {
-      await db.query(
-        `UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`,
-        [bookingId]
-      ).catch(() => {});
-      await db.query(
-        `INSERT INTO payment (booking_id, method, amount, status, payment_time)
-         VALUES (?, 'MOMO', ?, 'COMPLETED', NOW())`,
-        [bookingId, amount]
-      ).catch(() => {});
+      try {
+        await markBookingPaidOnce(bookingId, 'MOMO', amount);
+      } catch (e) {
+        logger.error(`[momo/return] failed to mark booking=${bookingId} PAID:`, e.message);
+      }
     } else {
       logger.error(`[momo/return] amount mismatch booking=${bookingId} paid=${amount} expected=${bkAmt?.total_amount}`);
     }
   }
 
-  let bookingCode = '';
+  // Bug fix: see vnpay/return above — reflect the real final DB status,
+  // not just the signature check, so a swallowed write failure can't
+  // still show the passenger a success page.
+  let bookingCode = '', finalStatus = null;
   if (bookingId) {
-    const [[bk]] = await db.query('SELECT booking_code FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
+    const [[bk]] = await db.query('SELECT booking_code, status FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
     bookingCode = bk?.booking_code || '';
+    finalStatus = bk?.status || null;
   }
-  const status = isValid ? 'success' : 'failed';
+  const status = (isValid && finalStatus === 'PAID') ? 'success' : 'failed';
   res.redirect(`/pages/passenger/payment-result.html?status=${status}&bookingId=${bookingId||''}&method=momo&bookingCode=${encodeURIComponent(bookingCode)}`);
 });
 
@@ -160,15 +210,23 @@ router.post('/momo/notify', async (req, res) => {
     if (isValid && bookingId) {
       const [[bkAmt]] = await db.query('SELECT total_amount FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
       if (bkAmt && Math.round(Number(bkAmt.total_amount)) === Math.round(amount)) {
-        await db.query(
-          `UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`,
-          [bookingId]
-        ).catch(() => {});
+        await markBookingPaidOnce(bookingId, 'MOMO', amount);
       } else {
+        // Amount mismatch is a permanent rejection (tampered/stale
+        // callback), not a transient failure — still ack 'ok' so MoMo
+        // doesn't keep retrying something that will never match. Only a
+        // genuine write failure below (thrown, caught) changes the ack.
         logger.error(`[momo/notify] amount mismatch booking=${bookingId} paid=${amount} expected=${bkAmt?.total_amount}`);
       }
     }
-  } catch (e) { logger.error('[momo/notify]', e.message); }
+  } catch (e) {
+    // Bug fix: a real write failure inside the try (e.g. markBookingPaidOnce
+    // throwing on a genuine DB error) used to still fall through to the
+    // unconditional 'ok' response below, hiding the failure from MoMo
+    // (no retry) and from logs at the response level.
+    logger.error('[momo/notify]', e.message);
+    return res.json({ message: 'failed' });
+  }
   res.json({ message: 'ok' });
 });
 
@@ -187,16 +245,19 @@ router.post('/zalopay/callback', async (req, res) => {
       // Phase 2I (defense-in-depth): see vnpay/return above.
       const [[bkAmt]] = await db.query('SELECT total_amount FROM booking WHERE booking_id=?', [bookingId]).catch(() => [[]]);
       if (bkAmt && Math.round(Number(bkAmt.total_amount)) === Math.round(Number(amount))) {
-        await db.query(
-          `UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`,
-          [bookingId]
-        ).catch(() => {});
-        await db.query(
-          `INSERT INTO payment (booking_id, method, amount, status, payment_time)
-           VALUES (?, 'ZALOPAY', ?, 'COMPLETED', NOW())`,
-          [bookingId, amount]
-        ).catch(() => {});
+        // Bug fix: previously wrapped in .catch(()=>{}) so a real write
+        // failure here fell through to the unconditional return_code:1
+        // below — telling ZaloPay the callback succeeded (stopping its
+        // retries) even though the booking was never actually marked
+        // PAID. Letting it throw into the outer catch below returns
+        // return_code:0, which ZaloPay will retry.
+        await markBookingPaidOnce(bookingId, 'ZALOPAY', amount);
       } else {
+        // Amount mismatch is a permanent rejection (tampered/stale
+        // callback), not a transient failure — still ack return_code:1 so
+        // ZaloPay doesn't keep retrying something that will never match.
+        // Only a genuine write failure above (thrown, caught below)
+        // changes the ack.
         logger.error(`[zalopay/callback] amount mismatch booking=${bookingId} paid=${amount} expected=${bkAmt?.total_amount}`);
       }
     }
@@ -248,13 +309,13 @@ router.post('/vnpay/ipn', async (req, res) => {
     if (!bkAmt) return res.json({ RspCode: '01', Message: 'Order not found' });
     if (Math.round(Number(bkAmt.total_amount)) !== amount) return res.json({ RspCode: '04', Message: 'Invalid amount' });
 
+    // Bug fix: the write here used to be wrapped in .catch(()=>{}), so a
+    // real DB failure fell through to the unconditional RspCode:'00'
+    // below — telling VNPay the IPN succeeded (stopping its retries) even
+    // though the booking was never actually marked PAID. Letting it throw
+    // into the outer catch returns RspCode:'99', which VNPay will retry.
     if (bkAmt.status === 'PENDING') {
-      await db.query(`UPDATE booking SET status='PAID' WHERE booking_id=? AND status='PENDING'`, [bookingId]).catch(() => {});
-      await db.query(
-        `INSERT INTO payment (booking_id, method, amount, status, payment_time)
-         VALUES (?, 'VNPAY', ?, 'COMPLETED', NOW())`,
-        [bookingId, amount]
-      ).catch(() => {});
+      await markBookingPaidOnce(bookingId, 'VNPAY', amount);
     }
     return res.json({ RspCode: '00', Message: 'Confirm Success' });
   } catch (e) {
@@ -306,6 +367,17 @@ async function confirmVietQR(req, res) {
        VALUES (?, 'VIETQR', ?, 'COMPLETED', NOW())`,
       [booking_id, bk.total_amount]
     ).catch(() => {});
+
+    // Bug fix: VietQR was one of the four gateway payment paths that never
+    // awarded loyalty points at all (only bookingController.js's CASH/
+    // payBooking path did) — best-effort, never blocks the already-
+    // committed payment above.
+    try {
+      const [[owner]] = await db.query('SELECT user_id FROM booking WHERE booking_id=?', [booking_id]);
+      if (owner?.user_id) await awardPoints(db, owner.user_id, booking_id, bk.total_amount);
+    } catch (e) {
+      logger.error(`[vietqr/confirm] awardPoints failed booking=${booking_id}:`, e.message);
+    }
 
     res.json({ success: true });
   } catch (e) {

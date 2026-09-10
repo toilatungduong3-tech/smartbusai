@@ -103,10 +103,17 @@ const bookingId   = p.get('bookingId');
 const method      = p.get('method') || '';
 const bookingCode = p.get('bookingCode') || '';
 
-const METHOD_LABEL = { momo:'Ví MoMo 💜', vnpay:'VNPay 💙', vietqr:'Chuyển khoản 🏦' };
+const METHOD_LABEL = { momo:'Ví MoMo 💜', vnpay:'VNPay 💙', vietqr:'Chuyển khoản 🏦', zalopay:'ZaloPay 💠' };
 const card = document.getElementById('card');
 
 document.getElementById('methodBadge').textContent = METHOD_LABEL[method] || method.toUpperCase();
+
+// Deep-link "Xem vé của tôi" straight to this specific ticket instead of
+// just the general bookings tab — bookingId is already known from this
+// page's own redirect URL (see booking.html/vnpay/momo return handlers).
+if (bookingId) {
+  document.getElementById('btnMain').href = `/pages/passenger/profile.html?bookingId=${bookingId}#bookings`;
+}
 
 if (status === 'success') {
   card.classList.add('status-success');

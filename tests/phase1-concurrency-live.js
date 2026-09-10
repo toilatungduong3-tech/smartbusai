@@ -8,7 +8,7 @@
  * uniqueness).
  *
  * This is a one-off, point-in-time live-verification script (Category C
- * per tests/SMARTBUSAI_MASTER_COMPLETION_MATRIX.md's test taxonomy) — not
+ * per test case sửa đổi/SMARTBUSAI_MASTER_COMPLETION_MATRIX.md's test taxonomy) — not
  * a permanent Jest suite. It creates and then cleans up its own real rows.
  * NOT safe to re-run against hardcoded IDs from a prior run (it looks up
  * fresh state each time), but re-running it is safe in general since it

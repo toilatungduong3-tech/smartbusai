@@ -1,7 +1,7 @@
 /**
  * SmartBusAI — Route inference (curated corridor lookup only)
  *
- * Route-forensics fix (see tests/route_visualization_forensic_audit.md):
+ * Route-forensics fix (see test case sửa đổi/route_visualization_forensic_audit.md):
  * extracted out of public/pages/passenger/index.html so this exact logic
  * is testable under Jest, not reimplemented/duplicated. Loaded as a plain
  * global-scope <script> in the browser; required as a CommonJS module in

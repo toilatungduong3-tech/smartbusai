@@ -148,6 +148,11 @@ const cspDirectives = {
         // — without this, fetch() to OSRM is silently CSP-blocked and every
         // route map falls back to the straight-line/curated-highway path.
         "https://router.project-osrm.org",
+        // Reverse geocoding for "Vị trí của tôi" (index.html getMyLocation)
+        // — same failure mode as OSRM above: without this, fetch() to
+        // Nominatim is silently CSP-blocked and the UI falls back to
+        // showing raw lat/lng coordinates instead of a real address.
+        "https://nominatim.openstreetmap.org",
     ],
     frameSrc: ["https://accounts.google.com", "https://www.facebook.com"], // OAuth popup/iframe flows
     objectSrc: ["'none'"],

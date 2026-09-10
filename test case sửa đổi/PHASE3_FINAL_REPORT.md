@@ -125,7 +125,7 @@ Compare to Sprint 0's live measurement: ~35,000 ms.  ≈ 22-24× faster.
 
 - `server/ai/recommendation.js`: file header and the support-classifier section header corrected from "NLP Classification" to "Rule-based Keyword Classifier" — the function does Vietnamese substring/keyword matching against a static word list with canned response templates; no tokenization, embeddings, or trained model.
 - `server/swagger.js`: the `/api/admin/ai/classify-ticket` OpenAPI summary corrected the same way — this is user-facing API documentation (`/api-docs`), not just an internal comment.
-- `docs/SMARTBUSAI_TECHNICAL_REPORT.md` and `docs/SPRINT3_AUDIT_REPORT.md`: the same "NLP Classification" claim corrected in both.
+- `SMARTBUSAI_TECHNICAL_REPORT.md` and `SPRINT3_AUDIT_REPORT.md` (both in this same folder): the same "NLP Classification" claim corrected in both.
 - **VietQR / manual-pay transparency**: `confirmVietQR` already self-documented as a simulation in code (pre-existing, confirmed accurate — "mô phỏng, không phải xác thực chữ ký ngân hàng thật"). Added: (a) an explicit code comment on `payBooking` distinguishing `method=CASH` (a genuine real-world action — an operator physically receives cash, there's no gateway to call) from `method=MOMO/ZALOPAY/BANK` submitted through that same endpoint (a trust-based simulation, identical in kind to `confirmVietQR` — the real gateway-verified paths are the separate `/momo/notify`, `/vnpay/return`, `/vietqr/confirm` handlers); (b) a small, visible notice in the passenger payment QR modal (`booking.html`) — *"⚠️ Chế độ demo — thanh toán được mô phỏng cho mục đích đồ án, không kết nối cổng thanh toán/ngân hàng thật"* — shown for every payment method in that modal, not just VietQR, since the MoMo/ZaloPay QR codes there are also generated via a generic third-party QR-image API, not a real gateway call.
 
 ---
@@ -136,7 +136,7 @@ Compare to Sprint 0's live measurement: ~35,000 ms.  ≈ 22-24× faster.
 
 **Frontend:** `public/pages/passenger/index.html` (ticker endpoint switch, dead-code removal), `public/pages/passenger/booking.html` (demo-payment notice), `public/pages/operator/bookings.html`, `public/pages/operator/vehicles.html`, `public/pages/operator/trips.html`, `public/pages/operator/seats.html`, `public/pages/admin/operators.html` (all: `_authHeaders()` retrofit on the affected fetch calls).
 
-**Docs:** `docs/SMARTBUSAI_TECHNICAL_REPORT.md`, `docs/SPRINT3_AUDIT_REPORT.md`.
+**Docs:** `SMARTBUSAI_TECHNICAL_REPORT.md`, `SPRINT3_AUDIT_REPORT.md` (both in `test case sửa đổi/`).
 
 **Tests (new):** `tests/phase3-security.test.js` (20), `tests/phase3-security-live.js` (10-point live script), `tests/phase3-booking-cleanup.test.js` (6), `tests/phase3-transit-perf.test.js` (12). **Tests (updated for a legitimate, non-cosmetic behavior change only):** `tests/phase1-migration.test.js` (refactored to a maintainable `queueAllPresent()` helper + new INACTIVE-enum-missing case).
 

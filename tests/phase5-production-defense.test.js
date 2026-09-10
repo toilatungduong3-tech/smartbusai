@@ -5,7 +5,7 @@
  * indexes (content-level regression guard — the real EXPLAIN/timing
  * evidence proving they work at 100,000+ rows was measured live against
  * the real DB this sprint and is documented in migrate_v12.sql's own
- * header and SPRINT5_FINAL_REPORT.md, not re-measured here: a hard
+ * header and test case sửa đổi/SPRINT5_FINAL_REPORT.md, not re-measured here: a hard
  * millisecond assertion against a live DB would be flaky in any CI
  * environment without that exact dataset, which is why every earlier
  * performance-hardening test file in this repo — e.g.
@@ -92,7 +92,7 @@ describe('healthController.getHealth', () => {
 
 /* ══════════════════════════════════════════
    2. migrate_v12.sql — composite index content
-   (the real EXPLAIN/timing proof lives in SPRINT5_FINAL_REPORT.md —
+   (the real EXPLAIN/timing proof lives in test case sửa đổi/SPRINT5_FINAL_REPORT.md —
    see this file's header for why that isn't re-asserted here)
 ══════════════════════════════════════════ */
 describe('migrate_v12.sql — composite indexes are present with the right columns', () => {
@@ -185,7 +185,7 @@ describe('Secret hygiene', () => {
    4. Docker packaging sanity (content-level — no Docker daemon in this
    test environment, so this can't invoke `docker build`; the schema_base.sql
    + migrate.js sequence was separately verified end-to-end against a real
-   scratch database this sprint — see SPRINT5_FINAL_REPORT.md)
+   scratch database this sprint — see test case sửa đổi/SPRINT5_FINAL_REPORT.md)
 ══════════════════════════════════════════ */
 describe('Docker packaging files exist and are internally consistent', () => {
     test('Dockerfile references the real health endpoint for its HEALTHCHECK', () => {

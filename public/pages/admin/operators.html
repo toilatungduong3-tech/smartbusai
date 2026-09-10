@@ -925,7 +925,7 @@ async function updateKPI(){
     document.getElementById("kSuspendedBar").style.width=(suspended/total*100)+"%";
   }
   try{
-    const r=await fetch("/api/admin/stats");
+    const r=await fetch("/api/admin/stats",{headers:_authHeaders()});
     if(r.ok){const d=await r.json();
       const rev=Number(d.totalRevenue||0);
       const el=document.getElementById("kRevenue");

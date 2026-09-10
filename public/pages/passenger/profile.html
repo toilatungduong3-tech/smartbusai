@@ -450,6 +450,16 @@ header{
 .booking-card.bc-CANCELED{ border-left-color:#e74c3c !important; }
 .booking-card.bc-EXPIRED{ border-left-color:#e74c3c !important; opacity:.72; }
 
+/* ── Deep-link highlight: jumps to and flashes the ticket just booked ── */
+.booking-card.bk-highlight{
+  animation:bkHighlightFlash 1.6s ease-out 2;
+  box-shadow:0 0 0 2px rgba(99,102,241,.55),0 20px 52px rgba(0,0,0,.52),0 0 40px rgba(99,102,241,.35) !important;
+}
+@keyframes bkHighlightFlash{
+  0%{box-shadow:0 0 0 2px rgba(99,102,241,.85),0 0 60px rgba(99,102,241,.55);}
+  100%{box-shadow:0 0 0 2px rgba(99,102,241,.30),0 0 20px rgba(99,102,241,.10);}
+}
+
 /* ── EXPIRE SOON badge ── */
 .expire-soon-badge{
   display:inline-flex;align-items:center;gap:4px;
@@ -1745,7 +1755,7 @@ header{
 <div class="hero-strip">
   <div class="hero-strip-inner">
   <div class="avatar-wrap">
-    <img id="heroAvt" src="images/default-avatar.png" alt="Avatar" onclick="document.getElementById('avatarInput').click()">
+    <img id="heroAvt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%236366f1'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23e2e8f0'/%3E%3Cpath d='M50 60c-22 0-36 14-36 30v10h72V90c0-16-14-30-36-30z' fill='%23e2e8f0'/%3E%3C/svg%3E" alt="Avatar" onclick="document.getElementById('avatarInput').click()">
     <div class="avatar-edit" onclick="document.getElementById('avatarInput').click()" title="Đổi ảnh">✏️</div>
     <input type="file" id="avatarInput" hidden accept="image/*">
   </div>
@@ -1820,7 +1830,7 @@ header{
 
       <div class="gc sb-card">
         <div class="sb-avt">
-          <img id="sbAvt" src="images/default-avatar.png" alt="Avatar" onclick="document.getElementById('avatarInput').click()">
+          <img id="sbAvt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%236366f1'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23e2e8f0'/%3E%3Cpath d='M50 60c-22 0-36 14-36 30v10h72V90c0-16-14-30-36-30z' fill='%23e2e8f0'/%3E%3C/svg%3E" alt="Avatar" onclick="document.getElementById('avatarInput').click()">
         </div>
         <div class="sb-name" id="sbName">Đang tải…</div>
         <div class="sb-role">Hành khách</div>
@@ -2830,6 +2840,7 @@ function renderBk(list){
     /* Card class: nếu đã qua giờ nhưng vẫn PENDING (edge case) → EXPIRED */
     const cardClass=isPending&&depPassed?"EXPIRED":(b.status||"PENDING");
     div.className=`gc booking-card bc-${cardClass}`;
+    div.id=`bk-card-${b.booking_id}`;
     if(veryUrgent) div.style.cssText="border-left-color:#f39c12!important;box-shadow:0 0 0 1px rgba(243,156,18,.25),0 12px 44px rgba(0,0,0,.50)!important;";
 
     div.innerHTML=`
@@ -2892,6 +2903,26 @@ function renderBk(list){
     frag.appendChild(div);
   });
   el.appendChild(frag);
+
+  /* Deep-link from booking.html/index.html/payment-result.html's "Xem vé
+     của tôi" — previously that link only landed on the bookings tab, never
+     the specific ticket, so a user with several bookings had to scan the
+     whole list to find the one they just paid for. _pendingHighlightBookingId
+     is set once from ?bookingId= on page load and consumed here (the first
+     render after the target card actually exists in the DOM) so it never
+     re-fires on a later filter/cancel re-render. */
+  if(_pendingHighlightBookingId){
+    const card=document.getElementById(`bk-card-${_pendingHighlightBookingId}`);
+    if(card){
+      switchTab('B');
+      _pendingHighlightBookingId=null;
+      setTimeout(()=>{
+        card.scrollIntoView({behavior:'smooth', block:'center'});
+        card.classList.add('bk-highlight');
+        setTimeout(()=>card.classList.remove('bk-highlight'), 3400);
+      }, 350);
+    }
+  }
 }
 
 function filterBk(status,chipEl){
@@ -3312,6 +3343,21 @@ async function loadLoyalty(){
     updateLoyaltyUI(_realLoyaltyPoints);
     const hPts=document.getElementById("hStatPts");
     if(hPts) hPts.textContent=_realLoyaltyPoints;
+    /* Bug fix: loadBookings() and loadLoyalty() both fire at page init
+       without awaiting each other. renderTravelStats()/renderAchievements()
+       and renderInsights() (both called synchronously from loadBookings())
+       read _realLoyaltyPoints at that exact moment and silently fall back
+       to a fake Math.floor(spent/100000) estimate — plus, for renderInsights,
+       a tier label derived from that fake number — whenever loadBookings()
+       happens to resolve before this function does. Live-reproduced: the
+       hero section correctly showed 7304đ/Kim cương while "Thành tích của
+       bạn"/"Thống kê hành trình"/"Hạng" on the very same page simultaneously
+       showed 137đ/Đồng for the same account. Re-running these two render
+       calls now, with the real balance guaranteed set, corrects them
+       regardless of which fetch won the race — the same self-healing
+       approach hStatPts above already relies on. */
+    if(typeof renderTravelStats==='function') renderTravelStats(allBk);
+    if(typeof renderInsights==='function') renderInsights(allBk);
 
     // Update tier badge with backend tier data
     const tierEl = document.getElementById("heroTierBadge");
@@ -3920,6 +3966,9 @@ window.addEventListener("scroll",()=>{
   const btn=document.getElementById("scrollTopBtn2");
   if(btn) btn.classList.toggle("visible",window.scrollY>400);
 },{ passive:true });
+
+/* ── Deep-link target ticket (see renderBk) ── */
+let _pendingHighlightBookingId=new URLSearchParams(location.search).get('bookingId');
 
 /* ── INIT ── */
 document.addEventListener("DOMContentLoaded", async ()=>{

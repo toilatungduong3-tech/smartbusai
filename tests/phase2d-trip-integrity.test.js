@@ -390,10 +390,11 @@ describe('Phase 2D — autoGenerateRecurringTrips eligibility & date-safety', ()
             .mockResolvedValueOnce([[validRow]])
             .mockResolvedValueOnce([[{ nowMs: Date.now() }]])
             .mockResolvedValueOnce([[{ cnt: 0 }]])   // booking count = 0 -> in-place branch
+            .mockResolvedValueOnce([[]])              // Sprint 24: bus-conflict check -> no conflict
             .mockResolvedValueOnce([{}]);            // the in-place UPDATE
         await ctrl.autoGenerateRecurringTrips();
 
-        const updateCall = db.query.mock.calls[3];
+        const updateCall = db.query.mock.calls[4];
         expect(updateCall[0]).toMatch(/UPDATE trip SET departure_time=.*status='OPEN'/s);
         const [newDep, newArr] = updateCall[1];
         expect(newDep).not.toMatch(/NaN/);
@@ -420,11 +421,12 @@ describe('Phase 2D — autoGenerateRecurringTrips eligibility & date-safety', ()
                 .mockResolvedValueOnce([[invalidWithBooking, validRow]])
                 .mockResolvedValueOnce([[{ nowMs: Date.now() }]])
                 .mockResolvedValueOnce([[{ cnt: 0 }]])
+                .mockResolvedValueOnce([[]])              // Sprint 24: bus-conflict check (valid row only) -> no conflict
                 .mockResolvedValueOnce([{}]);
             await ctrl.autoGenerateRecurringTrips();
             const allSql = db.query.mock.calls.map(c => c[0]).join('\n');
             expect(allSql).not.toMatch(/INSERT INTO trip/); // trip 15 never clones, on either run
-            expect(db.query).toHaveBeenCalledTimes(4); // 2 setup + 1 booking-count(valid row only) + 1 update(valid row only)
+            expect(db.query).toHaveBeenCalledTimes(5); // 2 setup + 1 conflict-check + 1 booking-count(valid row only) + 1 update(valid row only)
         }
     });
 

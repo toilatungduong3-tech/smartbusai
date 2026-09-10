@@ -17,7 +17,7 @@
  * number that would be meaningless against a mocked, instant-resolving
  * db anyway. The real, live-measured latency numbers this sprint
  * produced against the actual running server are quoted in
- * SPRINT12_FINAL_REPORT.md, not fabricated here.
+ * test case sửa đổi/SPRINT12_FINAL_REPORT.md, not fabricated here.
  */
 
 const fs = require('fs');

@@ -4,16 +4,28 @@ const { getSystemFeePercent, getVipSurchargePercent } = require("./settingsContr
 const pricingEngine = require("../services/pricingEngine");
 const { sendBookingConfirmation, sendBookingCancellation } = require("../services/emailService");
 const { parsePagination, paginatedResponse } = require("../utils/pagination");
+const { ownsOperator } = require("../middleware/operatorScope");
 const logger = require('../utils/logger');
 
 /* Phase 2I: shared ownership check for booking-scoped endpoints (pay, QR,
    status update, service-order). The route only guarantees a valid JWT
    (authenticate); this enforces that the caller is either the booking's
    own owner or an ADMIN/OPERATOR, mirroring the existing
-   requireAdminOrOperator pattern used elsewhere (tripRoutes, routeStopRoutes). */
-function canAccessBooking(req, bookingUserId) {
+   requireAdminOrOperator pattern used elsewhere (tripRoutes, routeStopRoutes).
+
+   Bug fix: this used to let ANY OPERATOR account through unconditionally,
+   with no check that the booking's trip actually belongs to that
+   operator's own fleet — Operator A could pay/cancel/read-QR/add-service-
+   order on Operator B's bookings just by guessing a sequential booking_id.
+   Now takes the booking's real owning operator_id (its trip's bus's
+   operator_id) and requires ownsOperator() to agree, the same ownership
+   rule already enforced for buses/seats/trips. Requires attachOperatorId
+   to have run on the route so req.operatorId is populated for the OPERATOR
+   branch — see bookingRoutes.js. */
+function canAccessBooking(req, bookingUserId, bookingOperatorId) {
     if (!req.user) return false;
-    if (req.user.role === 'ADMIN' || req.user.role === 'OPERATOR') return true;
+    if (req.user.role === 'ADMIN') return true;
+    if (req.user.role === 'OPERATOR') return ownsOperator(req, bookingOperatorId);
     return bookingUserId != null && Number(bookingUserId) === Number(req.user.user_id);
 }
 const BOOKING_STATUS_VALUES = new Set(["PENDING", "PAID", "CANCELED"]);
@@ -271,7 +283,8 @@ function generateBookingCode() {
 exports.createBooking = async (req, res) => {
     const {
         user_id, trip_id, seats, status: reqStatus, payment_method, extras,
-        guest_name, guest_phone, guest_email  // Guest booking fields
+        guest_name, guest_phone, guest_email,  // Guest booking fields
+        voucher_code
     } = req.body;
     const bookingStatus = (reqStatus === "PENDING") ? "PENDING" : "PAID";
 
@@ -405,8 +418,37 @@ exports.createBooking = async (req, res) => {
         });
         const extrasJson = extrasArr.length ? JSON.stringify(extrasArr) : null;
 
+        /* Bug fix: a redeemed voucher's free-seat discount was never
+           subtracted here at all — createBooking didn't even read
+           voucher_code from the request. booking.html computed and
+           DISPLAYED a discount (seatPrice × min(seats, free_seats)) purely
+           client-side, the user was still charged full price for every
+           seat, and the voucher got marked "used" anyway via a separate
+           call right after — so every single redemption cost the user
+           real points for a discount that never actually applied. Locking
+           the voucher row FOR UPDATE in this same transaction (same
+           pattern as the trip row above) makes checking eligibility and
+           marking it used atomic with the charge itself: either both
+           happen together, or neither does — no window where the voucher
+           is spent but the discount didn't land, or vice versa. */
+        let voucherDiscount = 0, voucherRow = null;
+        if (voucher_code && req.user && req.user.user_id) {
+            const [[v]] = await conn.query(
+                `SELECT voucher_id, code, free_seats FROM voucher
+                 WHERE user_id=? AND code=? AND is_used=0 FOR UPDATE`,
+                [req.user.user_id, voucher_code]
+            );
+            if (!v) {
+                await conn.rollback();
+                return res.status(409).json({ message: "Voucher không hợp lệ hoặc đã được sử dụng, vui lòng tải lại trang" });
+            }
+            voucherRow = v;
+            const freeCount = Math.min(normalizedSeats.length, Number(v.free_seats) || 0);
+            voucherDiscount = Math.min(nonVipFinal * freeCount, seatDiscountedTotal);
+        }
+
         const subtotal = seatSubtotal + extrasTotal; // pre-discount, for the response's receipt breakdown
-        const total = seatDiscountedTotal + extrasTotal;
+        const total = (seatDiscountedTotal - voucherDiscount) + extrasTotal;
 
         // Generate unique booking_code
         let bookingCode;
@@ -469,6 +511,16 @@ exports.createBooking = async (req, res) => {
             );
         }
 
+        // Mark the voucher used in the SAME transaction as the discounted
+        // charge above — atomic with the booking, not a separate best-effort
+        // call after the fact (see the pricing comment above for why).
+        if (voucherRow) {
+            await conn.query(
+                `UPDATE voucher SET is_used=1, used_at=NOW(), booking_id=? WHERE voucher_id=?`,
+                [bookingId, voucherRow.voucher_id]
+            );
+        }
+
         await conn.commit();
 
         // ── Post-commit for immediate PAID bookings ──
@@ -526,6 +578,8 @@ exports.createBooking = async (req, res) => {
             system_fee_pct: systemFeePercent,
             loyalty_tier: loyaltyTier,
             loyalty_discount_pct: loyaltyDiscountPct,
+            voucher_discount: voucherDiscount,
+            voucher_applied: voucherRow ? voucherRow.code : null,
             is_guest: !user_id
         });
 
@@ -553,9 +607,13 @@ exports.updateBookingStatus = async (req, res) => {
         if (!BOOKING_STATUS_VALUES.has(status)) {
             return res.status(422).json({ message: `status không hợp lệ: ${[...BOOKING_STATUS_VALUES].join(", ")}` });
         }
-        const [[existing]] = await db.query("SELECT user_id FROM booking WHERE booking_id=?", [id]);
+        const [[existing]] = await db.query(
+            `SELECT b.user_id, bs.operator_id
+             FROM booking b JOIN trip t ON b.trip_id=t.trip_id JOIN bus bs ON t.bus_id=bs.bus_id
+             WHERE b.booking_id=?`, [id]
+        );
         if (!existing) return res.status(404).json({ message: "Booking không tồn tại" });
-        if (!canAccessBooking(req, existing.user_id)) {
+        if (!canAccessBooking(req, existing.user_id, existing.operator_id)) {
             return res.status(403).json({ message: "Không có quyền truy cập booking này" });
         }
         const isPrivileged = req.user && (req.user.role === 'ADMIN' || req.user.role === 'OPERATOR');
@@ -641,13 +699,15 @@ exports.payBooking = async (req, res) => {
         const { method } = req.body; // CASH | MOMO | ZALOPAY | BANK
 
         const [rows] = await db.query(
-            "SELECT booking_id, total_amount, status, user_id FROM booking WHERE booking_id=?", [id]
+            `SELECT b.booking_id, b.total_amount, b.status, b.user_id, bs.operator_id
+             FROM booking b JOIN trip t ON b.trip_id=t.trip_id JOIN bus bs ON t.bus_id=bs.bus_id
+             WHERE b.booking_id=?`, [id]
         );
         if (!rows.length) return res.status(404).json({ message: "Booking không tồn tại" });
         /* Phase 2I: was reachable by anyone with zero ownership check — a
            second, separate bypass of the F-13/F-17 payment-integrity fix,
            found during this phase's audit. */
-        if (!canAccessBooking(req, rows[0].user_id)) {
+        if (!canAccessBooking(req, rows[0].user_id, rows[0].operator_id)) {
             return res.status(403).json({ message: "Không có quyền truy cập booking này" });
         }
         if (rows[0].status === "CANCELED") return res.status(400).json({ message: "Vé đã bị huỷ" });
@@ -738,7 +798,7 @@ exports.getBookingQR = async (req, res) => {
                     u.full_name, u.email,
                     t.departure_time, t.arrival_time,
                     ro.origin, ro.destination,
-                    bs.plate_number, bs.bus_type,
+                    bs.plate_number, bs.bus_type, bs.operator_id,
                     GROUP_CONCAT(s.seat_number ORDER BY s.seat_number SEPARATOR ', ') AS seat_numbers
              FROM booking b
              LEFT JOIN users u ON b.user_id = u.user_id
@@ -755,7 +815,7 @@ exports.getBookingQR = async (req, res) => {
         const booking = rows[0];
         /* Phase 2I: was an IDOR — any sequential booking_id leaked full
            name/email/QR image/checksum with zero auth. */
-        if (!canAccessBooking(req, booking.user_id)) {
+        if (!canAccessBooking(req, booking.user_id, booking.operator_id)) {
             return res.status(403).json({ message: 'Không có quyền truy cập booking này' });
         }
         const { generateQRImage, generateChecksum } = require('../services/qrService');
@@ -847,13 +907,15 @@ exports.addServiceOrder = async (req, res) => {
 
         // Get existing booking
         const [rows] = await db.query(
-            "SELECT booking_id, total_amount, extras, status, user_id FROM booking WHERE booking_id=?", [id]
+            `SELECT b.booking_id, b.total_amount, b.extras, b.status, b.user_id, bs.operator_id
+             FROM booking b JOIN trip t ON b.trip_id=t.trip_id JOIN bus bs ON t.bus_id=bs.bus_id
+             WHERE b.booking_id=?`, [id]
         );
         if (!rows.length) return res.status(404).json({ message: "Booking không tồn tại" });
         /* Phase 2I: was unauthenticated, no ownership check — anyone could
            append paid "extras" to any booking and insert an unverified
            payment row for it. */
-        if (!canAccessBooking(req, rows[0].user_id)) {
+        if (!canAccessBooking(req, rows[0].user_id, rows[0].operator_id)) {
             return res.status(403).json({ message: "Không có quyền truy cập booking này" });
         }
         if (rows[0].status === "CANCELED") return res.status(400).json({ message: "Vé đã bị huỷ" });

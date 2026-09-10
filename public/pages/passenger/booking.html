@@ -2385,7 +2385,7 @@ header{
       </div>
     </div>
     <div class="success-actions">
-      <button class="success-btn-primary" onclick="window.location.href='/pages/passenger/profile.html#bookings'">📋 Xem vé của tôi</button>
+      <button class="success-btn-primary" id="btnViewMyTicket" onclick="window.location.href='/pages/passenger/profile.html#bookings'">📋 Xem vé của tôi</button>
       <button class="success-btn-secondary" onclick="window.location.href='/pages/passenger/index.html'">🏠 Về trang chủ</button>
     </div>
   </div>
@@ -3368,7 +3368,16 @@ function updatePrice(){
   const vipMult=1+(_sysSettings.vipSurcharge||50)/100;
   selectedSeats.forEach(s=>{ if(s.type==="VIP"){vip++;ticketTotal+=Math.round(seatPrice*vipMult);}else{normal++;ticketTotal+=seatPrice;} });
   const {total:amTotal}=getAmenitiesTotalAndList();
-  const grand=ticketTotal+amTotal;
+  /* Bug fix: this never subtracted the applied voucher, so the big
+     "Tổng thanh toán" box kept showing the full pre-voucher amount all the
+     way through seat selection — only the later booking-summary modal
+     (_doCreateBooking's own totalAmount calc) actually reflected the
+     discount, right before the real, correct charge. Matching that same
+     Math.min(_voucherDiscount, ticketTotal) cap here means the number the
+     user watches update live is the same number they actually get charged,
+     not just a coincidentally-correct one at the very last step. */
+  const voucherOff=Math.min(_voucherDiscount,ticketTotal);
+  const grand=ticketTotal-voucherOff+amTotal;
 
   document.getElementById("seatCount").textContent=selectedSeats.length+" ghế";
   document.getElementById("normalCount").textContent=normal;
@@ -3626,6 +3635,16 @@ async function _createPendingThenRedirect(method, totalAmount, extrasList){
   if(btn){ btn.disabled=true; btn.textContent="⏳ Đang tạo đơn…"; }
   try{
     const bookingRes=await submitBookingRaw(method, totalAmount, "PENDING", extrasList);
+    if(bookingRes===false){
+      // submitBookingRaw already showed its own specific validation toast
+      // (e.g. missing guest name/phone) — showing the generic error below
+      // on top of it would instantly replace that message (showToast
+      // removes any existing toast first), leaving the guest staring at
+      // "failed, try again" with no idea what was actually wrong.
+      isProcessing=false;
+      if(btn){btn.disabled=false;btn.textContent="✔ Xác nhận đặt vé";}
+      return;
+    }
     if(!bookingRes||!bookingRes.booking_id){
       showToast("Lỗi tạo đặt chỗ — vui lòng thử lại","error");
       isProcessing=false;
@@ -3634,10 +3653,15 @@ async function _createPendingThenRedirect(method, totalAmount, extrasList){
     }
     const bookingId=bookingRes.booking_id;
     const bookingCode=bookingRes.booking_code;
+    // Server is the source of truth for the price actually charged (it's
+    // what /api/payment/create's payUrl amount is looked up from) — use
+    // bookingRes.total for display so the QR can never show a number that
+    // doesn't match what the gateway will actually charge.
+    const realTotal=Number(bookingRes.total)||totalAmount;
     const pmtRes=await fetch("/api/payment/create",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({booking_id:bookingId, payment_method:method, amount:totalAmount})
+      body:JSON.stringify({booking_id:bookingId, payment_method:method, amount:realTotal})
     });
     const pmtData=await pmtRes.json();
     if(!pmtRes.ok||!pmtData.payUrl){
@@ -3648,7 +3672,7 @@ async function _createPendingThenRedirect(method, totalAmount, extrasList){
     }
     // Mở trang thanh toán trong tab mới, giữ trang hiện tại để user xác nhận
     window.open(pmtData.payUrl, '_blank');
-    showGatewayConfirmModal(method, totalAmount, bookingId, pmtData.payUrl, bookingCode);
+    showGatewayConfirmModal(method, realTotal, bookingId, pmtData.payUrl, bookingCode);
   }catch(e){
     showToast("Lỗi kết nối server","error");
     isProcessing=false;
@@ -3742,6 +3766,13 @@ async function _createPendingThenShowVietQR(totalAmount, extrasList){
   if(btn){btn.disabled=true;btn.textContent="⏳ Đang tạo đơn…";}
   try{
     const bookingRes=await submitBookingRaw("BANK", totalAmount, "PENDING", extrasList);
+    if(bookingRes===false){
+      // See _createPendingThenRedirect — don't stomp submitBookingRaw's
+      // own specific validation toast with the generic one below.
+      isProcessing=false;
+      if(btn){btn.disabled=false;btn.textContent="✔ Xác nhận đặt vé";}
+      return;
+    }
     if(!bookingRes||!bookingRes.booking_id){
       showToast("Lỗi tạo đặt chỗ — vui lòng thử lại","error");
       isProcessing=false;
@@ -3750,15 +3781,16 @@ async function _createPendingThenShowVietQR(totalAmount, extrasList){
     }
     const bookingId=bookingRes.booking_id;
     const bookingCode=bookingRes.booking_code;
+    const realTotal=Number(bookingRes.total)||totalAmount;
     pendingBookingData={...pendingBookingData, booking_id:bookingId, booking_code:bookingCode};
     // Lấy VietQR URL từ backend
     const pmtRes=await fetch("/api/payment/create",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({booking_id:bookingId, payment_method:"vietqr", amount:totalAmount})
+      body:JSON.stringify({booking_id:bookingId, payment_method:"vietqr", amount:realTotal})
     });
     const pmtData=await pmtRes.json();
-    showVietQR(pmtData.qrUrl||null, totalAmount, bookingId, bookingCode);
+    showVietQR(pmtData.qrUrl||null, realTotal, bookingId, bookingCode);
   }catch(e){
     showToast("Lỗi kết nối server","error");
   }finally{
@@ -3774,11 +3806,23 @@ async function submitBookingRaw(method, totalAmount, bookingStatus, extrasList){
   const guestEmail=(document.getElementById('paxEmail')||{}).value?.trim()||null;
   if(!userId&&(!guestName||!guestPhone)){
     showToast("Vui lòng nhập họ tên và số điện thoại","warning");
-    return null;
+    return false;
   }
+  /* Bug fix: without this Authorization header, req.user is never set on
+     the server (optionalAuth needs a verified JWT), so createBooking always
+     fell back to guest/BRONZE pricing (0% loyalty discount) even for a
+     logged-in user with a real tier — the exact mismatch reported: this
+     page's own preview (via _loadLoyaltyTier, line ~2650) showed the
+     discounted price, but the booking actually created — and therefore
+     booking.total_amount, which is what the MoMo/VNPay/QR payment amount
+     is looked up from server-side — used the full, undiscounted price. */
+  const _token=typeof getAccessToken==='function'?getAccessToken():null;
   const res=await fetch("/api/bookings",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json",
+      ...(userId&&_token?{Authorization:`Bearer ${_token}`}:{})
+    },
     body:JSON.stringify({
       user_id:userId||null, trip_id:tripId, seats:selectedSeats,
       total_amount:totalAmount, payment_method:method,
@@ -3786,11 +3830,19 @@ async function submitBookingRaw(method, totalAmount, bookingStatus, extrasList){
       extras:extrasList||[],
       guest_name:userId?null:guestName,
       guest_phone:userId?null:guestPhone,
-      guest_email:userId?null:guestEmail
+      guest_email:userId?null:guestEmail,
+      // Bug fix: this path (MoMo/VNPay/ZaloPay/VietQR — every payment
+      // method except cash) never sent the applied voucher at all, so
+      // createBooking had nothing to apply the discount against no matter
+      // what the server-side fix there does. Sending it here is what
+      // actually makes the discount (and the atomic "mark used") take
+      // effect for these flows too, not just cash.
+      voucher_code:_appliedVoucher?.code||null
     })
   });
   const data=await res.json();
   if(!res.ok) return null;
+  if(res.ok && _appliedVoucher){ _appliedVoucher=null; _voucherDiscount=0; if(userId) api.clearCache(`/users/${userId}/vouchers`); }
   return data;
 }
 
@@ -3940,9 +3992,15 @@ async function submitBooking(payment, totalAmount, bookingStatus="PAID"){
   const guestEmail=(document.getElementById('paxEmail')||{}).value?.trim()||null;
 
   try{
+    // Same Authorization fix as submitBookingRaw() — without it, the server
+    // never sees a verified user and silently charges guest/BRONZE pricing.
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
     const res=await fetch("/api/bookings",{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers:{
+        "Content-Type":"application/json",
+        ...(userId&&_token?{Authorization:`Bearer ${_token}`}:{})
+      },
       body:JSON.stringify({
         user_id:userId||null, trip_id:tripId, seats:selectedSeats,
         total_amount:totalAmount, payment_method:payment,
@@ -3950,22 +4008,23 @@ async function submitBooking(payment, totalAmount, bookingStatus="PAID"){
         extras:pendingBookingData?.extras||[],
         guest_name:userId?null:guestName,
         guest_phone:userId?null:guestPhone,
-        guest_email:userId?null:guestEmail
+        guest_email:userId?null:guestEmail,
+        voucher_code:_appliedVoucher?.code||null
       })
     });
     const data=await res.json();
     if(res.ok){
       if(_appliedVoucher){
-        // Sprint 24 — mark the real, server-persisted voucher used (was:
-        // flip a `used` flag inside localStorage['smartbus_vouchers']).
-        // Best-effort: a failure here must never block the booking that
-        // already succeeded — the voucher would just remain "unused" and
-        // block a future redeem until an admin/backend cleanup, which is
-        // safer than silently losing a successful booking.
-        try{
-          await api.put(`/users/${userId}/vouchers/${_appliedVoucher.code}/use`, { booking_id: data.booking_id });
-          api.clearCache(`/users/${userId}/vouchers`);
-        }catch(e){ /* non-critical */ }
+        /* Bug fix: this used to PUT .../vouchers/:code/use as a separate,
+           best-effort call after the booking already succeeded — but
+           createBooking never actually subtracted the voucher's discount
+           from what was charged, so every redemption cost real points for
+           a discount that only ever existed in this page's own display.
+           createBooking now looks up and applies the voucher itself
+           (locked FOR UPDATE in the same transaction as the charge) and
+           marks it used atomically with the booking — so there is nothing
+           left to do here except clear the local/cached state to match. */
+        api.clearCache(`/users/${userId}/vouchers`);
         _appliedVoucher=null;_voucherDiscount=0;
       }
       if(bookingStatus==="PAID"){
@@ -3976,7 +4035,7 @@ async function submitBooking(payment, totalAmount, bookingStatus="PAID"){
           setTimeout(()=>{ window.location.href="/pages/passenger/index.html"; }, 3500);
         } else {
           showToast("✅ Vé đặt thành công — mã #"+data.booking_id+". Chuyển đến thanh toán...", "success");
-          setTimeout(()=>{ window.location.href="/pages/passenger/profile.html#bookings"; }, 2200);
+          setTimeout(()=>{ window.location.href=`/pages/passenger/profile.html?bookingId=${data.booking_id}#bookings`; }, 2200);
         }
       }
       selectedSeats=[]; updatePrice(); await loadSeats();
@@ -4119,10 +4178,17 @@ function renderBusFeatures(trip){
   try{
     const uid=localStorage.getItem('user_id');
     if(!uid) return;
-    const res=await fetch(`/api/users/${uid}`);
+    const _token=typeof getAccessToken==='function'?getAccessToken():null;
+    if(!_token) return;
+    // Bug fix: GET /api/users/:id (userController.getUserById) never
+    // selects loyalty_points at all — this always read undefined and
+    // showed "0 điểm" for every user regardless of real balance. The
+    // dedicated /:id/loyalty endpoint (already used by _loadLoyaltyTier
+    // above for the tier discount) is the one that actually returns it.
+    const res=await fetch(`/api/users/${uid}/loyalty`,{headers:{Authorization:`Bearer ${_token}`}});
     if(!res.ok) return;
-    const u=await res.json();
-    const pts=Number(u.loyalty_points||u.points||0);
+    const data=await res.json();
+    const pts=Number(data.points||0);
     const widget=document.getElementById('loyaltyWidget');
     if(!widget) return;
     document.getElementById('lwBalance').textContent=pts.toLocaleString('vi-VN')+' điểm';
@@ -4178,6 +4244,14 @@ function showBookingSuccess(bookingId, paymentMethod, totalAmount, bookingCode, 
   document.getElementById('successSeats').textContent=seats;
   document.getElementById('successTotal').textContent=Number(totalAmount).toLocaleString('vi-VN')+' ₫';
   document.getElementById('successPayment').textContent=payLabels[paymentMethod]||paymentMethod||'—';
+
+  // Deep-link straight to this ticket in profile.html's "Vé đã đặt" tab
+  // instead of just landing on the tab and leaving the user to find it
+  // themselves among every other booking they have.
+  const viewBtn=document.getElementById('btnViewMyTicket');
+  if(viewBtn && bookingId){
+    viewBtn.onclick=()=>{ window.location.href=`/pages/passenger/profile.html?bookingId=${bookingId}#bookings`; };
+  }
 
   // Guest CTA — encourage registration
   let guestCta = document.getElementById('guestSuccessCta');
